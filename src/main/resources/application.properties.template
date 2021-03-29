@@ -1,0 +1,17 @@
+# Server port
+server.port=
+
+# Active profiles
+spring.profiles.active=
+
+# Database configuration
+spring.datasource.platform=
+spring.datasource.url=
+
+# Google Maps API Key
+google.api-key=
+
+# Keycloak configuration
+keycloak.auth-server-url=
+keycloak.realm=
+keycloak.resource=
