@@ -1,4 +1,3 @@
-HELP.md
 .gradle
 build/
 !**/src/main/**/build/
@@ -35,5 +34,6 @@ out/
 ### VS Code ###
 .vscode/
 
-application.properties
+/application.yaml
+/application.yml
 /*.db

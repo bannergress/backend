@@ -27,5 +27,14 @@ dependencies {
 }
 
 test {
+	environment SPRING_PROFILES_ACTIVE: environment.SPRING_PROFILES_ACTIVE ?: 'dev'
 	useJUnitPlatform()
 }
+
+bootRun {
+	environment SPRING_PROFILES_ACTIVE: environment.SPRING_PROFILES_ACTIVE ?: 'dev'
+	if (project.hasProperty('jvmArgs')) {
+		jvmArgs = (project.jvmArgs.split('\\s+') as List)
+	}
+}
+
