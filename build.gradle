@@ -1,15 +1,21 @@
 plugins {
 	id 'org.springframework.boot' version '2.4.4'
-	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
-	id 'java'
 }
 
-group = 'com.bannergress'
-version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '11'
+apply plugin: 'java'
+apply plugin: 'io.spring.dependency-management'
+
+group 'com.bannergress'
+sourceCompatibility = JavaVersion.VERSION_11
 
 repositories {
 	mavenCentral()
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.keycloak.bom:keycloak-adapter-bom:$keycloak_version"
+	}
 }
 
 dependencies {
@@ -17,13 +23,19 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	implementation 'org.keycloak:keycloak-spring-boot-starter:12.0.4'
-	implementation 'org.hibernate:hibernate-envers:5.4.29.Final'
-	implementation 'com.google.guava:guava:30.1.1-jre'
-	implementation 'com.google.maps:google-maps-services:0.18.0'
+	implementation 'org.keycloak:keycloak-spring-boot-starter'
+	implementation "org.hibernate:hibernate-envers:${hibernate_enver_version}"
+	implementation "com.google.guava:guava:${guava_version}"
+	implementation "com.google.maps:google-maps-services:${google_maps_services_version}"
+
 	runtimeOnly 'com.h2database:h2'
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
+}
+
+tasks.withType(JavaCompile) {
+	options.encoding = 'UTF-8'
 }
 
 test {
