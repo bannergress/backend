@@ -1,96 +1,103 @@
 package com.bannergress.backend.entities;
 
-import java.net.URL;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
+import com.bannergress.backend.enums.POIType;
 import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
 
-import com.bannergress.backend.enums.POIType;
+import javax.persistence.*;
+import java.net.URL;
 
-/** Represents a point of interest, i.e. a portal or a field trip waypoint. */
+/**
+ * Represents a point of interest, i.e. a portal or a field trip waypoint.
+ */
 @Entity
 @Table(name = "poi")
 @Audited
 @AuditTable("poi_audit")
 public class POI {
-	/** Ingress POI ID. */
-	@Id
-	@Column(name = "id")
-	private String id;
+    /**
+     * Ingress POI ID.
+     */
+    @Id
+    @Column(name = "id")
+    private String id;
 
-	/** Title. */
-	@Column(name = "title", nullable = true)
-	private String title;
+    /**
+     * Title.
+     */
+    @Column(name = "title", nullable = true)
+    private String title;
 
-	/** Latitude. */
-	@Column(name = "latitude", nullable = true)
-	private Double latitude;
+    /**
+     * Latitude.
+     */
+    @Column(name = "latitude", nullable = true)
+    private Double latitude;
 
-	/** Longitude. */
-	@Column(name = "longitude", nullable = true)
-	private Double longitude;
+    /**
+     * Longitude.
+     */
+    @Column(name = "longitude", nullable = true)
+    private Double longitude;
 
-	/** Picture URL. */
-	@Column(name = "picture_url", nullable = true)
-	private URL picture;
+    /**
+     * Picture URL.
+     */
+    @Column(name = "picture_url", nullable = true)
+    private URL picture;
 
-	/** Type of the POI (portal or field trip waypoint. */
-	@Column(name = "type", nullable = false)
-	@Enumerated(EnumType.STRING)
-	private POIType type;
+    /**
+     * Type of the POI (portal or field trip waypoint.
+     */
+    @Column(name = "type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private POIType type;
 
-	public String getId() {
-		return id;
-	}
+    public String getId() {
+        return id;
+    }
 
-	public void setId(String id) {
-		this.id = id;
-	}
+    public void setId(String id) {
+        this.id = id;
+    }
 
-	public String getTitle() {
-		return title;
-	}
+    public String getTitle() {
+        return title;
+    }
 
-	public void setTitle(String title) {
-		this.title = title;
-	}
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
-	public Double getLatitude() {
-		return latitude;
-	}
+    public Double getLatitude() {
+        return latitude;
+    }
 
-	public void setLatitude(Double latitude) {
-		this.latitude = latitude;
-	}
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
+    }
 
-	public Double getLongitude() {
-		return longitude;
-	}
+    public Double getLongitude() {
+        return longitude;
+    }
 
-	public void setLongitude(Double longitude) {
-		this.longitude = longitude;
-	}
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
+    }
 
-	public URL getPicture() {
-		return picture;
-	}
+    public URL getPicture() {
+        return picture;
+    }
 
-	public void setPicture(URL picture) {
-		this.picture = picture;
-	}
+    public void setPicture(URL picture) {
+        this.picture = picture;
+    }
 
-	public POIType getType() {
-		return type;
-	}
+    public POIType getType() {
+        return type;
+    }
 
-	public void setType(POIType type) {
-		this.type = type;
-	}
+    public void setType(POIType type) {
+        this.type = type;
+    }
 }

@@ -4,6 +4,7 @@ plugins {
 
 apply plugin: 'java'
 apply plugin: 'io.spring.dependency-management'
+apply plugin: 'checkstyle'
 
 group 'com.bannergress'
 sourceCompatibility = JavaVersion.VERSION_11
@@ -36,6 +37,13 @@ dependencies {
 
 tasks.withType(JavaCompile) {
 	options.encoding = 'UTF-8'
+}
+
+checkstyle {
+	configFile file('config/checkstyle/simple-checkstyle.xml')
+	sourceSets = [project.sourceSets.main, project.sourceSets.test]
+	maxErrors = 0
+	maxWarnings = 0
 }
 
 test {
