@@ -16,7 +16,7 @@
         <module name="NeedBraces"/>
         <module name="RightCurly"/>
         <module name="ImportOrder">
-            <property name="groups" value="*,javax,java"/>
+            <property name="groups" value="*,/javax?/"/>
             <property name="ordered" value="false"/>
             <property name="separated" value="true"/>
             <property name="option" value="bottom"/>

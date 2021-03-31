@@ -28,4 +28,4 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Execute checkstyle
-        run: ./gradlew checkstyleMain checkstyleTest --continue
+        run: ./gradlew checkstyleMain checkstyleTest --continue --exclude-task classes --exclude-task testClasses
