@@ -1,31 +1,30 @@
 package com.bannergress.backend.dto;
 
-import java.util.List;
-
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-
 import com.bannergress.backend.dto.serialization.IntelMissionDetailsDeserializer;
 import com.bannergress.backend.enums.Faction;
 import com.bannergress.backend.enums.MissionType;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import java.util.List;
+
 @JsonDeserialize(using = IntelMissionDetailsDeserializer.class)
 public class IntelMissionDetails extends IntelMissionSummary {
-	@NotEmpty
-	public String description;
+    @NotEmpty
+    public String description;
 
-	@NotEmpty
-	public String authorName;
+    @NotEmpty
+    public String authorName;
 
-	@NotNull
-	public Faction authorFaction;
+    @NotNull
+    public Faction authorFaction;
 
-	public int numberCompleted;
+    public int numberCompleted;
 
-	@NotNull
-	public MissionType type;
+    @NotNull
+    public MissionType type;
 
-	@NotEmpty
-	public List<IntelMissionStep> steps;
+    @NotEmpty
+    public List<IntelMissionStep> steps;
 }

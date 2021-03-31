@@ -1,11 +1,19 @@
 package com.bannergress.backend.enums;
 
-/** POI type. */
+/**
+ * POI type.
+ */
 public enum POIType {
-	/** Portal. */
-	portal,
-	/** Field trip waypoint. */
-	fieldTripWaypoint,
-	/** Unavailable. */
-	unavailable
+    /**
+     * Portal.
+     */
+    portal,
+    /**
+     * Field trip waypoint.
+     */
+    fieldTripWaypoint,
+    /**
+     * Unavailable.
+     */
+    unavailable
 }

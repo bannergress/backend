@@ -1,169 +1,181 @@
 package com.bannergress.backend.entities;
 
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OrderColumn;
-import javax.persistence.Table;
-
+import com.bannergress.backend.enums.MissionType;
 import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 
-import com.bannergress.backend.enums.MissionType;
+import javax.persistence.*;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
-/** Represents an Ingress mission. */
+/**
+ * Represents an Ingress mission.
+ */
 @Entity
 @Table(name = "mission")
 @Audited
 @AuditTable("mission_audit")
 public class Mission {
-	/** Ingress mission ID. */
-	@Id
-	@Column(name = "id")
-	private String id;
+    /**
+     * Ingress mission ID.
+     */
+    @Id
+    @Column(name = "id")
+    private String id;
 
-	/** Title. */
-	@Column(name = "title", nullable = false)
-	private String title;
+    /**
+     * Title.
+     */
+    @Column(name = "title", nullable = false)
+    private String title;
 
-	/** Description. */
-	@Column(name = "description", nullable = true)
-	private String description;
+    /**
+     * Description.
+     */
+    @Column(name = "description", nullable = true)
+    private String description;
 
-	/** Picture URL. */
-	@Column(name = "picture_url", nullable = false)
-	private URL picture;
+    /**
+     * Picture URL.
+     */
+    @Column(name = "picture_url", nullable = false)
+    private URL picture;
 
-	/** Author. */
-	@ManyToOne(optional = true)
-	@JoinColumn(name = "author")
-	private NamedAgent author;
+    /**
+     * Author.
+     */
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "author")
+    private NamedAgent author;
 
-	/** Mission rating in percent. */
-	@Column(name = "rating", nullable = false)
-	@NotAudited
-	private double rating;
+    /**
+     * Mission rating in percent.
+     */
+    @Column(name = "rating", nullable = false)
+    @NotAudited
+    private double rating;
 
-	/** Number of agents who completed the mission. */
-	@Column(name = "number_completed", nullable = true)
-	@NotAudited
-	private Integer numberCompleted;
+    /**
+     * Number of agents who completed the mission.
+     */
+    @Column(name = "number_completed", nullable = true)
+    @NotAudited
+    private Integer numberCompleted;
 
-	/** Average duration of the mission in milliseconds. */
-	@Column(name = "average_duration_milliseconds", nullable = false)
-	@NotAudited
-	private long averageDurationMilliseconds;
+    /**
+     * Average duration of the mission in milliseconds.
+     */
+    @Column(name = "average_duration_milliseconds", nullable = false)
+    @NotAudited
+    private long averageDurationMilliseconds;
 
-	/** Type of mission (sequential / any order / hidden). */
-	@Column(name = "type", nullable = true)
-	@Enumerated(EnumType.STRING)
-	private MissionType type;
+    /**
+     * Type of mission (sequential / any order / hidden).
+     */
+    @Column(name = "type", nullable = true)
+    @Enumerated(EnumType.STRING)
+    private MissionType type;
 
-	/** Mission steps. */
-	@OneToMany(mappedBy = "mission", cascade = CascadeType.ALL, orphanRemoval = true)
-	@OrderColumn(name = "position")
-	private List<MissionStep> steps = new ArrayList<>();
+    /**
+     * Mission steps.
+     */
+    @OneToMany(mappedBy = "mission", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderColumn(name = "position")
+    private List<MissionStep> steps = new ArrayList<>();
 
-	/** Mission status. */
-	@Column(name = "online", nullable = false)
-	private boolean online;
+    /**
+     * Mission status.
+     */
+    @Column(name = "online", nullable = false)
+    private boolean online;
 
-	public String getId() {
-		return id;
-	}
+    public String getId() {
+        return id;
+    }
 
-	public void setId(String id) {
-		this.id = id;
-	}
+    public void setId(String id) {
+        this.id = id;
+    }
 
-	public String getTitle() {
-		return title;
-	}
+    public String getTitle() {
+        return title;
+    }
 
-	public void setTitle(String title) {
-		this.title = title;
-	}
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
-	public String getDescription() {
-		return description;
-	}
+    public String getDescription() {
+        return description;
+    }
 
-	public void setDescription(String description) {
-		this.description = description;
-	}
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-	public URL getPicture() {
-		return picture;
-	}
+    public URL getPicture() {
+        return picture;
+    }
 
-	public void setPicture(URL picture) {
-		this.picture = picture;
-	}
+    public void setPicture(URL picture) {
+        this.picture = picture;
+    }
 
-	public NamedAgent getAuthor() {
-		return author;
-	}
+    public NamedAgent getAuthor() {
+        return author;
+    }
 
-	public void setAuthor(NamedAgent author) {
-		this.author = author;
-	}
+    public void setAuthor(NamedAgent author) {
+        this.author = author;
+    }
 
-	public double getRating() {
-		return rating;
-	}
+    public double getRating() {
+        return rating;
+    }
 
-	public void setRating(double rating) {
-		this.rating = rating;
-	}
+    public void setRating(double rating) {
+        this.rating = rating;
+    }
 
-	public Integer getNumberCompleted() {
-		return numberCompleted;
-	}
+    public Integer getNumberCompleted() {
+        return numberCompleted;
+    }
 
-	public void setNumberCompleted(Integer numberCompleted) {
-		this.numberCompleted = numberCompleted;
-	}
+    public void setNumberCompleted(Integer numberCompleted) {
+        this.numberCompleted = numberCompleted;
+    }
 
-	public long getAverageDurationMilliseconds() {
-		return averageDurationMilliseconds;
-	}
+    public long getAverageDurationMilliseconds() {
+        return averageDurationMilliseconds;
+    }
 
-	public void setAverageDurationMilliseconds(long averageDurationMilliseconds) {
-		this.averageDurationMilliseconds = averageDurationMilliseconds;
-	}
+    public void setAverageDurationMilliseconds(long averageDurationMilliseconds) {
+        this.averageDurationMilliseconds = averageDurationMilliseconds;
+    }
 
-	public MissionType getType() {
-		return type;
-	}
+    public MissionType getType() {
+        return type;
+    }
 
-	public void setType(MissionType type) {
-		this.type = type;
-	}
+    public void setType(MissionType type) {
+        this.type = type;
+    }
 
-	public List<MissionStep> getSteps() {
-		return steps;
-	}
+    public List<MissionStep> getSteps() {
+        return steps;
+    }
 
-	public void setSteps(List<MissionStep> steps) {
-		this.steps = steps;
-	}
+    public void setSteps(List<MissionStep> steps) {
+        this.steps = steps;
+    }
 
-	public boolean isOnline() {
-		return online;
-	}
+    public boolean isOnline() {
+        return online;
+    }
 
-	public void setOnline(boolean online) {
-		this.online = online;
-	}
+    public void setOnline(boolean online) {
+        this.online = online;
+    }
 }

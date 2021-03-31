@@ -1,9 +1,15 @@
 package com.bannergress.backend.enums;
 
-/** Represents an Ingress faction. */
+/**
+ * Represents an Ingress faction.
+ */
 public enum Faction {
-	/** Enlightened. */
-	enlightened,
-	/** Resistance. */
-	resistance
+    /**
+     * Enlightened.
+     */
+    enlightened,
+    /**
+     * Resistance.
+     */
+    resistance
 }
