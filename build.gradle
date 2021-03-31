@@ -29,6 +29,10 @@ dependencies {
 	implementation "com.google.guava:guava:${guava_version}"
 	implementation "com.google.maps:google-maps-services:${google_maps_services_version}"
 
+    annotationProcessor "net.karneim:pojobuilder:$pojobuilder_version"
+
+    compileOnly "net.karneim:pojobuilder:$pojobuilder_version:annotations"
+
 	runtimeOnly 'com.h2database:h2'
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
