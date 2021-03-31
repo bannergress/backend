@@ -1,0 +1,23 @@
+server:
+  # Server port
+  port: 8080
+
+spring:
+  # Active profiles
+  profiles:
+    - 'prod'
+
+  # Database configuration
+  datasource:
+    platform:
+    url:
+
+google:
+  # Google Maps API Key
+  api-key:
+
+# Keycloak configuration
+keycloak:
+  auth-server-url:
+  realm:
+  resource:
