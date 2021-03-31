@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -40,6 +41,9 @@ public class MissionServiceImpl implements MissionService {
     public void importMission(IntelMissionDetails data) {
         Mission mission = importMissionSummary(data);
         NamedAgent author = agentService.importAgent(data.authorName, data.authorFaction);
+        Instant now = Instant.now();
+        mission.setLatestUpdateSummary(now);
+        mission.setLatestUpdateDetails(now);
         mission.setAuthor(author);
         mission.setDescription(data.description);
         mission.setNumberCompleted(data.numberCompleted);
@@ -95,6 +99,7 @@ public class MissionServiceImpl implements MissionService {
             mission = new Mission();
             mission.setId(data.id);
         }
+        mission.setLatestUpdateSummary(Instant.now());
         mission.setTitle(data.title);
         mission.setPicture(data.picture);
         mission.setAverageDurationMilliseconds(data.averageDurationMilliseconds);
@@ -116,6 +121,14 @@ public class MissionServiceImpl implements MissionService {
     @Override
     public Optional<Mission> findById(String id) {
         return Optional.ofNullable(entityManager.find(Mission.class, id));
+    }
+
+    @Override
+    public Collection<Mission> findByIds(Collection<String> ids) {
+        TypedQuery<Mission> query = entityManager.createQuery("SELECT m FROM Mission m WHERE m.id IN :ids",
+            Mission.class);
+        query.setParameter("ids", ids);
+        return query.getResultList();
     }
 
     @Override

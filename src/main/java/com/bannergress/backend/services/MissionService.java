@@ -43,6 +43,14 @@ public interface MissionService {
     Optional<Mission> findById(String id);
 
     /**
+     * Finds missions by IDs.
+     *
+     * @param ids Niantic mission IDs.
+     * @return Mission.
+     */
+    Collection<Mission> findByIds(Collection<String> ids);
+
+    /**
      * Verifies that a collection of missions is available for use in a banner. Throws if at least one of the missions is not available.
      *
      * @param ids Mission IDs.
