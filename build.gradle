@@ -25,7 +25,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.keycloak:keycloak-spring-boot-starter'
-	implementation "org.hibernate:hibernate-envers:${hibernate_enver_version}"
+	implementation "org.hibernate:hibernate-envers"
 	implementation "com.google.guava:guava:${guava_version}"
 	implementation "com.google.maps:google-maps-services:${google_maps_services_version}"
 
