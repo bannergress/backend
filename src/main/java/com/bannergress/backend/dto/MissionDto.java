@@ -4,6 +4,7 @@ import com.bannergress.backend.utils.PojoBuilder;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
 
 import javax.validation.constraints.NotNull;
+
 import java.net.URL;
 import java.util.List;
 

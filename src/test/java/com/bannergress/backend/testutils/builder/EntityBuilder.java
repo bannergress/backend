@@ -4,6 +4,7 @@ import com.bannergress.backend.entities.*;
 import com.bannergress.backend.enums.*;
 
 import javax.validation.constraints.NotNull;
+
 import java.util.List;
 
 import static com.bannergress.backend.testutils.builder.BuilderMethods.*;

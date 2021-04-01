@@ -3,6 +3,7 @@ package com.bannergress.backend.testutils.builder;
 import com.bannergress.backend.utils.PojoBuilder;
 
 import javax.validation.constraints.NotNull;
+
 import java.util.*;
 
 import static com.bannergress.backend.testutils.builder.JavatypeBuilder.random;

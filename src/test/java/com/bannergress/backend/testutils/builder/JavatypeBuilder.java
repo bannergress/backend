@@ -3,6 +3,7 @@ package com.bannergress.backend.testutils.builder;
 import com.bannergress.backend.utils.PojoBuilder;
 
 import javax.validation.constraints.NotNull;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Random;

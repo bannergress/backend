@@ -7,6 +7,7 @@ import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
+
 import java.net.URL;
 
 /**

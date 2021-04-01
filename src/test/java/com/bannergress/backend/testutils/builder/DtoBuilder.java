@@ -9,9 +9,12 @@ import com.bannergress.backend.enums.Objective;
 import com.bannergress.backend.enums.POIType;
 
 import javax.validation.constraints.NotNull;
+
 import java.util.Collections;
 
-import static com.bannergress.backend.testutils.builder.BuilderMethods.*;
+import static com.bannergress.backend.testutils.builder.BuilderMethods.a;
+import static com.bannergress.backend.testutils.builder.BuilderMethods.listWith;
+import static com.bannergress.backend.testutils.builder.BuilderMethods.oneOf;
 import static com.bannergress.backend.testutils.builder.JavatypeBuilder.*;
 
 public class DtoBuilder {
