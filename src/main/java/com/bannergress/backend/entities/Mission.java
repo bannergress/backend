@@ -99,14 +99,14 @@ public class Mission {
     /**
      * Timestamp when the mission summary was last updated.
      */
-    @Column(name = "latest_update_summary", nullable = true)
+    @Column(name = "latest_update_summary", nullable = true, columnDefinition = "timestamp with time zone")
     @NotAudited
     private Instant latestUpdateSummary;
 
     /**
      * Timestamp when the mission details were last updated.
      */
-    @Column(name = "latest_update_details", nullable = true)
+    @Column(name = "latest_update_details", nullable = true, columnDefinition = "timestamp with time zone")
     @NotAudited
     private Instant latestUpdateDetails;
 
