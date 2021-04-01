@@ -1,5 +1,8 @@
 package com.bannergress.backend.entities;
 
+import com.bannergress.backend.utils.PojoBuilder;
+import net.karneim.pojobuilder.GeneratePojoBuilder;
+
 import javax.persistence.*;
 
 /**
@@ -7,6 +10,7 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "place_information")
+@GeneratePojoBuilder(withBuilderInterface = PojoBuilder.class)
 public class PlaceInformation {
     /**
      * Internal ID without meaning.

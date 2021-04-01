@@ -1,6 +1,8 @@
 package com.bannergress.backend.entities;
 
 import com.bannergress.backend.enums.MissionType;
+import com.bannergress.backend.utils.PojoBuilder;
+import net.karneim.pojobuilder.GeneratePojoBuilder;
 import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
@@ -17,6 +19,7 @@ import java.util.List;
 @Table(name = "mission")
 @Audited
 @AuditTable("mission_audit")
+@GeneratePojoBuilder(withBuilderInterface = PojoBuilder.class)
 public class Mission {
     /**
      * Ingress mission ID.

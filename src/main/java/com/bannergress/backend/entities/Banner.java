@@ -1,5 +1,7 @@
 package com.bannergress.backend.entities;
 
+import com.bannergress.backend.utils.PojoBuilder;
+import net.karneim.pojobuilder.GeneratePojoBuilder;
 import org.hibernate.annotations.SortNatural;
 import org.hibernate.envers.AuditJoinTable;
 import org.hibernate.envers.AuditTable;
@@ -7,10 +9,7 @@ import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 
 import javax.persistence.*;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * Represents a banner.
@@ -19,6 +18,7 @@ import java.util.TreeMap;
 @Table(name = "banner")
 @Audited
 @AuditTable("banner_audit")
+@GeneratePojoBuilder(withBuilderInterface = PojoBuilder.class)
 public class Banner {
     /**
      * Internal ID without further meaning.
@@ -116,7 +116,7 @@ public class Banner {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(final long id) {
         this.id = id;
     }
 
@@ -206,5 +206,27 @@ public class Banner {
 
     public void setPicture(BannerPicture picture) {
         this.picture = picture;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        final Banner banner = (Banner) o;
+        return id == banner.id && numberOfMissions == banner.numberOfMissions && complete == banner.complete
+            && online == banner.online && Objects.equals(title, banner.title) && Objects.equals(description, banner.description)
+            && Objects.equals(missions, banner.missions) && Objects.equals(startLatitude, banner.startLatitude)
+            && Objects.equals(startLongitude, banner.startLongitude) && Objects.equals(lengthMeters, banner.lengthMeters)
+            && Objects.equals(picture, banner.picture) && Objects.equals(startPlaces, banner.startPlaces);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, title, description, numberOfMissions, missions, startLatitude, startLongitude,
+            lengthMeters, complete, online, picture, startPlaces);
     }
 }
