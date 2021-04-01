@@ -1,19 +1,18 @@
 [*]
 charset = utf-8
 end_of_line = lf
-indent_size = 4
+indent_size = 2
 indent_style = space
 insert_final_newline = true
+tab_width = 2
+
+[*.java]
+indent_size = 4
 tab_width = 4
-
-[*yaml]
-indent_size = 2
-tab_width = 2
-
-[*xml]
-indent_size = 2
-tab_width = 2
-
-[*json]
-indent_size = 2
-tab_width = 2
+ij_java_imports_layout = *, |, javax.**, java.**, |, $*
+ij_java_if_brace_force = always
+ij_java_binary_operation_sign_on_next_line = true
+ij_java_binary_operation_wrap = normal
+ij_java_class_count_to_use_import_on_demand = 5
+ij_java_names_count_to_use_import_on_demand = 5
+ij_visual_guides = 140
