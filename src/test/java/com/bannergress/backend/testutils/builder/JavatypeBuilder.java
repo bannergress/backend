@@ -6,6 +6,7 @@ import javax.validation.constraints.NotNull;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.Instant;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -89,5 +90,8 @@ public class JavatypeBuilder {
             + ALPHANUMERIC.substring(index, index + 1).toUpperCase();
     }
 
-
+    @NotNull
+    public static PojoBuilder<Instant> $Instant() {
+        return () -> Instant.ofEpochMilli(random.nextLong());
+    }
 }
