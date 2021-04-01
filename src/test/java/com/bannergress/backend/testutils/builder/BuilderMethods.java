@@ -34,6 +34,7 @@ public class BuilderMethods {
         return args[random(0, args.length)];
     }
 
+    @SuppressWarnings("unchecked")
     @NotNull
     public static <T> T[] arrayWith(final PojoBuilder<T> builder) {
         return (T[]) new Object[]{builder.build()};
