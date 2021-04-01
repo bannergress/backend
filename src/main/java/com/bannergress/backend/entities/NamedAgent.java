@@ -1,6 +1,8 @@
 package com.bannergress.backend.entities;
 
 import com.bannergress.backend.enums.Faction;
+import com.bannergress.backend.utils.PojoBuilder;
+import net.karneim.pojobuilder.GeneratePojoBuilder;
 import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
 
@@ -13,6 +15,7 @@ import javax.persistence.*;
 @Table(name = "named_agent")
 @Audited
 @AuditTable("named_agent_audit")
+@GeneratePojoBuilder(withBuilderInterface = PojoBuilder.class)
 public class NamedAgent {
     /**
      * Agent name.

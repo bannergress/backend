@@ -21,6 +21,7 @@ import javax.persistence.EntityGraph;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -43,7 +44,7 @@ public class BannerServiceImpl implements BannerService {
     private BannerPictureService bannerPictureService;
 
     @Override
-    public Collection<Banner> findByPlace(String placeId, int offset, int maxResults) {
+    public List<Banner> findByPlace(String placeId, int offset, int maxResults) {
         TypedQuery<Banner> query = entityManager
             .createQuery("SELECT b FROM Banner b JOIN b.startPlaces p WHERE p.id = :placeId", Banner.class);
         query.setParameter("placeId", placeId);

@@ -4,6 +4,7 @@ import com.bannergress.backend.dto.BannerDto;
 import com.bannergress.backend.entities.Banner;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -18,7 +19,7 @@ public interface BannerService {
      * @param maxResults Maximum number of results.
      * @return Banners that were found.
      */
-    Collection<Banner> findByPlace(String placeId, int offset, int maxResults);
+    List<Banner> findByPlace(String placeId, int offset, int maxResults);
 
     /**
      * Finds banners inside an area.

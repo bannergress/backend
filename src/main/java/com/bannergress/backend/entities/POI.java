@@ -1,6 +1,8 @@
 package com.bannergress.backend.entities;
 
 import com.bannergress.backend.enums.POIType;
+import com.bannergress.backend.utils.PojoBuilder;
+import net.karneim.pojobuilder.GeneratePojoBuilder;
 import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
 
@@ -14,6 +16,7 @@ import java.net.URL;
 @Table(name = "poi")
 @Audited
 @AuditTable("poi_audit")
+@GeneratePojoBuilder(withBuilderInterface = PojoBuilder.class)
 public class POI {
     /**
      * Ingress POI ID.

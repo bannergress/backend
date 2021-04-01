@@ -1,6 +1,8 @@
 package com.bannergress.backend.entities;
 
 import com.bannergress.backend.enums.PlaceType;
+import com.bannergress.backend.utils.PojoBuilder;
+import net.karneim.pojobuilder.GeneratePojoBuilder;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -11,6 +13,7 @@ import java.util.List;
  */
 @Entity
 @Table(name = "place")
+@GeneratePojoBuilder(withBuilderInterface = PojoBuilder.class)
 public class Place {
     /**
      * Google Maps Place ID.
