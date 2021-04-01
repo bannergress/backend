@@ -8,6 +8,7 @@ import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 
 import javax.persistence.*;
+
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;

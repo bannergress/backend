@@ -5,6 +5,7 @@ import com.bannergress.backend.utils.PojoBuilder;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
 
 import javax.persistence.*;
+
 import java.util.ArrayList;
 import java.util.List;
 

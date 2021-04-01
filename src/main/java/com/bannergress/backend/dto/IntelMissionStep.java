@@ -6,6 +6,7 @@ import com.bannergress.backend.validation.NianticId;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+
 import java.net.URL;
 
 public class IntelMissionStep {
