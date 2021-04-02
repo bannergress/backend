@@ -78,6 +78,7 @@ public class BannerController {
     private static BannerDto toSummary(Banner banner) {
         BannerDto dto = new BannerDto();
         dto.id = banner.getId();
+        dto.title = banner.getTitle();
         dto.numberOfMissions = banner.getNumberOfMissions();
         dto.lengthMeters = banner.getLengthMeters();
         return dto;
