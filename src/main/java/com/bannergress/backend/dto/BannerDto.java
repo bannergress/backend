@@ -11,7 +11,6 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -47,7 +46,7 @@ public class BannerDto {
      * position must be less than {@link #numberOfMissions}. The map may be sparse,
      * i.e. not every position is necessarily mapped to a mission.
      */
-    public Map<@NotNull @Min(0) Integer, @NotNull MissionDto> missions = new HashMap<>();
+    public Map<@NotNull @Min(0) Integer, @NotNull MissionDto> missions;
 
     /**
      * Latitude of the start portal of the first mission.
