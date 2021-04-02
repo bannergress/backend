@@ -78,7 +78,7 @@ public class BannerPictureServiceImpl implements BannerPictureService {
             throw new RuntimeException(ex);
         }
     }
-    
+
     protected byte[] createPicture(Banner banner) {
         final int numberColumns = 6;
         final int numberRows = banner.getNumberOfMissions() / numberColumns;
@@ -92,7 +92,7 @@ public class BannerPictureServiceImpl implements BannerPictureService {
         graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER));
 
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
-            // loads, draws and masks the individual mission images to the banner image. 
+            // loads, draws and masks the individual mission images to the banner image.
             for (Map.Entry<Integer, Mission> entry : banner.getMissions().entrySet()) {
                 int missionPostion = banner.getNumberOfMissions() - entry.getKey().intValue() - 1;
                 try (CloseableHttpResponse imageResponse = httpclient
@@ -115,12 +115,11 @@ public class BannerPictureServiceImpl implements BannerPictureService {
         }
 
         graphics.dispose();
-        
+
         // blurs a bit
         bannerImage = new ConvolveOp(new Kernel(3, 3, new float[] {0f, 0.125f, 0f, 0.125f, 0.5f, 0.125f, 0f, 0.125f, 0f}),
             ConvolveOp.EDGE_NO_OP, null).filter(bannerImage, null);
 
-        
         try (ByteArrayOutputStream stream = new ByteArrayOutputStream(40 * 1024 * numberRows)) {
             ImageIO.write(bannerImage, "png", stream);
             return stream.toByteArray();
@@ -128,7 +127,7 @@ public class BannerPictureServiceImpl implements BannerPictureService {
             throw new RuntimeException(e);
         }
     }
-    
+
     @Override
     public Optional<BannerPicture> findByHash(String hash) {
         return Optional.ofNullable(entityManager.find(BannerPicture.class, hash));
