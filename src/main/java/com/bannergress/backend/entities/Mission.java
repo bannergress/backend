@@ -10,6 +10,7 @@ import org.hibernate.envers.NotAudited;
 import javax.persistence.*;
 
 import java.net.URL;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -94,6 +95,20 @@ public class Mission {
      */
     @Column(name = "online", nullable = false)
     private boolean online;
+
+    /**
+     * Timestamp when the mission summary was last updated.
+     */
+    @Column(name = "latest_update_summary", nullable = true, columnDefinition = "timestamp with time zone")
+    @NotAudited
+    private Instant latestUpdateSummary;
+
+    /**
+     * Timestamp when the mission details were last updated.
+     */
+    @Column(name = "latest_update_details", nullable = true, columnDefinition = "timestamp with time zone")
+    @NotAudited
+    private Instant latestUpdateDetails;
 
     public String getId() {
         return id;
@@ -181,5 +196,21 @@ public class Mission {
 
     public void setOnline(boolean online) {
         this.online = online;
+    }
+
+    public Instant getLatestUpdateSummary() {
+        return latestUpdateSummary;
+    }
+
+    public void setLatestUpdateSummary(Instant latestUpdateSummary) {
+        this.latestUpdateSummary = latestUpdateSummary;
+    }
+
+    public Instant getLatestUpdateDetails() {
+        return latestUpdateDetails;
+    }
+
+    public void setLatestUpdateDetails(Instant latestUpdateDetails) {
+        this.latestUpdateDetails = latestUpdateDetails;
     }
 }

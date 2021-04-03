@@ -1,6 +1,7 @@
 package com.bannergress.backend.controllers;
 
 import com.bannergress.backend.dto.MissionDto;
+import com.bannergress.backend.dto.MissionStatus;
 import com.bannergress.backend.dto.MissionStepDto;
 import com.bannergress.backend.dto.PoiDto;
 import com.bannergress.backend.entities.Mission;
@@ -8,20 +9,22 @@ import com.bannergress.backend.entities.MissionStep;
 import com.bannergress.backend.entities.POI;
 import com.bannergress.backend.security.Roles;
 import com.bannergress.backend.services.MissionService;
+import com.bannergress.backend.validation.NianticId;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.annotation.security.RolesAllowed;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -37,6 +40,20 @@ public class MissionController {
     public Collection<MissionDto> getUnused(@RequestParam @NotEmpty String search) {
         Collection<Mission> unusedMissions = missionService.findUnusedMissions(search, 300);
         return Collections2.transform(unusedMissions, MissionController::toSummary);
+    }
+
+    @RolesAllowed(Roles.IMPORT_DATA)
+    @PostMapping("/missions/status")
+    public Map<String, MissionStatus> getStatus(@RequestBody Collection<@NianticId @NotNull String> ids) {
+        Collection<Mission> missions = missionService.findByIds(ids);
+        Map<String, MissionStatus> result = new HashMap<>();
+        result.putAll(Maps.toMap(ids, id -> new MissionStatus()));
+        for (Mission mission : missions) {
+            MissionStatus status = result.get(mission.getId());
+            status.latestUpdateSummary = mission.getLatestUpdateSummary();
+            status.latestUpdateDetails = mission.getLatestUpdateDetails();
+        }
+        return result;
     }
 
     @GetMapping("/missions/{id}")

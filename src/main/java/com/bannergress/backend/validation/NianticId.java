@@ -9,7 +9,7 @@ import java.lang.annotation.*;
  * The annotated elemented must be a valid Niantic ID. <code>null</code> is
  * considered valid.
  */
-@Target({ElementType.METHOD, ElementType.FIELD, ElementType.ANNOTATION_TYPE})
+@Target({ElementType.METHOD, ElementType.FIELD, ElementType.ANNOTATION_TYPE, ElementType.TYPE_USE})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = NianticIdValidator.class)
 @Documented
