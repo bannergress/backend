@@ -43,6 +43,8 @@ public class PlaceServiceImpl implements PlaceService {
             query.setParameter("parentPlaceId", parentPlaceId.get());
         }
         if (queryString.isPresent()) {
+            // Right now, the query string filters only on the long name of the place.
+            // In the future, it might also filter on other aspects, like short name.
             query.setParameter("queryString", "%" + queryString.get().toLowerCase() + "%");
         }
         return ImmutableSet.copyOf(query.getResultList());
