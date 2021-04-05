@@ -21,6 +21,7 @@ import javax.persistence.EntityGraph;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -83,6 +84,7 @@ public class BannerServiceImpl implements BannerService {
         banner.setTitle(bannerDto.title);
         banner.setDescription(bannerDto.description);
         banner.setNumberOfMissions(bannerDto.numberOfMissions);
+        banner.setCreated(Instant.now());
         entityManager.persist(banner);
         banner.getMissions().clear();
         banner.getMissions().putAll(Maps.transformValues(bannerDto.missions,

@@ -10,6 +10,7 @@ import org.hibernate.envers.NotAudited;
 
 import javax.persistence.*;
 
+import java.time.Instant;
 import java.util.*;
 
 /**
@@ -113,6 +114,13 @@ public class Banner {
     @NotAudited
     private Set<Place> startPlaces = new HashSet<>();
 
+    /**
+     * Timestamp the banner was created.
+     */
+    @Column(name = "created", nullable = false)
+    @NotAudited
+    private Instant created;
+
     public long getId() {
         return id;
     }
@@ -209,6 +217,14 @@ public class Banner {
         this.picture = picture;
     }
 
+    public Instant getCreated() {
+        return created;
+    }
+
+    public void setCreated(Instant created) {
+        this.created = created;
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -219,15 +235,17 @@ public class Banner {
         }
         final Banner banner = (Banner) o;
         return id == banner.id && numberOfMissions == banner.numberOfMissions && complete == banner.complete
-            && online == banner.online && Objects.equals(title, banner.title) && Objects.equals(description, banner.description)
-            && Objects.equals(missions, banner.missions) && Objects.equals(startLatitude, banner.startLatitude)
-            && Objects.equals(startLongitude, banner.startLongitude) && Objects.equals(lengthMeters, banner.lengthMeters)
-            && Objects.equals(picture, banner.picture) && Objects.equals(startPlaces, banner.startPlaces);
+            && online == banner.online && Objects.equals(title, banner.title)
+            && Objects.equals(description, banner.description) && Objects.equals(missions, banner.missions)
+            && Objects.equals(startLatitude, banner.startLatitude)
+            && Objects.equals(startLongitude, banner.startLongitude)
+            && Objects.equals(lengthMeters, banner.lengthMeters) && Objects.equals(picture, banner.picture)
+            && Objects.equals(startPlaces, banner.startPlaces) && Objects.equals(created, banner.created);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(id, title, description, numberOfMissions, missions, startLatitude, startLongitude,
-            lengthMeters, complete, online, picture, startPlaces);
+            lengthMeters, complete, online, picture, startPlaces, created);
     }
 }
