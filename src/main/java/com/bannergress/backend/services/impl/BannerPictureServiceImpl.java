@@ -10,7 +10,9 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -27,19 +29,35 @@ import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ForkJoinPool;
 
 /**
  * Default implementation of {@link BannerPictureService}.
  */
 @Service
 @Transactional(isolation = Isolation.SERIALIZABLE)
-public class BannerPictureServiceImpl implements BannerPictureService {
+public class BannerPictureServiceImpl implements BannerPictureService, InitializingBean {
     @Autowired
     EntityManager entityManager;
+
+    @Value("${bannerpictureservice.parallelism:12}")
+    private int parallelism;
+    protected ExecutorService missionPictureRequestWorkers;
+    protected CloseableHttpClient missionPictureHttpclient;
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        this.missionPictureRequestWorkers = new ForkJoinPool(parallelism);
+        this.missionPictureHttpclient = HttpClients.custom()
+            .setMaxConnPerRoute(parallelism)
+            .build();
+    }
 
     @Override
     public void refresh(Banner banner) {
@@ -91,34 +109,39 @@ public class BannerPictureServiceImpl implements BannerPictureService {
         graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
         graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER));
 
-        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
-            // loads, draws and masks the individual mission images to the banner image.
-            for (Map.Entry<Integer, Mission> entry : banner.getMissions().entrySet()) {
-                int missionPostion = banner.getNumberOfMissions() - entry.getKey().intValue() - 1;
-                try (CloseableHttpResponse imageResponse = httpclient
-                        .execute(new HttpGet(entry.getValue().getPicture().toURI()))) {
-                    BufferedImage missionImage = ImageIO.read(imageResponse.getEntity().getContent());
-                    int x1 = DISTANCE_CIRCLES + (missionPostion % numberColumns) * MISSIONSIZE;
-                    int y1 = DISTANCE_CIRCLES + (missionPostion / numberColumns) * MISSIONSIZE;
+        // loads, draws and masks the individual mission images to the banner image.
+        try {
+            missionPictureRequestWorkers
+                .submit(() -> banner.getMissions().entrySet().parallelStream().forEach(entry -> {
+                    BufferedImage missionImage;
+                    try (
+                        CloseableHttpResponse imageResponse = missionPictureHttpclient
+                            .execute(new HttpGet(entry.getValue().getPicture().toURI()));
+                        InputStream is = imageResponse.getEntity().getContent()) {
+                        missionImage = ImageIO.read(is);
+                    } catch (URISyntaxException | IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                    int missionPosition = banner.getNumberOfMissions() - entry.getKey().intValue() - 1;
+                    int x1 = DISTANCE_CIRCLES + (missionPosition % numberColumns) * MISSIONSIZE;
+                    int y1 = DISTANCE_CIRCLES + (missionPosition / numberColumns) * MISSIONSIZE;
                     int x2 = x1 + DIAMETER;
                     int y2 = y1 + DIAMETER;
                     graphics.drawImage(missionImage, x1, y1, x2, y2, 0, 0, missionImage.getWidth(),
                         missionImage.getHeight(), null);
-                    graphics.drawImage(maskImage, x1, y1, x2, y2, 0, 0, maskImage.getWidth(),
-                        maskImage.getHeight(), null);
-                } catch (URISyntaxException ex) {
-                    throw new RuntimeException(ex);
-                }
-            }
-        } catch (IOException ex) {
+                    graphics.drawImage(maskImage, x1, y1, x2, y2, 0, 0, maskImage.getWidth(), maskImage.getHeight(),
+                        null);
+                })).get();
+        } catch (InterruptedException | ExecutionException ex) {
             throw new RuntimeException(ex);
         }
 
         graphics.dispose();
 
         // blurs a bit
-        bannerImage = new ConvolveOp(new Kernel(3, 3, new float[] {0f, 0.125f, 0f, 0.125f, 0.5f, 0.125f, 0f, 0.125f, 0f}),
-            ConvolveOp.EDGE_NO_OP, null).filter(bannerImage, null);
+        bannerImage = new ConvolveOp(
+            new Kernel(3, 3, new float[] {0f, 0.125f, 0f, 0.125f, 0.5f, 0.125f, 0f, 0.125f, 0f}), ConvolveOp.EDGE_NO_OP,
+            null).filter(bannerImage, null);
 
         try (ByteArrayOutputStream stream = new ByteArrayOutputStream(40 * 1024 * numberRows)) {
             ImageIO.write(bannerImage, "png", stream);
