@@ -10,7 +10,6 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
@@ -42,22 +41,17 @@ import java.util.concurrent.ForkJoinPool;
  */
 @Service
 @Transactional(isolation = Isolation.SERIALIZABLE)
-public class BannerPictureServiceImpl implements BannerPictureService, InitializingBean {
+public class BannerPictureServiceImpl implements BannerPictureService {
     @Autowired
     EntityManager entityManager;
 
-    @Value("${bannerpictureservice.parallelism:12}")
-    private int parallelism;
+    public BannerPictureServiceImpl(@Value("${bannerpictureservice.parallelism:12}") int parallelism) {
+        this.missionPictureRequestWorkers = new ForkJoinPool(parallelism);
+        this.missionPictureHttpclient = HttpClients.custom().setMaxConnPerRoute(parallelism).build();
+    }
+
     protected ExecutorService missionPictureRequestWorkers;
     protected CloseableHttpClient missionPictureHttpclient;
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        this.missionPictureRequestWorkers = new ForkJoinPool(parallelism);
-        this.missionPictureHttpclient = HttpClients.custom()
-            .setMaxConnPerRoute(parallelism)
-            .build();
-    }
 
     @Override
     public void refresh(Banner banner) {
