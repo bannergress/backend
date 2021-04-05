@@ -2,8 +2,10 @@ package com.bannergress.backend.controllers;
 
 import com.bannergress.backend.dto.BannerDto;
 import com.bannergress.backend.entities.Banner;
+import com.bannergress.backend.entities.PlaceInformation;
 import com.bannergress.backend.enums.BannerSortOrder;
 import com.bannergress.backend.services.BannerService;
+import com.bannergress.backend.services.PlaceService;
 import com.google.common.collect.Maps;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.ResponseEntity;
@@ -25,8 +27,11 @@ public class BannerController {
 
     private final BannerService bannerService;
 
-    public BannerController(final BannerService bannerService) {
+    private final PlaceService placeService;
+
+    public BannerController(final BannerService bannerService, final PlaceService placeService) {
         this.bannerService = bannerService;
+        this.placeService = placeService;
     }
 
     /**
@@ -60,8 +65,7 @@ public class BannerController {
         }
         final Collection<Banner> banners = bannerService.find(placeId, minLatitude, maxLatitude, minLongitude,
             maxLongitude, sortBy, dir, offset, limit);
-        return ResponseEntity.ok(
-            banners.stream().map(BannerController::toSummary).collect(Collectors.toUnmodifiableList()));
+        return ResponseEntity.ok(banners.stream().map(this::toSummary).collect(Collectors.toUnmodifiableList()));
     }
 
     /**
@@ -73,7 +77,7 @@ public class BannerController {
     @GetMapping("/banners/{id}")
     public ResponseEntity<BannerDto> get(@PathVariable final long id) {
         final Optional<Banner> banner = bannerService.findByIdWithDetails(id);
-        return ResponseEntity.of(banner.map(BannerController::toDetails));
+        return ResponseEntity.of(banner.map(this::toDetails));
     }
 
     @PostMapping("/banners")
@@ -82,7 +86,7 @@ public class BannerController {
         return get(id);
     }
 
-    private static BannerDto toSummary(Banner banner) {
+    private BannerDto toSummary(Banner banner) {
         BannerDto dto = new BannerDto();
         dto.id = banner.getId();
         dto.title = banner.getTitle();
@@ -90,10 +94,15 @@ public class BannerController {
         dto.lengthMeters = banner.getLengthMeters();
         dto.startLatitude = banner.getStartLatitude();
         dto.startLongitude = banner.getStartLongitude();
+        Optional<PlaceInformation> placeInformation = placeService
+            .getMostAccuratePlaceInformation(banner.getStartPlaces(), "en");
+        if (placeInformation.isPresent()) {
+            dto.formattedAddress = placeInformation.get().getFormattedAddress();
+        }
         return dto;
     }
 
-    private static BannerDto toDetails(Banner banner) {
+    private BannerDto toDetails(Banner banner) {
         BannerDto dto = toSummary(banner);
         dto.missions = Maps.transformValues(banner.getMissions(), MissionController::toDetails);
         return dto;

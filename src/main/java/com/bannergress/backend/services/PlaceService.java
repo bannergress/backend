@@ -30,4 +30,13 @@ public interface PlaceService {
      * @return Place information.
      */
     PlaceInformation getPlaceInformation(Place place, String languagePreference);
+
+    /**
+     * Gets localized information about the most specific place.
+     *
+     * @param places             Places.
+     * @param languagePreference Language preference, as specified by the Accept-Language header.
+     * @return Place information, if the list of places is not empty.
+     */
+    Optional<PlaceInformation> getMostAccuratePlaceInformation(Collection<Place> places, String languagePreference);
 }

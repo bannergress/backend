@@ -3,6 +3,7 @@ package com.bannergress.backend.controllers;
 import com.bannergress.backend.dto.BannerDto;
 import com.bannergress.backend.entities.Banner;
 import com.bannergress.backend.services.BannerService;
+import com.bannergress.backend.services.impl.PlaceServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.HttpStatus;
@@ -28,7 +29,7 @@ class BannerControllerTest {
 
     private final BannerService bannerService = mock(BannerService.class);
 
-    private final BannerController testController = new BannerController(bannerService);
+    private final BannerController testController = new BannerController(bannerService, new PlaceServiceImpl());
 
     @Test
     void list() {
