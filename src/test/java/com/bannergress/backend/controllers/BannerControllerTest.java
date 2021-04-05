@@ -5,6 +5,7 @@ import com.bannergress.backend.entities.Banner;
 import com.bannergress.backend.services.BannerService;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,17 +31,18 @@ class BannerControllerTest {
     @Test
     void list() {
         //WHEN
-        final String place = a($String());
+        final Optional<String> place =Optional.of( a($String()));
         final Banner banner = a($Banner());
 
-        when(bannerService.findByPlace(eq(place), eq(0), anyInt())).thenReturn(List.of(banner));
+        when(bannerService.find(eq(place),eq(Optional.empty()),eq(Optional.empty()),eq(Optional.empty()),eq(Optional.empty()), eq(0), anyInt())).thenReturn(List.of(banner));
 
         //THEN
-        final List<BannerDto> result = testController.list(place);
+        final ResponseEntity<List<BannerDto>> result = testController.list(place, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
 
         //VERIFY
-        assertThat(result).hasSize(1);
-        final var bannerDto = result.get(0);
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(result.getBody()).hasSize(1);
+        final var bannerDto = result.getBody().get(0);
         assertThat(bannerDto.id).isEqualTo(banner.getId());
         assertThat(bannerDto.numberOfMissions).isEqualTo(banner.getNumberOfMissions());
         assertThat(bannerDto.lengthMeters).isEqualTo(banner.getLengthMeters());
@@ -49,20 +51,21 @@ class BannerControllerTest {
     @Test
     void list_withBoundingBox() {
         //WHEN
-        final double minLat = a($Double());
-        final double maxLat = a($Double());
-        final double minLong = a($Double());
-        final double maxLong = a($Double());
+        final Optional<Double> minLat =Optional.of( a($Double()));
+        final Optional<Double> maxLat = Optional.of(a($Double()));
+        final Optional<Double> minLong = Optional.of(a($Double()));
+        final Optional<Double> maxLong = Optional.of(a($Double()));
         final Banner banner = a($Banner());
 
-        when(bannerService.findByBounds(eq(minLat), eq(maxLat), eq(minLong), eq(maxLong), eq(0), anyInt())).thenReturn(List.of(banner));
+        when(bannerService.find(eq(Optional.empty()), eq(minLat), eq(maxLat), eq(minLong), eq(maxLong), eq(0), anyInt())).thenReturn(List.of(banner));
 
         //THEN
-        final List<BannerDto> result = testController.list(minLat, maxLat, minLong, maxLong);
+        final ResponseEntity<List<BannerDto>> result = testController.list(Optional.empty(), minLat, maxLat, minLong, maxLong);
 
         //VERIFY
-        assertThat(result).hasSize(1);
-        final var bannerDto = result.get(0);
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(result.getBody()).hasSize(1);
+        final var bannerDto = result.getBody().get(0);
         assertThat(bannerDto.id).isEqualTo(banner.getId());
         assertThat(bannerDto.numberOfMissions).isEqualTo(banner.getNumberOfMissions());
         assertThat(bannerDto.lengthMeters).isEqualTo(banner.getLengthMeters());

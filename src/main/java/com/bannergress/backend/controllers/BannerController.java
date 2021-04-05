@@ -29,32 +29,30 @@ public class BannerController {
     }
 
     /**
-     * Lists banners inside a place.
+     * Lists banners.
      *
-     * @param placeId Place ID.
-     * @return Banners.
-     */
-    @GetMapping(value = "/banners", params = {"placeId"})
-    public List<BannerDto> list(@RequestParam final String placeId) {
-        final List<Banner> banners = bannerService.findByPlace(placeId, 0, MAX_RESULTS);
-        return banners.stream().map(BannerController::toSummary).collect(Collectors.toUnmodifiableList());
-    }
-
-    /**
-     * Lists banners inside a bounding box.
-     *
+     * @param placeId      Place ID the banner belongs to.
      * @param minLatitude  Minimum latitude of the bounding box.
      * @param maxLatitude  Maximum latitude of the bounding box.
      * @param minLongitude Minimum longitude of the bounding box.
      * @param maxLongitude Maximum longitude of the bounding box.
      * @return Banners.
      */
-    @GetMapping(value = "/banners", params = {"minLatitude", "maxLatitude", "minLongitude", "maxLongitude"})
-    public List<BannerDto> list(@RequestParam final double minLatitude, @RequestParam final double maxLatitude,
-                                @RequestParam final double minLongitude, @RequestParam final double maxLongitude) {
-        final Collection<Banner> banners = bannerService.findByBounds(minLatitude, maxLatitude, minLongitude, maxLongitude, 0,
-            MAX_RESULTS);
-        return banners.stream().map(BannerController::toSummaryWithCoordinates).collect(Collectors.toUnmodifiableList());
+    @GetMapping(value = "/banners")
+    public ResponseEntity<List<BannerDto>> list(@RequestParam final Optional<String> placeId,
+                                                @RequestParam final Optional<Double> minLatitude,
+                                                @RequestParam final Optional<Double> maxLatitude,
+                                                @RequestParam final Optional<Double> minLongitude,
+                                                @RequestParam final Optional<Double> maxLongitude) {
+        int numberOfBounds = (minLatitude.isPresent() ? 1 : 0) + (maxLatitude.isPresent() ? 1 : 0)
+            + (minLongitude.isPresent() ? 1 : 0) + (maxLongitude.isPresent() ? 1 : 0);
+        if (numberOfBounds != 0 && numberOfBounds != 4) {
+            return ResponseEntity.badRequest().build();
+        }
+        final Collection<Banner> banners = bannerService.find(placeId, minLatitude, maxLatitude, minLongitude,
+            maxLongitude, 0, MAX_RESULTS);
+        return ResponseEntity.ok(
+            banners.stream().map(BannerController::toSummaryWithCoordinates).collect(Collectors.toUnmodifiableList()));
     }
 
     /**

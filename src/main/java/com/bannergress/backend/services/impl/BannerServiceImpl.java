@@ -46,25 +46,31 @@ public class BannerServiceImpl implements BannerService {
     private BannerPictureService bannerPictureService;
 
     @Override
-    public List<Banner> findByPlace(String placeId, int offset, int maxResults) {
-        TypedQuery<Banner> query = entityManager
-            .createQuery("SELECT b FROM Banner b JOIN b.startPlaces p WHERE p.id = :placeId", Banner.class);
-        query.setParameter("placeId", placeId);
-        query.setMaxResults(maxResults);
-        return query.getResultList();
-    }
-
-    @Override
-    public Collection<Banner> findByBounds(double minLatitude, double maxLatitude, double minLongitude,
-                                           double maxLongitude, int offset, int maxResults) {
-        TypedQuery<Banner> query = entityManager
-            .createQuery("SELECT b FROM Banner b WHERE b.startLatitude BETWEEN :minLatitude AND :maxLatitude "
-                + "AND b.startLongitude BETWEEN :minLongitude AND :maxLongitude", Banner.class);
-        query.setParameter("minLatitude", minLatitude);
-        query.setParameter("maxLatitude", maxLatitude);
-        query.setParameter("minLongitude", minLongitude);
-        query.setParameter("maxLongitude", maxLongitude);
-        query.setMaxResults(maxResults);
+    public List<Banner> find(Optional<String> placeId, Optional<Double> minLatitude, Optional<Double> maxLatitude,
+                             Optional<Double> minLongitude, Optional<Double> maxLongitude, int offset, int limit) {
+        String queryString = "SELECT DISTINCT b FROM Banner b";
+        if (placeId.isPresent()) {
+            queryString += " JOIN b.startPlaces p";
+        }
+        queryString += " LEFT JOIN FETCH b.startPlaces p2 LEFT JOIN FETCH p2.information WHERE true = true";
+        if (placeId.isPresent()) {
+            queryString += " AND p.id = :placeId";
+        }
+        if (minLatitude.isPresent()) {
+            queryString += " AND b.startLatitude BETWEEN :minLatitude AND :maxLatitude "
+                + "AND b.startLongitude BETWEEN :minLongitude AND :maxLongitude";
+        }
+        TypedQuery<Banner> query = entityManager.createQuery(queryString, Banner.class);
+        if (placeId.isPresent()) {
+            query.setParameter("placeId", placeId.get());
+        }
+        if (minLatitude.isPresent()) {
+            query.setParameter("minLatitude", minLatitude.get());
+            query.setParameter("maxLatitude", maxLatitude.get());
+            query.setParameter("minLongitude", minLongitude.get());
+            query.setParameter("maxLongitude", maxLongitude.get());
+        }
+        query.setMaxResults(limit);
         return query.getResultList();
     }
 

@@ -3,7 +3,6 @@ package com.bannergress.backend.services;
 import com.bannergress.backend.dto.BannerDto;
 import com.bannergress.backend.entities.Banner;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,28 +11,19 @@ import java.util.Optional;
  */
 public interface BannerService {
     /**
-     * Finds banners that are located at a place.
+     * Finds banners.
      *
-     * @param placeId    Place ID.
-     * @param offset     Offset of the first result.
-     * @param maxResults Maximum number of results.
-     * @return Banners that were found.
-     */
-    List<Banner> findByPlace(String placeId, int offset, int maxResults);
-
-    /**
-     * Finds banners inside an area.
-     *
-     * @param minLatitude  Minimum latitude.
-     * @param maxLatitude  Maximum latitude.
-     * @param minLongitude Minimum longitude.
-     * @param maxLongitude Maximum longitude.
+     * @param placeId      Optional place ID.
+     * @param minLatitude  Optional minimum latitude.
+     * @param maxLatitude  Optional maximum latitude.
+     * @param minLongitude Optional minimum longitude.
+     * @param maxLongitude Optional maximum longitude.
      * @param offset       Offset of the first result.
-     * @param maxResults   Maximum number of results.
+     * @param limit        Maximum number of results.
      * @return Banners that were found.
      */
-    Collection<Banner> findByBounds(double minLatitude, double maxLatitude, double minLongitude, double maxLongitude,
-                                    int offset, int maxResults);
+    List<Banner> find(Optional<String> placeId, Optional<Double> minLatitude, Optional<Double> maxLatitude,
+                      Optional<Double> minLongitude, Optional<Double> maxLongitude, int offset, int limit);
 
     /**
      * Finds a banner by its internal ID, including details down to mission level.
