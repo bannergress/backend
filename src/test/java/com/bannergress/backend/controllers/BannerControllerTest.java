@@ -4,6 +4,7 @@ import com.bannergress.backend.dto.BannerDto;
 import com.bannergress.backend.entities.Banner;
 import com.bannergress.backend.services.BannerService;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -18,6 +19,7 @@ import static com.bannergress.backend.testutils.builder.JavatypeBuilder.$Long;
 import static com.bannergress.backend.testutils.builder.JavatypeBuilder.$String;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -30,16 +32,18 @@ class BannerControllerTest {
 
     @Test
     void list() {
-        //WHEN
-        final Optional<String> place =Optional.of( a($String()));
+        // WHEN
+        final Optional<String> place = Optional.of(a($String()));
         final Banner banner = a($Banner());
 
-        when(bannerService.find(eq(place),eq(Optional.empty()),eq(Optional.empty()),eq(Optional.empty()),eq(Optional.empty()), eq(0), anyInt())).thenReturn(List.of(banner));
+        when(bannerService.find(eq(place), eq(Optional.empty()), eq(Optional.empty()), eq(Optional.empty()),
+            eq(Optional.empty()), eq(Optional.empty()), any(), eq(0), anyInt())).thenReturn(List.of(banner));
 
-        //THEN
-        final ResponseEntity<List<BannerDto>> result = testController.list(place, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+        // THEN
+        final ResponseEntity<List<BannerDto>> result = testController.list(place, Optional.empty(), Optional.empty(),
+            Optional.empty(), Optional.empty(), Optional.empty(), Direction.ASC, 0, 100);
 
-        //VERIFY
+        // VERIFY
         assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(result.getBody()).hasSize(1);
         final var bannerDto = result.getBody().get(0);
@@ -50,19 +54,21 @@ class BannerControllerTest {
 
     @Test
     void list_withBoundingBox() {
-        //WHEN
-        final Optional<Double> minLat =Optional.of( a($Double()));
+        // WHEN
+        final Optional<Double> minLat = Optional.of(a($Double()));
         final Optional<Double> maxLat = Optional.of(a($Double()));
         final Optional<Double> minLong = Optional.of(a($Double()));
         final Optional<Double> maxLong = Optional.of(a($Double()));
         final Banner banner = a($Banner());
 
-        when(bannerService.find(eq(Optional.empty()), eq(minLat), eq(maxLat), eq(minLong), eq(maxLong), eq(0), anyInt())).thenReturn(List.of(banner));
+        when(bannerService.find(eq(Optional.empty()), eq(minLat), eq(maxLat), eq(minLong), eq(maxLong), any(), any(),
+            eq(0), anyInt())).thenReturn(List.of(banner));
 
-        //THEN
-        final ResponseEntity<List<BannerDto>> result = testController.list(Optional.empty(), minLat, maxLat, minLong, maxLong);
+        // THEN
+        final ResponseEntity<List<BannerDto>> result = testController.list(Optional.empty(), minLat, maxLat, minLong,
+            maxLong, Optional.empty(), Direction.ASC, 0, 100);
 
-        //VERIFY
+        // VERIFY
         assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(result.getBody()).hasSize(1);
         final var bannerDto = result.getBody().get(0);
@@ -75,16 +81,16 @@ class BannerControllerTest {
 
     @Test
     void get() {
-        //WHEN
+        // WHEN
         final long id = a($Long());
         final Banner banner = a($Banner());
 
         when(bannerService.findByIdWithDetails(id)).thenReturn(Optional.of(banner));
 
-        //THEN
+        // THEN
         final var response = testController.get(id);
 
-        //VERIFY
+        // VERIFY
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         final BannerDto bannerDto = response.getBody();
         assertThat(bannerDto).isNotNull();
@@ -98,31 +104,31 @@ class BannerControllerTest {
 
     @Test
     void get_notFound() {
-        //WHEN
+        // WHEN
         final long id = a($Long());
 
         when(bannerService.findByIdWithDetails(id)).thenReturn(Optional.empty());
 
-        //THEN
+        // THEN
         final var response = testController.get(id);
 
-        //VERIFY
+        // VERIFY
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test
     void post() {
-        //WHEN
+        // WHEN
         final BannerDto banner = a($BannerDto());
         final Banner savedBanner = a($Banner());
 
         when(bannerService.save(banner)).thenReturn(savedBanner.getId());
         when(bannerService.findByIdWithDetails(savedBanner.getId())).thenReturn(Optional.of(savedBanner));
 
-        //THEN
+        // THEN
         final var response = testController.post(banner);
 
-        //VERIFY
+        // VERIFY
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         final BannerDto bannerDto = response.getBody();
         assertThat(bannerDto).isNotNull();

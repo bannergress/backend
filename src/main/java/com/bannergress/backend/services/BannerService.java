@@ -2,6 +2,8 @@ package com.bannergress.backend.services;
 
 import com.bannergress.backend.dto.BannerDto;
 import com.bannergress.backend.entities.Banner;
+import com.bannergress.backend.enums.BannerSortOrder;
+import org.springframework.data.domain.Sort.Direction;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,12 +20,15 @@ public interface BannerService {
      * @param maxLatitude  Optional maximum latitude.
      * @param minLongitude Optional minimum longitude.
      * @param maxLongitude Optional maximum longitude.
+     * @param sortBy       Optional sort order.
+     * @param dir          Sort direction.
      * @param offset       Offset of the first result.
      * @param limit        Maximum number of results.
      * @return Banners that were found.
      */
     List<Banner> find(Optional<String> placeId, Optional<Double> minLatitude, Optional<Double> maxLatitude,
-                      Optional<Double> minLongitude, Optional<Double> maxLongitude, int offset, int limit);
+                      Optional<Double> minLongitude, Optional<Double> maxLongitude, Optional<BannerSortOrder> sortBy,
+                      Direction dir, int offset, int limit);
 
     /**
      * Finds a banner by its internal ID, including details down to mission level.

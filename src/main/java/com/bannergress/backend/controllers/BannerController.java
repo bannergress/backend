@@ -2,12 +2,15 @@ package com.bannergress.backend.controllers;
 
 import com.bannergress.backend.dto.BannerDto;
 import com.bannergress.backend.entities.Banner;
+import com.bannergress.backend.enums.BannerSortOrder;
 import com.bannergress.backend.services.BannerService;
 import com.google.common.collect.Maps;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
 
 import java.util.Collection;
 import java.util.List;
@@ -22,8 +25,6 @@ public class BannerController {
 
     private final BannerService bannerService;
 
-    private static final int MAX_RESULTS = 1000;
-
     public BannerController(final BannerService bannerService) {
         this.bannerService = bannerService;
     }
@@ -36,6 +37,10 @@ public class BannerController {
      * @param maxLatitude  Maximum latitude of the bounding box.
      * @param minLongitude Minimum longitude of the bounding box.
      * @param maxLongitude Maximum longitude of the bounding box.
+     * @param sortBy       Sort order.
+     * @param dir          Sort direction.
+     * @param offset       Offset of the first result.
+     * @param limit        Maximum number of results.
      * @return Banners.
      */
     @GetMapping(value = "/banners")
@@ -43,14 +48,18 @@ public class BannerController {
                                                 @RequestParam final Optional<Double> minLatitude,
                                                 @RequestParam final Optional<Double> maxLatitude,
                                                 @RequestParam final Optional<Double> minLongitude,
-                                                @RequestParam final Optional<Double> maxLongitude) {
+                                                @RequestParam final Optional<Double> maxLongitude,
+                                                @RequestParam final Optional<BannerSortOrder> sortBy,
+                                                @RequestParam(defaultValue = "ASC") final Direction dir,
+                                                @RequestParam(defaultValue = "0") final int offset,
+                                                @RequestParam(defaultValue = "20") @Max(50) final int limit) {
         int numberOfBounds = (minLatitude.isPresent() ? 1 : 0) + (maxLatitude.isPresent() ? 1 : 0)
             + (minLongitude.isPresent() ? 1 : 0) + (maxLongitude.isPresent() ? 1 : 0);
         if (numberOfBounds != 0 && numberOfBounds != 4) {
             return ResponseEntity.badRequest().build();
         }
         final Collection<Banner> banners = bannerService.find(placeId, minLatitude, maxLatitude, minLongitude,
-            maxLongitude, 0, MAX_RESULTS);
+            maxLongitude, sortBy, dir, offset, limit);
         return ResponseEntity.ok(
             banners.stream().map(BannerController::toSummaryWithCoordinates).collect(Collectors.toUnmodifiableList()));
     }

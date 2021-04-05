@@ -5,6 +5,7 @@ import com.bannergress.backend.entities.Banner;
 import com.bannergress.backend.entities.Mission;
 import com.bannergress.backend.entities.MissionStep;
 import com.bannergress.backend.entities.Place;
+import com.bannergress.backend.enums.BannerSortOrder;
 import com.bannergress.backend.services.BannerPictureService;
 import com.bannergress.backend.services.BannerService;
 import com.bannergress.backend.services.GeocodingService;
@@ -12,6 +13,7 @@ import com.bannergress.backend.services.MissionService;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Maps;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.jpa.repository.EntityGraph.EntityGraphType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -47,7 +49,8 @@ public class BannerServiceImpl implements BannerService {
 
     @Override
     public List<Banner> find(Optional<String> placeId, Optional<Double> minLatitude, Optional<Double> maxLatitude,
-                             Optional<Double> minLongitude, Optional<Double> maxLongitude, int offset, int limit) {
+                             Optional<Double> minLongitude, Optional<Double> maxLongitude,
+                             Optional<BannerSortOrder> sortBy, Direction dir, int offset, int limit) {
         String queryString = "SELECT DISTINCT b FROM Banner b";
         if (placeId.isPresent()) {
             queryString += " JOIN b.startPlaces p";
@@ -59,6 +62,13 @@ public class BannerServiceImpl implements BannerService {
         if (minLatitude.isPresent()) {
             queryString += " AND b.startLatitude BETWEEN :minLatitude AND :maxLatitude "
                 + "AND b.startLongitude BETWEEN :minLongitude AND :maxLongitude";
+        }
+        if (sortBy.isPresent()) {
+            switch (sortBy.get()) {
+                case created:
+                    queryString += " ORDER BY b.created " + dir.toString();
+                    break;
+            }
         }
         TypedQuery<Banner> query = entityManager.createQuery(queryString, Banner.class);
         if (placeId.isPresent()) {
@@ -78,7 +88,8 @@ public class BannerServiceImpl implements BannerService {
     public Optional<Banner> findByIdWithDetails(long id) {
         EntityGraph<Banner> bannerGraph = entityManager.createEntityGraph(Banner.class);
         bannerGraph.addSubgraph("missions").addSubgraph("steps").addAttributeNodes("poi");
-        return Optional.ofNullable(entityManager.find(Banner.class, id, Map.of(EntityGraphType.LOAD.toString(), bannerGraph)));
+        return Optional
+            .ofNullable(entityManager.find(Banner.class, id, Map.of(EntityGraphType.LOAD.toString(), bannerGraph)));
     }
 
     @Override
