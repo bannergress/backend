@@ -61,7 +61,7 @@ public class BannerController {
         final Collection<Banner> banners = bannerService.find(placeId, minLatitude, maxLatitude, minLongitude,
             maxLongitude, sortBy, dir, offset, limit);
         return ResponseEntity.ok(
-            banners.stream().map(BannerController::toSummaryWithCoordinates).collect(Collectors.toUnmodifiableList()));
+            banners.stream().map(BannerController::toSummary).collect(Collectors.toUnmodifiableList()));
     }
 
     /**
@@ -88,18 +88,13 @@ public class BannerController {
         dto.title = banner.getTitle();
         dto.numberOfMissions = banner.getNumberOfMissions();
         dto.lengthMeters = banner.getLengthMeters();
-        return dto;
-    }
-
-    private static BannerDto toSummaryWithCoordinates(Banner banner) {
-        BannerDto dto = toSummary(banner);
         dto.startLatitude = banner.getStartLatitude();
         dto.startLongitude = banner.getStartLongitude();
         return dto;
     }
 
     private static BannerDto toDetails(Banner banner) {
-        BannerDto dto = toSummaryWithCoordinates(banner);
+        BannerDto dto = toSummary(banner);
         dto.missions = Maps.transformValues(banner.getMissions(), MissionController::toDetails);
         return dto;
     }
