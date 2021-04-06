@@ -2,12 +2,17 @@ package com.bannergress.backend.controllers;
 
 import com.bannergress.backend.dto.BannerDto;
 import com.bannergress.backend.entities.Banner;
+import com.bannergress.backend.entities.PlaceInformation;
+import com.bannergress.backend.enums.BannerSortOrder;
 import com.bannergress.backend.services.BannerService;
+import com.bannergress.backend.services.PlaceService;
 import com.google.common.collect.Maps;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
 
 import java.util.Collection;
 import java.util.List;
@@ -22,39 +27,45 @@ public class BannerController {
 
     private final BannerService bannerService;
 
-    private static final int MAX_RESULTS = 1000;
+    private final PlaceService placeService;
 
-    public BannerController(final BannerService bannerService) {
+    public BannerController(final BannerService bannerService, final PlaceService placeService) {
         this.bannerService = bannerService;
+        this.placeService = placeService;
     }
 
     /**
-     * Lists banners inside a place.
+     * Lists banners.
      *
-     * @param placeId Place ID.
-     * @return Banners.
-     */
-    @GetMapping(value = "/banners", params = {"placeId"})
-    public List<BannerDto> list(@RequestParam final String placeId) {
-        final List<Banner> banners = bannerService.findByPlace(placeId, 0, MAX_RESULTS);
-        return banners.stream().map(BannerController::toSummary).collect(Collectors.toUnmodifiableList());
-    }
-
-    /**
-     * Lists banners inside a bounding box.
-     *
+     * @param placeId      Place ID the banner belongs to.
      * @param minLatitude  Minimum latitude of the bounding box.
      * @param maxLatitude  Maximum latitude of the bounding box.
      * @param minLongitude Minimum longitude of the bounding box.
      * @param maxLongitude Maximum longitude of the bounding box.
+     * @param sortBy       Sort order.
+     * @param dir          Sort direction.
+     * @param offset       Offset of the first result.
+     * @param limit        Maximum number of results.
      * @return Banners.
      */
-    @GetMapping(value = "/banners", params = {"minLatitude", "maxLatitude", "minLongitude", "maxLongitude"})
-    public List<BannerDto> list(@RequestParam final double minLatitude, @RequestParam final double maxLatitude,
-                                @RequestParam final double minLongitude, @RequestParam final double maxLongitude) {
-        final Collection<Banner> banners = bannerService.findByBounds(minLatitude, maxLatitude, minLongitude, maxLongitude, 0,
-            MAX_RESULTS);
-        return banners.stream().map(BannerController::toSummaryWithCoordinates).collect(Collectors.toUnmodifiableList());
+    @GetMapping(value = "/banners")
+    public ResponseEntity<List<BannerDto>> list(@RequestParam final Optional<String> placeId,
+                                                @RequestParam final Optional<Double> minLatitude,
+                                                @RequestParam final Optional<Double> maxLatitude,
+                                                @RequestParam final Optional<Double> minLongitude,
+                                                @RequestParam final Optional<Double> maxLongitude,
+                                                @RequestParam final Optional<BannerSortOrder> sortBy,
+                                                @RequestParam(defaultValue = "ASC") final Direction dir,
+                                                @RequestParam(defaultValue = "0") final int offset,
+                                                @RequestParam(defaultValue = "20") @Max(50) final int limit) {
+        int numberOfBounds = (minLatitude.isPresent() ? 1 : 0) + (maxLatitude.isPresent() ? 1 : 0)
+            + (minLongitude.isPresent() ? 1 : 0) + (maxLongitude.isPresent() ? 1 : 0);
+        if (numberOfBounds != 0 && numberOfBounds != 4) {
+            return ResponseEntity.badRequest().build();
+        }
+        final Collection<Banner> banners = bannerService.find(placeId, minLatitude, maxLatitude, minLongitude,
+            maxLongitude, sortBy, dir, offset, limit);
+        return ResponseEntity.ok(banners.stream().map(this::toSummary).collect(Collectors.toUnmodifiableList()));
     }
 
     /**
@@ -66,7 +77,7 @@ public class BannerController {
     @GetMapping("/banners/{id}")
     public ResponseEntity<BannerDto> get(@PathVariable final long id) {
         final Optional<Banner> banner = bannerService.findByIdWithDetails(id);
-        return ResponseEntity.of(banner.map(BannerController::toDetails));
+        return ResponseEntity.of(banner.map(this::toDetails));
     }
 
     @PostMapping("/banners")
@@ -75,24 +86,24 @@ public class BannerController {
         return get(id);
     }
 
-    private static BannerDto toSummary(Banner banner) {
+    private BannerDto toSummary(Banner banner) {
         BannerDto dto = new BannerDto();
         dto.id = banner.getId();
         dto.title = banner.getTitle();
         dto.numberOfMissions = banner.getNumberOfMissions();
         dto.lengthMeters = banner.getLengthMeters();
-        return dto;
-    }
-
-    private static BannerDto toSummaryWithCoordinates(Banner banner) {
-        BannerDto dto = toSummary(banner);
         dto.startLatitude = banner.getStartLatitude();
         dto.startLongitude = banner.getStartLongitude();
+        Optional<PlaceInformation> placeInformation = placeService
+            .getMostAccuratePlaceInformation(banner.getStartPlaces(), "en");
+        if (placeInformation.isPresent()) {
+            dto.formattedAddress = placeInformation.get().getFormattedAddress();
+        }
         return dto;
     }
 
-    private static BannerDto toDetails(Banner banner) {
-        BannerDto dto = toSummaryWithCoordinates(banner);
+    private BannerDto toDetails(Banner banner) {
+        BannerDto dto = toSummary(banner);
         dto.missions = Maps.transformValues(banner.getMissions(), MissionController::toDetails);
         return dto;
     }

@@ -26,7 +26,8 @@ public class EntityBuilder {
             .withComplete(a($Boolean()))
             .withOnline(a($Boolean()))
             .withPicture(a($BannerPicture()))
-            .withStartPlaces(setWith($Place()));
+            .withStartPlaces(setWith($Place()))
+            .withCreated(a($Instant()));
     }
 
     @NotNull

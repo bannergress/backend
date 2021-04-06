@@ -13,6 +13,7 @@ import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Optional;
 
 /**
@@ -54,5 +55,12 @@ public class PlaceServiceImpl implements PlaceService {
     public PlaceInformation getPlaceInformation(Place place, String languageCode) {
         // languageCode is ignored for now, we always fetch the first (english) translation
         return place.getInformation().get(0);
+    }
+
+    @Override
+    public Optional<PlaceInformation> getMostAccuratePlaceInformation(Collection<Place> places,
+                                                                      String languagePreference) {
+        return places.stream().sorted(Comparator.comparing(Place::getType).reversed()).findFirst()
+            .map(place -> getPlaceInformation(place, languagePreference));
     }
 }
