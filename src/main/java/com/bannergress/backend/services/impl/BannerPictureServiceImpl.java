@@ -6,12 +6,7 @@ import com.bannergress.backend.entities.Mission;
 import com.bannergress.backend.services.BannerPictureService;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -28,13 +23,8 @@ import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URISyntaxException;
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ForkJoinPool;
 
 /**
  * Default implementation of {@link BannerPictureService}.
@@ -42,16 +32,15 @@ import java.util.concurrent.ForkJoinPool;
 @Service
 @Transactional(isolation = Isolation.SERIALIZABLE)
 public class BannerPictureServiceImpl implements BannerPictureService {
+
+    /**
+     * The version of this implementation. Change in order to have banner images re-created after
+     * an implementation change.
+     */
+    public static final int IMPLEMENTATION_VERSION = 1;
+
     @Autowired
     EntityManager entityManager;
-
-    public BannerPictureServiceImpl(@Value("${bannerpictureservice.parallelism:12}") int parallelism) {
-        this.missionPictureRequestWorkers = new ForkJoinPool(parallelism);
-        this.missionPictureHttpclient = HttpClients.custom().setMaxConnPerRoute(parallelism).build();
-    }
-
-    protected ExecutorService missionPictureRequestWorkers;
-    protected CloseableHttpClient missionPictureHttpclient;
 
     @Override
     public void refresh(Banner banner) {
@@ -75,7 +64,7 @@ public class BannerPictureServiceImpl implements BannerPictureService {
      */
     private String hash(Banner banner) {
         Hasher hasher = Hashing.murmur3_128().newHasher();
-        hasher.putLong(banner.getId()).putInt(banner.getNumberOfMissions());
+        hasher.putInt(IMPLEMENTATION_VERSION).putLong(banner.getId()).putInt(banner.getNumberOfMissions());
         for (Entry<Integer, Mission> entry : banner.getMissions().entrySet()) {
             hasher.putInt(entry.getKey()).putUnencodedChars(entry.getValue().getPicture().toString());
         }
@@ -104,30 +93,21 @@ public class BannerPictureServiceImpl implements BannerPictureService {
         graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER));
 
         // loads, draws and masks the individual mission images to the banner image.
-        try {
-            missionPictureRequestWorkers
-                .submit(() -> banner.getMissions().entrySet().parallelStream().forEach(entry -> {
-                    BufferedImage missionImage;
-                    try (
-                        CloseableHttpResponse imageResponse = missionPictureHttpclient
-                            .execute(new HttpGet(entry.getValue().getPicture().toURI()));
-                        InputStream is = imageResponse.getEntity().getContent()) {
-                        missionImage = ImageIO.read(is);
-                    } catch (URISyntaxException | IOException ex) {
-                        throw new RuntimeException(ex);
-                    }
-                    int missionPosition = banner.getNumberOfMissions() - entry.getKey().intValue() - 1;
-                    int x1 = DISTANCE_CIRCLES + (missionPosition % numberColumns) * MISSIONSIZE;
-                    int y1 = DISTANCE_CIRCLES + (missionPosition / numberColumns) * MISSIONSIZE;
-                    int x2 = x1 + DIAMETER;
-                    int y2 = y1 + DIAMETER;
-                    graphics.drawImage(missionImage, x1, y1, x2, y2, 0, 0, missionImage.getWidth(),
-                        missionImage.getHeight(), null);
-                    graphics.drawImage(maskImage, x1, y1, x2, y2, 0, 0, maskImage.getWidth(), maskImage.getHeight(),
-                        null);
-                })).get();
-        } catch (InterruptedException | ExecutionException ex) {
-            throw new RuntimeException(ex);
+        for (Entry<Integer, Mission> entry : banner.getMissions().entrySet()) {
+            BufferedImage missionImage;
+            try {
+                missionImage = ImageIO.read(entry.getValue().getPicture());
+            } catch (IOException ex) {
+                throw new RuntimeException("failed ro read image: " + entry.getValue().getPicture(), ex);
+            }
+            int missionPosition = banner.getNumberOfMissions() - entry.getKey().intValue() - 1;
+            int x1 = DISTANCE_CIRCLES + (missionPosition % numberColumns) * MISSIONSIZE;
+            int y1 = DISTANCE_CIRCLES + (missionPosition / numberColumns) * MISSIONSIZE;
+            int x2 = x1 + DIAMETER;
+            int y2 = y1 + DIAMETER;
+            graphics.drawImage(missionImage, x1, y1, x2, y2, 0, 0, missionImage.getWidth(), missionImage.getHeight(),
+                null);
+            graphics.drawImage(maskImage, x1, y1, x2, y2, 0, 0, maskImage.getWidth(), maskImage.getHeight(), null);
         }
 
         graphics.dispose();
@@ -138,10 +118,10 @@ public class BannerPictureServiceImpl implements BannerPictureService {
             null).filter(bannerImage, null);
 
         try (ByteArrayOutputStream stream = new ByteArrayOutputStream(40 * 1024 * numberRows)) {
-            ImageIO.write(bannerImage, "png", stream);
+            ImageIO.write(bannerImage, "jpg", stream);
             return stream.toByteArray();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (IOException ex) {
+            throw new RuntimeException("failed to generate banner with id " + banner.getId(), ex);
         }
     }
 
