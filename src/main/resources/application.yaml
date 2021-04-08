@@ -27,6 +27,8 @@ spring:
   h2:
     console:
       enabled: true
+  flyway:
+    enabled: false # On dev mode the columns are created via hibernate
 
 logging:
   level:
