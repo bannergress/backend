@@ -1,6 +1,7 @@
 package com.bannergress.backend.services;
 
 import com.bannergress.backend.dto.IntelMissionDetails;
+import com.bannergress.backend.dto.IntelTopMissionsForPortal;
 import com.bannergress.backend.dto.IntelTopMissionsInBounds;
 import com.bannergress.backend.entities.Mission;
 
@@ -26,6 +27,14 @@ public interface MissionService {
      * @return Imported missions.
      */
     Collection<Mission> importTopMissionsInBounds(IntelTopMissionsInBounds data);
+
+    /**
+     * Imports missions from intel-based data.
+     *
+     * @param data Intel request and response data.
+     * @return Imported missions.
+     */
+    Collection<Mission> importTopMissionsForPortal(IntelTopMissionsForPortal data);
 
     /**
      * Finds missions contain a string in their titles and that are not part of any banner.

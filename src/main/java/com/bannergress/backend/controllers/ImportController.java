@@ -1,6 +1,7 @@
 package com.bannergress.backend.controllers;
 
 import com.bannergress.backend.dto.IntelMissionDetails;
+import com.bannergress.backend.dto.IntelTopMissionsForPortal;
 import com.bannergress.backend.dto.IntelTopMissionsInBounds;
 import com.bannergress.backend.dto.MissionStatus;
 import com.bannergress.backend.entities.Mission;
@@ -30,6 +31,13 @@ public class ImportController {
     @PostMapping("/importTopMissionsInBounds")
     public Map<String, MissionStatus> importTopMissionsInBounds(@RequestBody @Valid IntelTopMissionsInBounds data) {
         Collection<Mission> missions = importService.importTopMissionsInBounds(data);
+        return toStatusMap(missions);
+    }
+
+    @RolesAllowed(Roles.IMPORT_DATA)
+    @PostMapping("/importtopMissionsForPortal")
+    public Map<String, MissionStatus> importTopMissionsForPortal(@RequestBody @Valid IntelTopMissionsForPortal data) {
+        Collection<Mission> missions = importService.importTopMissionsForPortal(data);
         return toStatusMap(missions);
     }
 

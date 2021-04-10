@@ -1,9 +1,6 @@
 package com.bannergress.backend.services.impl;
 
-import com.bannergress.backend.dto.IntelMissionDetails;
-import com.bannergress.backend.dto.IntelMissionStep;
-import com.bannergress.backend.dto.IntelMissionSummary;
-import com.bannergress.backend.dto.IntelTopMissionsInBounds;
+import com.bannergress.backend.dto.*;
 import com.bannergress.backend.entities.Mission;
 import com.bannergress.backend.entities.MissionStep;
 import com.bannergress.backend.entities.NamedAgent;
@@ -88,6 +85,15 @@ public class MissionServiceImpl implements MissionService {
 
     @Override
     public Collection<Mission> importTopMissionsInBounds(IntelTopMissionsInBounds data) {
+        List<Mission> imported = new ArrayList<>();
+        for (IntelMissionSummary summary : data.summaries) {
+            imported.add(importMissionSummary(summary));
+        }
+        return imported;
+    }
+
+    @Override
+    public Collection<Mission> importTopMissionsForPortal(IntelTopMissionsForPortal data) {
         List<Mission> imported = new ArrayList<>();
         for (IntelMissionSummary summary : data.summaries) {
             imported.add(importMissionSummary(summary));
