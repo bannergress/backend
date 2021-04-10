@@ -10,7 +10,7 @@ spring:
     banner-mode: OFF
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
 
 keycloak:
   bearer-only: true
@@ -27,6 +27,11 @@ spring:
   h2:
     console:
       enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: update
+  flyway:
+    enabled: false # On dev mode the columns are created via hibernate
 
 logging:
   level:
