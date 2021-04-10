@@ -15,15 +15,17 @@ public interface MissionService {
      * Imports a mission from intel-based data.
      *
      * @param data Intel response data.
+     * @return Imported mission.
      */
-    void importMission(IntelMissionDetails data);
+    Mission importMission(IntelMissionDetails data);
 
     /**
      * Imports missions from intel-based data.
      *
      * @param data Intel request and response data.
+     * @return Imported missions.
      */
-    void importTopMissionsInBounds(IntelTopMissionsInBounds data);
+    Collection<Mission> importTopMissionsInBounds(IntelTopMissionsInBounds data);
 
     /**
      * Finds missions contain a string in their titles and that are not part of any banner.

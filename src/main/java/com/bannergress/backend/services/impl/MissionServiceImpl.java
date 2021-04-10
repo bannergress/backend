@@ -38,7 +38,7 @@ public class MissionServiceImpl implements MissionService {
     private AgentService agentService;
 
     @Override
-    public void importMission(IntelMissionDetails data) {
+    public Mission importMission(IntelMissionDetails data) {
         Mission mission = importMissionSummary(data);
         NamedAgent author = agentService.importAgent(data.authorName, data.authorFaction);
         Instant now = Instant.now();
@@ -65,6 +65,7 @@ public class MissionServiceImpl implements MissionService {
         for (int i = mission.getSteps().size() - 1; i >= steps.size(); i--) {
             mission.getSteps().remove(i);
         }
+        return mission;
     }
 
     private void importMissionStep(IntelMissionStep intelMissionStep, MissionStep missionStep) {
@@ -86,11 +87,12 @@ public class MissionServiceImpl implements MissionService {
     }
 
     @Override
-    public void importTopMissionsInBounds(IntelTopMissionsInBounds data) {
+    public Collection<Mission> importTopMissionsInBounds(IntelTopMissionsInBounds data) {
         List<Mission> imported = new ArrayList<>();
         for (IntelMissionSummary summary : data.summaries) {
             imported.add(importMissionSummary(summary));
         }
+        return imported;
     }
 
     private Mission importMissionSummary(IntelMissionSummary data) {
