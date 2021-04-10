@@ -42,7 +42,6 @@ public class MissionController {
         return Collections2.transform(unusedMissions, MissionController::toSummary);
     }
 
-    @RolesAllowed(Roles.IMPORT_DATA)
     @PostMapping("/missions/status")
     public Map<String, MissionStatus> getStatus(@RequestBody Collection<@NianticId @NotNull String> ids) {
         Collection<Mission> missions = missionService.findByIds(ids);
