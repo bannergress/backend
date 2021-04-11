@@ -1,9 +1,6 @@
 package com.bannergress.backend.services.impl;
 
-import com.bannergress.backend.dto.IntelMissionDetails;
-import com.bannergress.backend.dto.IntelMissionStep;
-import com.bannergress.backend.dto.IntelMissionSummary;
-import com.bannergress.backend.dto.IntelTopMissionsInBounds;
+import com.bannergress.backend.dto.*;
 import com.bannergress.backend.entities.Mission;
 import com.bannergress.backend.entities.MissionStep;
 import com.bannergress.backend.entities.NamedAgent;
@@ -38,7 +35,7 @@ public class MissionServiceImpl implements MissionService {
     private AgentService agentService;
 
     @Override
-    public void importMission(IntelMissionDetails data) {
+    public Mission importMission(IntelMissionDetails data) {
         Mission mission = importMissionSummary(data);
         NamedAgent author = agentService.importAgent(data.authorName, data.authorFaction);
         Instant now = Instant.now();
@@ -65,6 +62,7 @@ public class MissionServiceImpl implements MissionService {
         for (int i = mission.getSteps().size() - 1; i >= steps.size(); i--) {
             mission.getSteps().remove(i);
         }
+        return mission;
     }
 
     private void importMissionStep(IntelMissionStep intelMissionStep, MissionStep missionStep) {
@@ -86,11 +84,21 @@ public class MissionServiceImpl implements MissionService {
     }
 
     @Override
-    public void importTopMissionsInBounds(IntelTopMissionsInBounds data) {
+    public Collection<Mission> importTopMissionsInBounds(IntelTopMissionsInBounds data) {
         List<Mission> imported = new ArrayList<>();
         for (IntelMissionSummary summary : data.summaries) {
             imported.add(importMissionSummary(summary));
         }
+        return imported;
+    }
+
+    @Override
+    public Collection<Mission> importTopMissionsForPortal(IntelTopMissionsForPortal data) {
+        List<Mission> imported = new ArrayList<>();
+        for (IntelMissionSummary summary : data.summaries) {
+            imported.add(importMissionSummary(summary));
+        }
+        return imported;
     }
 
     private Mission importMissionSummary(IntelMissionSummary data) {
