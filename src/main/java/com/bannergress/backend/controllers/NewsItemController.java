@@ -1,8 +1,8 @@
 package com.bannergress.backend.controllers;
 
-import com.bannergress.backend.NewsItemRepository;
 import com.bannergress.backend.dto.NewsItemDto;
 import com.bannergress.backend.entities.NewsItem;
+import com.bannergress.backend.repositories.NewsItemRepository;
 import com.bannergress.backend.security.Roles;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;

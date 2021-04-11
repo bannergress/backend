@@ -1,4 +1,4 @@
-package com.bannergress.backend;
+package com.bannergress.backend.repositories;
 
 import com.bannergress.backend.entities.NewsItem;
 import org.springframework.data.jpa.repository.JpaRepository;
