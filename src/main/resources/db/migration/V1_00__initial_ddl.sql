@@ -70,6 +70,7 @@ CREATE TABLE "place_information" (
   FOREIGN KEY ("place") REFERENCES "place"("id")
 );
 CREATE INDEX ON "place_information" USING gin ((lower("long_name")) gin_trgm_ops);
+CREATE INDEX ON "place_information" USING gin ((lower("formatted_address")) gin_trgm_ops);
 
 
 CREATE TABLE "banner_start_place" (
@@ -79,7 +80,7 @@ CREATE TABLE "banner_start_place" (
   FOREIGN KEY ("banner") REFERENCES "banner"("id"),
   FOREIGN KEY ("place") REFERENCES "place"("id")
 );
-CREATE INDEX ON "banner_start_place" ("place", "banner");
+CREATE INDEX ON "banner_start_place" ("place") INCLUDE ("banner");
 
 
 CREATE TABLE "poi" (
@@ -96,9 +97,8 @@ CREATE TABLE "poi" (
 CREATE TABLE "named_agent" (
   "name" text NOT NULL,
   "faction" faction NOT NULL,
-  PRIMARY KEY ("name")
+  PRIMARY KEY ("name") INCLUDE ("faction")
 );
-CREATE INDEX ON "named_agent" ("name", "faction");
 
 
 CREATE TABLE "mission" (
@@ -118,6 +118,7 @@ CREATE TABLE "mission" (
   FOREIGN KEY ("author") REFERENCES "named_agent"("name")
 );
 CREATE INDEX ON "mission" USING gin ((lower("title")) gin_trgm_ops);
+CREATE INDEX ON "mission" ("author");
 
 
 CREATE TABLE "mission_step" (
@@ -130,7 +131,7 @@ CREATE TABLE "mission_step" (
   FOREIGN KEY ("mission") REFERENCES "mission"("id"),
   FOREIGN KEY ("poi") REFERENCES "poi"("id")
 );
-CREATE INDEX ON "mission_step" ("mission", "poi", "id", "objective", "position");
+CREATE INDEX ON "mission_step" ("mission") INCLUDE ("poi", "id", "objective", "position");
 CREATE INDEX ON "mission_step" ("poi");
 
 
@@ -138,12 +139,11 @@ CREATE TABLE "banner_mission" (
   "banner" bigint NOT NULL,
   "mission" text NOT NULL,
   "position" integer NOT NULL,
-  PRIMARY KEY ("banner", "position"),
+  PRIMARY KEY ("banner", "position") INCLUDE ("mission"),
   FOREIGN KEY ("banner") REFERENCES "banner"("id"),
   FOREIGN KEY ("mission") REFERENCES "mission"("id")
 );
-CREATE INDEX ON "banner_mission" ("banner", "mission", "position");
-CREATE INDEX ON "banner_mission" ("mission");
+CREATE INDEX ON "banner_mission" ("mission") INCLUDE ("banner", "position");
 
 
 CREATE TABLE "revision" (
