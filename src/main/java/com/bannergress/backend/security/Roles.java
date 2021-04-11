@@ -13,4 +13,9 @@ public interface Roles {
      * Role which allows to import data.
      */
     String IMPORT_DATA = "import-data";
+
+    /**
+     * Role which allows to manage news items.
+     */
+    String MANAGE_NEWS = "manage-news";
 }

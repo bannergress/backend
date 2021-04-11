@@ -146,6 +146,14 @@ CREATE TABLE "banner_mission" (
 CREATE INDEX ON "banner_mission" ("mission") INCLUDE ("banner", "position");
 
 
+CREATE TABLE "news" (
+  "id" bigint NOT NULL,
+  "content" text NOT NULL,
+  "created" timestamp with time zone NOT NULL,
+  PRIMARY KEY ("id")
+);
+
+
 CREATE TABLE "revision" (
   "id" integer NOT NULL,
   "created" timestamp with time zone NOT NULL,
@@ -224,6 +232,16 @@ CREATE TABLE "poi_audit" (
   "picture_url" text,
   "title" text,
   "type" poi_type,
+  PRIMARY KEY ("id", "rev"),
+  FOREIGN KEY ("rev") REFERENCES "revision"("id")
+);
+
+
+CREATE TABLE "news_audit" (
+  "id" bigint NOT NULL,
+  "rev" integer NOT NULL,
+  "revtype" smallint,
+  "content" text,
   PRIMARY KEY ("id", "rev"),
   FOREIGN KEY ("rev") REFERENCES "revision"("id")
 );
