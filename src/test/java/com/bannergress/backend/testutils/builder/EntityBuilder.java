@@ -100,4 +100,12 @@ public class EntityBuilder {
             .withPicture(a($URL()))
             .withType(oneOf(POIType.values()));
     }
+
+    @NotNull
+    public static NewsItemBuilder $NewsItem() {
+        return new NewsItemBuilder()
+            .withId(a($Long()))
+            .withContent(a($String("content")))
+            .withCreated(a($Instant()));
+    }
 }
