@@ -4,8 +4,11 @@ import com.bannergress.backend.NewsItemRepository;
 import com.bannergress.backend.dto.NewsItemDto;
 import com.bannergress.backend.entities.NewsItem;
 import com.bannergress.backend.security.Roles;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
@@ -82,6 +85,21 @@ public class NewsItemController {
         newsItem.get().setContent(item.content);
         newsItem = Optional.of(newsItemRepository.save(newsItem.get()));
         return ResponseEntity.of(newsItem.map(NewsItemController::toDto));
+    }
+
+    /**
+     * Deletes an existing news item.
+     *
+     * @param id News item ID.
+     */
+    @RolesAllowed(Roles.MANAGE_NEWS)
+    @DeleteMapping("/news/{id}")
+    public void delete(@PathVariable final long id) {
+        try {
+            newsItemRepository.deleteById(id);
+        } catch (EmptyResultDataAccessException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
     }
 
     private static NewsItemDto toDto(final NewsItem newsItem) {
