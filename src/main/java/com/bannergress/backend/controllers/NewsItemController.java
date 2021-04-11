@@ -31,7 +31,7 @@ public class NewsItemController {
      *
      * @return News items.
      */
-    @GetMapping(value = "/news")
+    @GetMapping("/news")
     public Collection<NewsItemDto> list() {
         Collection<NewsItem> items = newsItemRepository.findAll();
         return items.stream().map(NewsItemController::toDto).collect(Collectors.toUnmodifiableList());
@@ -43,7 +43,7 @@ public class NewsItemController {
      * @param id ID.
      * @return News item.
      */
-    @GetMapping(value = "/news/{id}")
+    @GetMapping("/news/{id}")
     public ResponseEntity<NewsItemDto> get(@PathVariable final long id) {
         Optional<NewsItem> item = newsItemRepository.findById(id);
         return ResponseEntity.of(item.map(NewsItemController::toDto));
@@ -56,7 +56,7 @@ public class NewsItemController {
      * @return Created news item.
      */
     @RolesAllowed(Roles.MANAGE_NEWS)
-    @PostMapping(value = "/news")
+    @PostMapping("/news")
     public NewsItemDto post(@Valid @RequestBody final NewsItemDto item) {
         NewsItem newsItem = new NewsItem();
         newsItem.setContent(item.content);
@@ -73,7 +73,7 @@ public class NewsItemController {
      * @return Updated news item.
      */
     @RolesAllowed(Roles.MANAGE_NEWS)
-    @PutMapping(value = "/news/{id}")
+    @PutMapping("/news/{id}")
     public ResponseEntity<NewsItemDto> put(@PathVariable final long id, @Valid @RequestBody final NewsItemDto item) {
         Optional<NewsItem> newsItem = newsItemRepository.findById(id);
         if (newsItem.isEmpty()) {
