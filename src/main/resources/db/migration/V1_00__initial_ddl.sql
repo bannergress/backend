@@ -26,6 +26,7 @@ CREATE CAST (varchar AS poi_type) WITH INOUT AS IMPLICIT;
 CREATE TABLE "banner_picture" (
   "hash" text NOT NULL,
   "picture" "oid" NOT NULL,
+  "expiration"  timestamp with time zone,
   PRIMARY KEY ("hash")
 );
 
