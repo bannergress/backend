@@ -14,19 +14,17 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.Maps;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort.Direction;
-import org.springframework.data.jpa.repository.EntityGraph.EntityGraphType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityGraph;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
 
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -88,10 +86,9 @@ public class BannerServiceImpl implements BannerService {
 
     private void preloadPlaceInformation(List<Banner> banners) {
         if (!banners.isEmpty()) {
-            TypedQuery<Banner> query = entityManager.createQuery(
-                "SELECT b FROM Banner b LEFT JOIN FETCH b.startPlaces p LEFT JOIN FETCH p.information"
-                    + " WHERE b IN :banners",
-                Banner.class);
+            TypedQuery<Banner> query = entityManager
+                .createQuery("SELECT b FROM Banner b LEFT JOIN FETCH b.startPlaces p LEFT JOIN FETCH p.information"
+                    + " WHERE b IN :banners", Banner.class);
             query.setParameter("banners", banners);
             query.getResultList();
         }
@@ -99,10 +96,15 @@ public class BannerServiceImpl implements BannerService {
 
     @Override
     public Optional<Banner> findByIdWithDetails(long id) {
-        EntityGraph<Banner> bannerGraph = entityManager.createEntityGraph(Banner.class);
-        bannerGraph.addSubgraph("missions").addSubgraph("steps").addAttributeNodes("poi");
-        return Optional
-            .ofNullable(entityManager.find(Banner.class, id, Map.of(EntityGraphType.LOAD.toString(), bannerGraph)));
+        TypedQuery<Banner> query = entityManager
+            .createQuery("SELECT b FROM Banner b LEFT JOIN FETCH b.missions m LEFT JOIN FETCH m.author"
+                + " LEFT JOIN FETCH m.steps s LEFT JOIN FETCH s.poi WHERE b.id = :id", Banner.class);
+        query.setParameter("id", id);
+        try {
+            return Optional.of(query.getSingleResult());
+        } catch (NoResultException e) {
+            return Optional.empty();
+        }
     }
 
     @Override
