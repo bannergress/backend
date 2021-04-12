@@ -169,4 +169,34 @@ public class BannerServiceImpl implements BannerService {
     private static Double toRad(Double value) {
         return value * Math.PI / 180;
     }
+
+    @Override
+    public void updateBannersContainingMission(Collection<String> missionIds) {
+        if (!missionIds.isEmpty()) {
+            TypedQuery<Banner> query = entityManager.createQuery(
+                "SELECT b FROM Banner b LEFT JOIN FETCH b.missions m LEFT JOIN FETCH m.steps s LEFT JOIN FETCH s.poi"
+                    + " JOIN b.missions m2 WHERE m2.id IN :ids",
+                Banner.class);
+            query.setParameter("ids", missionIds);
+            List<Banner> banners = query.getResultList();
+            for (Banner banner : banners) {
+                calculateData(banner);
+            }
+        }
+    }
+
+    @Override
+    public void updateBannersContainingPOI(Collection<String> poiIds) {
+        if (!poiIds.isEmpty()) {
+            TypedQuery<Banner> query = entityManager.createQuery(
+                "SELECT b FROM Banner b LEFT JOIN FETCH b.missions m LEFT JOIN FETCH m.steps s LEFT JOIN FETCH s.poi"
+                    + " JOIN b.missions m2 JOIN m2.steps s2 JOIN s2.poi p2 WHERE p2.id IN :ids",
+                Banner.class);
+            query.setParameter("ids", poiIds);
+            List<Banner> banners = query.getResultList();
+            for (Banner banner : banners) {
+                calculateData(banner);
+            }
+        }
+    }
 }
