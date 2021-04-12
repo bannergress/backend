@@ -5,6 +5,8 @@ import net.karneim.pojobuilder.GeneratePojoBuilder;
 
 import javax.persistence.*;
 
+import java.time.Instant;
+
 /**
  * Represents a banner picture.
  */
@@ -23,6 +25,17 @@ public class BannerPicture {
     @Lob
     @Column(name = "picture", nullable = false)
     private byte[] picture;
+
+    @Column(name = "expiration", nullable = true)
+    private Instant expiration;
+
+    public Instant getExpiration() {
+        return expiration;
+    }
+
+    public void setExpiration(Instant expiration) {
+        this.expiration = expiration;
+    }
 
     public String getHash() {
         return hash;

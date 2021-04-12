@@ -68,6 +68,11 @@ public class BannerDto {
      */
     public String formattedAddress;
 
+    /**
+     * banner's picture ID
+     */
+    public String pictureId;
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -77,16 +82,17 @@ public class BannerDto {
             return false;
         }
         final BannerDto bannerDto = (BannerDto) o;
-        return id == bannerDto.id && numberOfMissions == bannerDto.numberOfMissions && Objects.equals(title, bannerDto.title) &&
-            Objects.equals(description, bannerDto.description) && Objects.equals(missions, bannerDto.missions) &&
-            Objects.equals(startLatitude, bannerDto.startLatitude) &&
-            Objects.equals(startLongitude, bannerDto.startLongitude) &&
-            Objects.equals(lengthMeters, bannerDto.lengthMeters) &&
-            Objects.equals(formattedAddress, bannerDto.formattedAddress);
+        return id == bannerDto.id && numberOfMissions == bannerDto.numberOfMissions
+            && Objects.equals(title, bannerDto.title) && Objects.equals(description, bannerDto.description)
+            && Objects.equals(missions, bannerDto.missions) && Objects.equals(startLatitude, bannerDto.startLatitude)
+            && Objects.equals(startLongitude, bannerDto.startLongitude)
+            && Objects.equals(lengthMeters, bannerDto.lengthMeters)
+            && Objects.equals(formattedAddress, bannerDto.formattedAddress);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, title, description, numberOfMissions, missions, startLatitude, startLongitude, lengthMeters, formattedAddress);
+        return Objects.hash(id, title, description, numberOfMissions, missions, startLatitude, startLongitude,
+            lengthMeters, formattedAddress);
     }
 }

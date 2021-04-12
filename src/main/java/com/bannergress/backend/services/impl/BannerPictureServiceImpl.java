@@ -3,11 +3,14 @@ package com.bannergress.backend.services.impl;
 import com.bannergress.backend.entities.Banner;
 import com.bannergress.backend.entities.BannerPicture;
 import com.bannergress.backend.entities.Mission;
+import com.bannergress.backend.services.BannerPictureMaintenanceService;
 import com.bannergress.backend.services.BannerPictureService;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +26,7 @@ import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Map.Entry;
 import java.util.Optional;
 
@@ -30,6 +34,7 @@ import java.util.Optional;
  * Default implementation of {@link BannerPictureService}.
  */
 @Service
+@EnableScheduling
 @Transactional(isolation = Isolation.SERIALIZABLE)
 public class BannerPictureServiceImpl implements BannerPictureService {
 
@@ -42,6 +47,14 @@ public class BannerPictureServiceImpl implements BannerPictureService {
     @Autowired
     EntityManager entityManager;
 
+    @Autowired
+    BannerPictureMaintenanceService bannerPictureMaintenanceService;
+
+    @Scheduled(fixedRate = 1000)
+    protected void removeExpiredPictures() {
+        bannerPictureMaintenanceService.removeExpired();
+    }
+
     @Override
     public void refresh(Banner banner) {
         String hash = hash(banner);
@@ -51,6 +64,13 @@ public class BannerPictureServiceImpl implements BannerPictureService {
         byte[] picture = createPicture(banner);
         BannerPicture bannerPicture = new BannerPicture();
         bannerPicture.setHash(hash);
+        banner.setPictureId(hash);
+
+        if (banner.getPicture() != null) {
+            banner.getPicture().setExpiration(Instant.now().plusSeconds(60));
+            entityManager.persist(banner.getPicture());
+        }
+
         bannerPicture.setPicture(picture);
         entityManager.persist(bannerPicture);
         banner.setPicture(bannerPicture);

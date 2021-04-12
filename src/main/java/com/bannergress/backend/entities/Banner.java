@@ -96,11 +96,15 @@ public class Banner {
     @NotAudited
     private boolean online;
 
+    @Column(name = "picture", nullable = false)
+    @NotAudited
+    private String pictureId;
+
     /**
      * Generated Picture.
      */
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "picture")
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "picture", insertable = false, updatable = false)
     @NotAudited
     private BannerPicture picture;
 
@@ -207,6 +211,14 @@ public class Banner {
 
     public void setOnline(boolean online) {
         this.online = online;
+    }
+
+    public String getPictureId() {
+        return pictureId;
+    }
+
+    public void setPictureId(String pictureId) {
+        this.pictureId = pictureId;
     }
 
     public BannerPicture getPicture() {

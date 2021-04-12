@@ -88,15 +88,19 @@ public class BannerServiceImpl implements BannerService {
     public Optional<Banner> findByIdWithDetails(long id) {
         EntityGraph<Banner> bannerGraph = entityManager.createEntityGraph(Banner.class);
         bannerGraph.addSubgraph("missions").addSubgraph("steps").addAttributeNodes("poi");
-        return Optional
+        Optional<Banner> banner = Optional
             .ofNullable(entityManager.find(Banner.class, id, Map.of(EntityGraphType.LOAD.toString(), bannerGraph)));
+        if (banner.isPresent()) {
+            bannerPictureService.refresh(banner.get());
+        }
+        return banner;
     }
 
     @Override
     public long save(BannerDto bannerDto) {
         Collection<String> missionIds = Collections2.transform(bannerDto.missions.values(),
             missionDto -> missionDto.id);
-        missionService.verifyAvailability(missionIds);
+//        missionService.verifyAvailability(missionIds);
         Banner banner = new Banner();
         banner.setTitle(bannerDto.title);
         banner.setDescription(bannerDto.description);
