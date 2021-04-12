@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
  * REST endpoint for news items.
  */
 @RestController
+@CrossOrigin
 public class NewsItemController {
     private final NewsItemRepository newsItemRepository;
 

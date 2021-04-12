@@ -31,6 +31,7 @@ import java.util.Optional;
  * REST endpoint for missions.
  */
 @RestController
+@CrossOrigin
 public class MissionController {
     @Autowired
     MissionService missionService;

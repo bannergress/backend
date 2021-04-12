@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
  * REST endpoint for banners.
  */
 @RestController
+@CrossOrigin
 public class BannerController {
 
     private final BannerService bannerService;

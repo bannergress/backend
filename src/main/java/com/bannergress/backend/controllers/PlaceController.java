@@ -5,6 +5,7 @@ import com.bannergress.backend.entities.Place;
 import com.bannergress.backend.entities.PlaceInformation;
 import com.bannergress.backend.enums.PlaceType;
 import com.bannergress.backend.services.PlaceService;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
  * REST endpoint for places.
  */
 @RestController
+@CrossOrigin
 public class PlaceController {
     private final PlaceService placeService;
 
