@@ -23,6 +23,7 @@ import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map.Entry;
 import java.util.Optional;
 
@@ -73,8 +74,8 @@ public class BannerPictureServiceImpl implements BannerPictureService {
 
     protected static final BufferedImage maskImage;
     static {
-        try {
-            maskImage = ImageIO.read(new ClassPathResource("mask-96.png").getFile());
+        try (InputStream stream = new ClassPathResource("mask-96.png").getInputStream()) {
+            maskImage = ImageIO.read(stream);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
