@@ -1,6 +1,3 @@
-BEGIN;
-
-
 CREATE EXTENSION pg_trgm;
 
 
@@ -245,6 +242,3 @@ CREATE TABLE "news_audit" (
   PRIMARY KEY ("id", "rev"),
   FOREIGN KEY ("rev") REFERENCES "revision"("id")
 );
-
-
-COMMIT;
