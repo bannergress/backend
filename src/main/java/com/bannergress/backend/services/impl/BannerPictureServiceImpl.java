@@ -3,14 +3,11 @@ package com.bannergress.backend.services.impl;
 import com.bannergress.backend.entities.Banner;
 import com.bannergress.backend.entities.BannerPicture;
 import com.bannergress.backend.entities.Mission;
-import com.bannergress.backend.services.BannerPictureMaintenanceService;
 import com.bannergress.backend.services.BannerPictureService;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,7 +31,6 @@ import java.util.Optional;
  * Default implementation of {@link BannerPictureService}.
  */
 @Service
-@EnableScheduling
 @Transactional(isolation = Isolation.SERIALIZABLE)
 public class BannerPictureServiceImpl implements BannerPictureService {
 
@@ -46,14 +42,6 @@ public class BannerPictureServiceImpl implements BannerPictureService {
 
     @Autowired
     EntityManager entityManager;
-
-    @Autowired
-    BannerPictureMaintenanceService bannerPictureMaintenanceService;
-
-    @Scheduled(fixedRate = 1000)
-    protected void removeExpiredPictures() {
-        bannerPictureMaintenanceService.removeExpired();
-    }
 
     @Override
     public void refresh(Banner banner) {
@@ -72,8 +60,8 @@ public class BannerPictureServiceImpl implements BannerPictureService {
         }
 
         bannerPicture.setPicture(picture);
-        entityManager.persist(bannerPicture);
         banner.setPicture(bannerPicture);
+        entityManager.persist(bannerPicture);
     }
 
     /**
@@ -137,7 +125,7 @@ public class BannerPictureServiceImpl implements BannerPictureService {
             new Kernel(3, 3, new float[] {0f, 0.125f, 0f, 0.125f, 0.5f, 0.125f, 0f, 0.125f, 0f}), ConvolveOp.EDGE_NO_OP,
             null).filter(bannerImage, null);
 
-        try (ByteArrayOutputStream stream = new ByteArrayOutputStream(40 * 1024 * numberRows)) {
+        try (ByteArrayOutputStream stream = new ByteArrayOutputStream(16 * 1024 * numberRows)) {
             ImageIO.write(bannerImage, "jpg", stream);
             return stream.toByteArray();
         } catch (IOException ex) {
@@ -148,5 +136,11 @@ public class BannerPictureServiceImpl implements BannerPictureService {
     @Override
     public Optional<BannerPicture> findByHash(String hash) {
         return Optional.ofNullable(entityManager.find(BannerPicture.class, hash));
+    }
+
+    @Override
+    public void removeExpired() {
+        entityManager.createQuery("DELETE FROM BannerPicture WHERE expiration < :now")
+            .setParameter("now", Instant.now()).executeUpdate();
     }
 }

@@ -3,29 +3,26 @@ package com.bannergress.backend.services.impl;
 import com.bannergress.backend.services.BannerPictureMaintenanceService;
 import com.bannergress.backend.services.BannerPictureService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
-
-import javax.persistence.EntityManager;
-
-import java.time.Instant;
 
 /**
- * Default implementation of {@link BannerPictureService}.
+ * Implements {@link BannerPictureService} to call
+ * {@link BannerPictureService#removeExpired()} at a fixed rate to remove orphaned banner
+ * pictures.
  */
 @Service
-@Transactional(isolation = Isolation.SERIALIZABLE)
+@EnableScheduling
 public class BannerPictureMaintenanceServiceImpl implements BannerPictureMaintenanceService {
 
     @Autowired
-    EntityManager entityManager;
+    BannerPictureService bannerPictureService;
 
     @Override
+    @Scheduled(fixedRate = 3600_000)
     public void removeExpired() {
-        entityManager.createQuery("DELETE FROM BannerPicture WHERE expiration < :now")
-            .setParameter("now", Instant.now())
-            .executeUpdate();
+        bannerPictureService.removeExpired();
     }
 
 }

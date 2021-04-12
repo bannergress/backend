@@ -17,4 +17,6 @@ public interface BannerPictureService {
     void refresh(Banner banner);
 
     Optional<BannerPicture> findByHash(String hash);
+
+    void removeExpired();
 }
