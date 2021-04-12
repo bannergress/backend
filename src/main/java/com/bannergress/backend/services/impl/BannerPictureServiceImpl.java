@@ -7,7 +7,6 @@ import com.bannergress.backend.services.BannerPictureService;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -74,7 +73,7 @@ public class BannerPictureServiceImpl implements BannerPictureService {
 
     protected static final BufferedImage maskImage;
     static {
-        try (InputStream stream = new ClassPathResource("mask-96.png").getInputStream()) {
+        try (InputStream stream = BannerPictureServiceImpl.class.getResourceAsStream("/mask-96.png")) {
             maskImage = ImageIO.read(stream);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
