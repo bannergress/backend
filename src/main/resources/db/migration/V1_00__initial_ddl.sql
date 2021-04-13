@@ -1,7 +1,4 @@
-BEGIN;
-
-
-CREATE EXTENSION pg_trgm;
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 
 CREATE SEQUENCE "hibernate_sequence";
@@ -246,6 +243,3 @@ CREATE TABLE "news_audit" (
   PRIMARY KEY ("id", "rev"),
   FOREIGN KEY ("rev") REFERENCES "revision"("id")
 );
-
-
-COMMIT;

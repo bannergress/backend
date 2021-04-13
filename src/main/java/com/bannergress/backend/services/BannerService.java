@@ -5,6 +5,7 @@ import com.bannergress.backend.entities.Banner;
 import com.bannergress.backend.enums.BannerSortOrder;
 import org.springframework.data.domain.Sort.Direction;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,4 +46,18 @@ public interface BannerService {
      * @return ID of the newly created banner.
      */
     long save(BannerDto bannerDto);
+
+    /**
+     * Updates information of all banners that contain one of the specified missions.
+     *
+     * @param missionIds Mission IDs.
+     */
+    void updateBannersContainingMission(Collection<String> missionIds);
+
+    /**
+     * Updates information of all banners that contain one of the specified POIs.
+     *
+     * @param missionIds POI IDs.
+     */
+    void updateBannersContainingPOI(Collection<String> poiIds);
 }

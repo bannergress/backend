@@ -7,6 +7,7 @@ import com.bannergress.backend.entities.NamedAgent;
 import com.bannergress.backend.entities.POI;
 import com.bannergress.backend.enums.POIType;
 import com.bannergress.backend.services.AgentService;
+import com.bannergress.backend.services.BannerService;
 import com.bannergress.backend.services.MissionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,10 +18,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Default implementation of {@link MissionService}.
@@ -34,10 +32,18 @@ public class MissionServiceImpl implements MissionService {
     @Autowired
     private AgentService agentService;
 
+    @Autowired
+    private BannerService bannerService;
+
     @Override
     public Mission importMission(IntelMissionDetails data) {
-        Mission mission = importMissionSummary(data);
+        Set<String> missionsWithBannerAffectingChanges = new HashSet<>();
+        Set<String> poisWithBannerAffectingChanges = new HashSet<>();
+        Mission mission = importMissionSummary(data, missionsWithBannerAffectingChanges);
         NamedAgent author = agentService.importAgent(data.authorName, data.authorFaction);
+        if (mission.getLatestUpdateDetails() == null) {
+            missionsWithBannerAffectingChanges.add(mission.getId());
+        }
         Instant now = Instant.now();
         mission.setLatestUpdateSummary(now);
         mission.setLatestUpdateDetails(now);
@@ -56,26 +62,35 @@ public class MissionServiceImpl implements MissionService {
                 missionStep.setMission(mission);
                 mission.getSteps().add(missionStep);
             }
-            importMissionStep(intelMissionStep, missionStep);
+            importMissionStep(intelMissionStep, missionStep, poisWithBannerAffectingChanges);
             entityManager.persist(missionStep);
         }
         for (int i = mission.getSteps().size() - 1; i >= steps.size(); i--) {
             mission.getSteps().remove(i);
         }
+        bannerService.updateBannersContainingMission(missionsWithBannerAffectingChanges);
+        bannerService.updateBannersContainingPOI(poisWithBannerAffectingChanges);
         return mission;
     }
 
-    private void importMissionStep(IntelMissionStep intelMissionStep, MissionStep missionStep) {
-        missionStep.setObjective(intelMissionStep.objective);
+    private void importMissionStep(IntelMissionStep intelMissionStep, MissionStep missionStep,
+                                   Set<String> poisWithBannerAffectingChanges) {
+        double newLatitude = intelMissionStep.latitudeE6 / 1_000_000d;
+        double newLongitude = intelMissionStep.longitudeE6 / 1_000_000d;
         POI poi = entityManager.find(POI.class, intelMissionStep.id);
         if (poi == null) {
             poi = new POI();
             poi.setId(intelMissionStep.id);
+        } else if (!Objects.equals(missionStep.getObjective(), intelMissionStep.objective)
+            || !Objects.equals(poi.getType(), intelMissionStep.type) || !Objects.equals(poi.getLatitude(), newLatitude)
+            || !Objects.equals(poi.getLongitude(), newLongitude)) {
+            poisWithBannerAffectingChanges.add(intelMissionStep.id);
         }
+        missionStep.setObjective(intelMissionStep.objective);
         poi.setType(intelMissionStep.type);
         if (intelMissionStep.type != POIType.unavailable) {
-            poi.setLatitude(intelMissionStep.latitudeE6 / 1_000_000d);
-            poi.setLongitude(intelMissionStep.longitudeE6 / 1_000_000d);
+            poi.setLatitude(newLatitude);
+            poi.setLongitude(newLongitude);
             poi.setTitle(intelMissionStep.title);
             poi.setPicture(intelMissionStep.picture);
         }
@@ -85,33 +100,41 @@ public class MissionServiceImpl implements MissionService {
 
     @Override
     public Collection<Mission> importTopMissionsInBounds(IntelTopMissionsInBounds data) {
-        List<Mission> imported = new ArrayList<>();
-        for (IntelMissionSummary summary : data.summaries) {
-            imported.add(importMissionSummary(summary));
-        }
-        return imported;
+        return importMissionSummaries(data.summaries);
     }
 
     @Override
     public Collection<Mission> importTopMissionsForPortal(IntelTopMissionsForPortal data) {
+        return importMissionSummaries(data.summaries);
+    }
+
+    private Collection<Mission> importMissionSummaries(List<IntelMissionSummary> summaries) {
         List<Mission> imported = new ArrayList<>();
-        for (IntelMissionSummary summary : data.summaries) {
-            imported.add(importMissionSummary(summary));
+        Set<String> missionsWithBannerAffectingChanges = new HashSet<>();
+        for (IntelMissionSummary summary : summaries) {
+            imported.add(importMissionSummary(summary, missionsWithBannerAffectingChanges));
         }
+        bannerService.updateBannersContainingMission(missionsWithBannerAffectingChanges);
         return imported;
     }
 
-    private Mission importMissionSummary(IntelMissionSummary data) {
+    private Mission importMissionSummary(IntelMissionSummary data,
+                                         Collection<String> missionsWithBannerAffectingChanges) {
+        double newRating = data.ratingE6 / 1_000_000.;
         Mission mission = entityManager.find(Mission.class, data.id);
         if (mission == null) {
             mission = new Mission();
             mission.setId(data.id);
+        } else if (!Objects.equals(mission.getPicture(), data.picture)
+            || !Objects.equals(mission.getAverageDurationMilliseconds(), data.averageDurationMilliseconds)
+            || !mission.isOnline()) {
+            missionsWithBannerAffectingChanges.add(mission.getId());
         }
         mission.setLatestUpdateSummary(Instant.now());
         mission.setTitle(data.title);
         mission.setPicture(data.picture);
         mission.setAverageDurationMilliseconds(data.averageDurationMilliseconds);
-        mission.setRating(data.ratingE6 / 1_000_000.);
+        mission.setRating(newRating);
         mission.setOnline(true);
         entityManager.persist(mission);
         return mission;
