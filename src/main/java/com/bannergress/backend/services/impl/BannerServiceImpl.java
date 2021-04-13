@@ -14,19 +14,17 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.Maps;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort.Direction;
-import org.springframework.data.jpa.repository.EntityGraph.EntityGraphType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityGraph;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
 
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -51,11 +49,11 @@ public class BannerServiceImpl implements BannerService {
     public List<Banner> find(Optional<String> placeId, Optional<Double> minLatitude, Optional<Double> maxLatitude,
                              Optional<Double> minLongitude, Optional<Double> maxLongitude,
                              Optional<BannerSortOrder> sortBy, Direction dir, int offset, int limit) {
-        String queryString = "SELECT DISTINCT b FROM Banner b";
+        String queryString = "SELECT b FROM Banner b";
         if (placeId.isPresent()) {
             queryString += " JOIN b.startPlaces p";
         }
-        queryString += " LEFT JOIN FETCH b.startPlaces p2 LEFT JOIN FETCH p2.information WHERE true = true";
+        queryString += " WHERE true = true";
         if (placeId.isPresent()) {
             queryString += " AND p.id = :placeId";
         }
@@ -81,15 +79,32 @@ public class BannerServiceImpl implements BannerService {
             query.setParameter("maxLongitude", maxLongitude.get());
         }
         query.setMaxResults(limit);
-        return query.getResultList();
+        List<Banner> banners = query.getResultList();
+        preloadPlaceInformation(banners);
+        return banners;
+    }
+
+    private void preloadPlaceInformation(List<Banner> banners) {
+        if (!banners.isEmpty()) {
+            TypedQuery<Banner> query = entityManager
+                .createQuery("SELECT b FROM Banner b LEFT JOIN FETCH b.startPlaces p LEFT JOIN FETCH p.information"
+                    + " WHERE b IN :banners", Banner.class);
+            query.setParameter("banners", banners);
+            query.getResultList();
+        }
     }
 
     @Override
     public Optional<Banner> findByIdWithDetails(long id) {
-        EntityGraph<Banner> bannerGraph = entityManager.createEntityGraph(Banner.class);
-        bannerGraph.addSubgraph("missions").addSubgraph("steps").addAttributeNodes("poi");
-        return Optional
-            .ofNullable(entityManager.find(Banner.class, id, Map.of(EntityGraphType.LOAD.toString(), bannerGraph)));
+        TypedQuery<Banner> query = entityManager
+            .createQuery("SELECT b FROM Banner b LEFT JOIN FETCH b.missions m LEFT JOIN FETCH m.author"
+                + " LEFT JOIN FETCH m.steps s LEFT JOIN FETCH s.poi WHERE b.id = :id", Banner.class);
+        query.setParameter("id", id);
+        try {
+            return Optional.of(query.getSingleResult());
+        } catch (NoResultException e) {
+            return Optional.empty();
+        }
     }
 
     @Override
