@@ -88,12 +88,8 @@ public class BannerServiceImpl implements BannerService {
     public Optional<Banner> findByIdWithDetails(long id) {
         EntityGraph<Banner> bannerGraph = entityManager.createEntityGraph(Banner.class);
         bannerGraph.addSubgraph("missions").addSubgraph("steps").addAttributeNodes("poi");
-        Optional<Banner> banner = Optional
+        return Optional
             .ofNullable(entityManager.find(Banner.class, id, Map.of(EntityGraphType.LOAD.toString(), bannerGraph)));
-        if (banner.isPresent()) {
-            bannerPictureService.refresh(banner.get());
-        }
-        return banner;
     }
 
     @Override

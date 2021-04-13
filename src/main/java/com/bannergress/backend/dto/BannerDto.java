@@ -69,9 +69,9 @@ public class BannerDto {
     public String formattedAddress;
 
     /**
-     * banner's picture ID
+     * path to banner's picture
      */
-    public String pictureId;
+    public String picture;
 
     @Override
     public boolean equals(final Object o) {

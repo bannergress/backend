@@ -52,7 +52,6 @@ public class BannerPictureServiceImpl implements BannerPictureService {
         byte[] picture = createPicture(banner);
         BannerPicture bannerPicture = new BannerPicture();
         bannerPicture.setHash(hash);
-        banner.setPictureId(hash);
 
         if (banner.getPicture() != null) {
             banner.getPicture().setExpiration(Instant.now().plusSeconds(60));
