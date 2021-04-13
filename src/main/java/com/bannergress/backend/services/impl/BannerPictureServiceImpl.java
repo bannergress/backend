@@ -22,6 +22,7 @@ import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.Instant;
 import java.io.InputStream;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -51,9 +52,15 @@ public class BannerPictureServiceImpl implements BannerPictureService {
         byte[] picture = createPicture(banner);
         BannerPicture bannerPicture = new BannerPicture();
         bannerPicture.setHash(hash);
+
+        if (banner.getPicture() != null) {
+            banner.getPicture().setExpiration(Instant.now().plusSeconds(60));
+            entityManager.persist(banner.getPicture());
+        }
+
         bannerPicture.setPicture(picture);
-        entityManager.persist(bannerPicture);
         banner.setPicture(bannerPicture);
+        entityManager.persist(bannerPicture);
     }
 
     /**
@@ -117,7 +124,7 @@ public class BannerPictureServiceImpl implements BannerPictureService {
             new Kernel(3, 3, new float[] {0f, 0.125f, 0f, 0.125f, 0.5f, 0.125f, 0f, 0.125f, 0f}), ConvolveOp.EDGE_NO_OP,
             null).filter(bannerImage, null);
 
-        try (ByteArrayOutputStream stream = new ByteArrayOutputStream(40 * 1024 * numberRows)) {
+        try (ByteArrayOutputStream stream = new ByteArrayOutputStream(16 * 1024 * numberRows)) {
             ImageIO.write(bannerImage, "jpg", stream);
             return stream.toByteArray();
         } catch (IOException ex) {
@@ -128,5 +135,11 @@ public class BannerPictureServiceImpl implements BannerPictureService {
     @Override
     public Optional<BannerPicture> findByHash(String hash) {
         return Optional.ofNullable(entityManager.find(BannerPicture.class, hash));
+    }
+
+    @Override
+    public void removeExpired() {
+        entityManager.createQuery("DELETE FROM BannerPicture WHERE expiration < :now")
+            .setParameter("now", Instant.now()).executeUpdate();
     }
 }

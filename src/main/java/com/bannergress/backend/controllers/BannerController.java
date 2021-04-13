@@ -94,6 +94,7 @@ public class BannerController {
         dto.lengthMeters = banner.getLengthMeters();
         dto.startLatitude = banner.getStartLatitude();
         dto.startLongitude = banner.getStartLongitude();
+        dto.picture = "/banners/pictures/" + banner.getPicture().getHash();
         Optional<PlaceInformation> placeInformation = placeService
             .getMostAccuratePlaceInformation(banner.getStartPlaces(), "en");
         if (placeInformation.isPresent()) {
