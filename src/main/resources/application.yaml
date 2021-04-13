@@ -32,6 +32,8 @@ spring:
       ddl-auto: update
   flyway:
     enabled: false # On dev mode the columns are created via hibernate
+keycloak:
+  enabled: false
 
 logging:
   level:
