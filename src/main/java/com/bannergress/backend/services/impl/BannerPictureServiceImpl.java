@@ -6,7 +6,12 @@ import com.bannergress.backend.entities.Mission;
 import com.bannergress.backend.services.BannerPictureService;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
+import okhttp3.Cache;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,9 +26,10 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
-import java.time.Instant;
 import java.io.InputStream;
+import java.time.Instant;
 import java.util.Map.Entry;
 import java.util.Optional;
 
@@ -42,6 +48,13 @@ public class BannerPictureServiceImpl implements BannerPictureService {
 
     @Autowired
     EntityManager entityManager;
+
+    private final OkHttpClient client;
+
+    public BannerPictureServiceImpl(@Value("${picture.cache.directory:caches/pictures/}") final String cacheDirectory,
+        @Value("${picture.cache.size:1000000000}") final long cacheSize) {
+        client = new OkHttpClient.Builder().cache(new Cache(new File(cacheDirectory), 1_000_000_000)).build();
+    }
 
     @Override
     public void refresh(Banner banner) {
@@ -102,8 +115,9 @@ public class BannerPictureServiceImpl implements BannerPictureService {
         // loads, draws and masks the individual mission images to the banner image.
         for (Entry<Integer, Mission> entry : banner.getMissions().entrySet()) {
             BufferedImage missionImage;
-            try {
-                missionImage = ImageIO.read(entry.getValue().getPicture());
+            Request request = new Request.Builder().url(entry.getValue().getPicture()).build();
+            try (Response response = client.newCall(request).execute()) {
+                missionImage = ImageIO.read(response.body().byteStream());
             } catch (IOException ex) {
                 throw new RuntimeException("failed ro read image: " + entry.getValue().getPicture(), ex);
             }
