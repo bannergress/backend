@@ -6,13 +6,14 @@ import net.karneim.pojobuilder.GeneratePojoBuilder;
 import javax.validation.constraints.NotNull;
 
 import java.time.Instant;
+import java.util.UUID;
 
 /**
  * Transports information about a single news item.
  */
 @GeneratePojoBuilder(withBuilderInterface = PojoBuilder.class)
 public class NewsItemDto {
-    public long id;
+    public UUID uuid;
 
     @NotNull
     public String content;

@@ -71,7 +71,8 @@ public class BannerPictureServiceImpl implements BannerPictureService {
      */
     private String hash(Banner banner) {
         Hasher hasher = Hashing.murmur3_128().newHasher();
-        hasher.putInt(IMPLEMENTATION_VERSION).putLong(banner.getId()).putInt(banner.getNumberOfMissions());
+        hasher.putInt(IMPLEMENTATION_VERSION).putUnencodedChars(banner.getUuid().toString())
+            .putInt(banner.getNumberOfMissions());
         for (Entry<Integer, Mission> entry : banner.getMissions().entrySet()) {
             hasher.putInt(entry.getKey()).putUnencodedChars(entry.getValue().getPicture().toString());
         }
@@ -128,7 +129,7 @@ public class BannerPictureServiceImpl implements BannerPictureService {
             ImageIO.write(bannerImage, "jpg", stream);
             return stream.toByteArray();
         } catch (IOException ex) {
-            throw new RuntimeException("failed to generate banner with id " + banner.getId(), ex);
+            throw new RuntimeException("failed to generate banner with id " + banner.getUuid(), ex);
         }
     }
 

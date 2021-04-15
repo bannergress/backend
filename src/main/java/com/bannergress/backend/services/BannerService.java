@@ -8,6 +8,7 @@ import org.springframework.data.domain.Sort.Direction;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Service for banner-related tasks.
@@ -32,20 +33,20 @@ public interface BannerService {
                       Direction dir, int offset, int limit);
 
     /**
-     * Finds a banner by its internal ID, including details down to mission level.
+     * Finds a banner by its internal UUID, including details down to mission level.
      *
-     * @param id Internal ID.
+     * @param uuid Internal UUID.
      * @return Banner.
      */
-    Optional<Banner> findByIdWithDetails(long id);
+    Optional<Banner> findByUuidWithDetails(UUID uuid);
 
     /**
      * Creates a new banner. Banner missions must not be used by any other banner.
      *
      * @param bannerDto Banner DTO.
-     * @return ID of the newly created banner.
+     * @return UUID of the newly created banner.
      */
-    long save(BannerDto bannerDto);
+    UUID save(BannerDto bannerDto);
 
     /**
      * Updates information of all banners that contain one of the specified missions.

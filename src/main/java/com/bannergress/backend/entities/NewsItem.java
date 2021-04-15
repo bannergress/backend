@@ -9,6 +9,7 @@ import org.hibernate.envers.NotAudited;
 import javax.persistence.*;
 
 import java.time.Instant;
+import java.util.UUID;
 
 /**
  * Represents a single news item.
@@ -20,12 +21,12 @@ import java.time.Instant;
 @GeneratePojoBuilder(withBuilderInterface = PojoBuilder.class)
 public class NewsItem {
     /**
-     * Internal ID without further meaning.
+     * Internal UUID without further meaning.
      */
     @Id
-    @Column(name = "id")
+    @Column(name = "uuid", columnDefinition = "uuid")
     @GeneratedValue
-    private long id;
+    private UUID uuid;
 
     /**
      * Content.
@@ -40,12 +41,12 @@ public class NewsItem {
     @NotAudited
     private Instant created;
 
-    public long getId() {
-        return id;
+    public UUID getUuid() {
+        return uuid;
     }
 
-    public void setId(long id) {
-        this.id = id;
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
     }
 
     public String getContent() {

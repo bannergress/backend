@@ -5,6 +5,8 @@ import net.karneim.pojobuilder.GeneratePojoBuilder;
 
 import javax.persistence.*;
 
+import java.util.UUID;
+
 /**
  * Represents translated information for a Google Maps Place.
  */
@@ -13,12 +15,12 @@ import javax.persistence.*;
 @GeneratePojoBuilder(withBuilderInterface = PojoBuilder.class)
 public class PlaceInformation {
     /**
-     * Internal ID without meaning.
+     * Internal UUID without meaning.
      */
     @Id
-    @Column(name = "id")
+    @Column(name = "uuid", columnDefinition = "uuid")
     @GeneratedValue
-    private long id;
+    private UUID uuid;
 
     /**
      * Corresponding Google Maps place.
@@ -51,12 +53,12 @@ public class PlaceInformation {
     @Column(name = "formatted_address", nullable = false)
     private String formattedAddress;
 
-    public long getId() {
-        return id;
+    public UUID getUuid() {
+        return uuid;
     }
 
-    public void setId(long id) {
-        this.id = id;
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
     }
 
     public Place getPlace() {

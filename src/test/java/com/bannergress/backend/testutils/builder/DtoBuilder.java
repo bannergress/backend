@@ -23,7 +23,7 @@ public class DtoBuilder {
     @NotNull
     public static BannerDtoBuilder $BannerDto() {
         return new BannerDtoBuilder()
-            .withId(a($Long()))
+            .withUuid(a($UUID()))
             .withTitle(a($String("title")))
             .withDescription(a($String("description")))
             .withNumberOfMissions(a($Int()))

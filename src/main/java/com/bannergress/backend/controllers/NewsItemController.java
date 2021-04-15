@@ -16,6 +16,7 @@ import javax.validation.Valid;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -46,9 +47,9 @@ public class NewsItemController {
      * @param id ID.
      * @return News item.
      */
-    @GetMapping("/news/{id}")
-    public ResponseEntity<NewsItemDto> get(@PathVariable final long id) {
-        Optional<NewsItem> item = newsItemRepository.findById(id);
+    @GetMapping("/news/{uuid}")
+    public ResponseEntity<NewsItemDto> get(@PathVariable final UUID uuid) {
+        Optional<NewsItem> item = newsItemRepository.findById(uuid);
         return ResponseEntity.of(item.map(NewsItemController::toDto));
     }
 
@@ -76,9 +77,9 @@ public class NewsItemController {
      * @return Updated news item.
      */
     @RolesAllowed(Roles.MANAGE_NEWS)
-    @PutMapping("/news/{id}")
-    public ResponseEntity<NewsItemDto> put(@PathVariable final long id, @Valid @RequestBody final NewsItemDto item) {
-        Optional<NewsItem> newsItem = newsItemRepository.findById(id);
+    @PutMapping("/news/{uuid}")
+    public ResponseEntity<NewsItemDto> put(@PathVariable final UUID uuid, @Valid @RequestBody final NewsItemDto item) {
+        Optional<NewsItem> newsItem = newsItemRepository.findById(uuid);
         if (newsItem.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
@@ -93,10 +94,10 @@ public class NewsItemController {
      * @param id News item ID.
      */
     @RolesAllowed(Roles.MANAGE_NEWS)
-    @DeleteMapping("/news/{id}")
-    public void delete(@PathVariable final long id) {
+    @DeleteMapping("/news/{uuid}")
+    public void delete(@PathVariable final UUID uuid) {
         try {
-            newsItemRepository.deleteById(id);
+            newsItemRepository.deleteById(uuid);
         } catch (EmptyResultDataAccessException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
@@ -104,7 +105,7 @@ public class NewsItemController {
 
     private static NewsItemDto toDto(final NewsItem newsItem) {
         NewsItemDto result = new NewsItemDto();
-        result.id = newsItem.getId();
+        result.uuid = newsItem.getUuid();
         result.content = newsItem.getContent();
         result.created = newsItem.getCreated();
         return result;
