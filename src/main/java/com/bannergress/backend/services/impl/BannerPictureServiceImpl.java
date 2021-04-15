@@ -53,7 +53,7 @@ public class BannerPictureServiceImpl implements BannerPictureService {
 
     public BannerPictureServiceImpl(@Value("${picture.cache.directory:caches/pictures/}") final String cacheDirectory,
         @Value("${picture.cache.size:1000000000}") final long cacheSize) {
-        client = new OkHttpClient.Builder().cache(new Cache(new File(cacheDirectory), 1_000_000_000)).build();
+        client = new OkHttpClient.Builder().cache(new Cache(new File(cacheDirectory), cacheSize)).build();
     }
 
     @Override
