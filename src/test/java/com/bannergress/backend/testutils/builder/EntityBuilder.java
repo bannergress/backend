@@ -15,7 +15,7 @@ public class EntityBuilder {
     @NotNull
     public static BannerBuilder $Banner() {
         return new BannerBuilder()
-            .withId(-1L)
+            .withUuid(a($UUID()))
             .withTitle(a($String("title")))
             .withDescription(a($String("description")))
             .withNumberOfMissions(a($Int()))
@@ -66,7 +66,7 @@ public class EntityBuilder {
     @NotNull
     public static PlaceInformationBuilder $PlaceInformation() {
         return new PlaceInformationBuilder()
-            .withId(a($Long()))
+            .withUuid(a($UUID()))
             .withPlace(null)
             .withLanguageCode(a($String("languagecode")))
             .withLongName(a($String("longname")))
@@ -84,7 +84,7 @@ public class EntityBuilder {
     @NotNull
     public static MissionStepBuilder $MissionStep() {
         return new MissionStepBuilder()
-            .withId(a($Long()))
+            .withUuid(a($UUID()))
             .withMission(a($Mission()))
             .withPoi(a($POI()))
             .withObjective(oneOf(Objective.values()));
@@ -104,7 +104,7 @@ public class EntityBuilder {
     @NotNull
     public static NewsItemBuilder $NewsItem() {
         return new NewsItemBuilder()
-            .withId(a($Long()))
+            .withUuid(a($UUID()))
             .withContent(a($String("content")))
             .withCreated(a($Instant()));
     }

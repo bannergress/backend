@@ -29,7 +29,7 @@ CREATE TABLE "banner_picture" (
 
 
 CREATE TABLE "banner" (
-  "id" bigint NOT NULL,
+  "uuid" uuid NOT NULL,
   "complete" boolean NOT NULL,
   "created" timestamp with time zone NOT NULL,
   "description" text,
@@ -40,7 +40,7 @@ CREATE TABLE "banner" (
   "start_longitude" double precision,
   "title" text NOT NULL,
   "picture" text,
-  PRIMARY KEY ("id"),
+  PRIMARY KEY ("uuid"),
   FOREIGN KEY ("picture") REFERENCES "banner_picture"("hash")
 );
 CREATE INDEX ON "banner" ("created" DESC);
@@ -57,7 +57,7 @@ CREATE INDEX ON "place" ("type");
 
 
 CREATE TABLE "place_information" (
-  "id" bigint NOT NULL,
+  "uuid" uuid NOT NULL,
   "formatted_address" text NOT NULL,
   "language_code" text NOT NULL,
   "long_name" text NOT NULL,
@@ -75,7 +75,7 @@ CREATE TABLE "banner_start_place" (
   "banner" bigint NOT NULL,
   "place" text NOT NULL,
   PRIMARY KEY ("banner", "place"),
-  FOREIGN KEY ("banner") REFERENCES "banner"("id"),
+  FOREIGN KEY ("banner") REFERENCES "banner"("uuid"),
   FOREIGN KEY ("place") REFERENCES "place"("id")
 );
 CREATE INDEX ON "banner_start_place" ("place") INCLUDE ("banner");
@@ -120,16 +120,16 @@ CREATE INDEX ON "mission" ("author");
 
 
 CREATE TABLE "mission_step" (
-  "id" bigint NOT NULL,
+  "uuid" uuid NOT NULL,
   "objective" objective,
   "mission" text NOT NULL,
   "poi" text,
   "position" integer,
-  PRIMARY KEY ("id"),
+  PRIMARY KEY ("uuid"),
   FOREIGN KEY ("mission") REFERENCES "mission"("id"),
   FOREIGN KEY ("poi") REFERENCES "poi"("id")
 );
-CREATE INDEX ON "mission_step" ("mission") INCLUDE ("poi", "id", "objective", "position");
+CREATE INDEX ON "mission_step" ("mission") INCLUDE ("poi", "uuid", "objective", "position");
 CREATE INDEX ON "mission_step" ("poi");
 
 
@@ -145,10 +145,10 @@ CREATE INDEX ON "banner_mission" ("mission") INCLUDE ("banner", "position");
 
 
 CREATE TABLE "news" (
-  "id" bigint NOT NULL,
+  "uuid" uuid NOT NULL,
   "content" text NOT NULL,
   "created" timestamp with time zone NOT NULL,
-  PRIMARY KEY ("id")
+  PRIMARY KEY ("uuid")
 );
 
 
@@ -161,13 +161,13 @@ CREATE TABLE "revision" (
 
 
 CREATE TABLE "banner_audit" (
-  "id" bigint NOT NULL,
+  "uuid" uuid NOT NULL,
   "rev" integer NOT NULL,
   "revtype" smallint,
   "description" text,
   "number_of_missions" integer,
   "title" text,
-  PRIMARY KEY ("id", "rev"),
+  PRIMARY KEY ("uuid", "rev"),
   FOREIGN KEY ("rev") REFERENCES "revision"("id")
 );
 
@@ -199,14 +199,14 @@ CREATE TABLE "mission_audit" (
 
 
 CREATE TABLE "mission_step_audit" (
-  "id" bigint NOT NULL,
+  "uuid" bigint NOT NULL,
   "rev" integer NOT NULL,
   "revtype" smallint,
   "objective" objective,
   "position" integer,
   "mission" text,
   "poi" text,
-  PRIMARY KEY ("id", "rev"),
+  PRIMARY KEY ("uuid", "rev"),
   FOREIGN KEY ("rev") REFERENCES "revision"("id")
 );
 
@@ -236,10 +236,10 @@ CREATE TABLE "poi_audit" (
 
 
 CREATE TABLE "news_audit" (
-  "id" bigint NOT NULL,
+  "uuid" uuid NOT NULL,
   "rev" integer NOT NULL,
   "revtype" smallint,
   "content" text,
-  PRIMARY KEY ("id", "rev"),
+  PRIMARY KEY ("uuid", "rev"),
   FOREIGN KEY ("rev") REFERENCES "revision"("id")
 );

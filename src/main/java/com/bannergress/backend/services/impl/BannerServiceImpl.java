@@ -26,6 +26,7 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Default implementation of {@link BannerService}.
@@ -95,11 +96,11 @@ public class BannerServiceImpl implements BannerService {
     }
 
     @Override
-    public Optional<Banner> findByIdWithDetails(long id) {
+    public Optional<Banner> findByUuidWithDetails(UUID uuid) {
         TypedQuery<Banner> query = entityManager
             .createQuery("SELECT b FROM Banner b LEFT JOIN FETCH b.missions m LEFT JOIN FETCH m.author"
-                + " LEFT JOIN FETCH m.steps s LEFT JOIN FETCH s.poi WHERE b.id = :id", Banner.class);
-        query.setParameter("id", id);
+                + " LEFT JOIN FETCH m.steps s LEFT JOIN FETCH s.poi WHERE b.uuid = :uuid", Banner.class);
+        query.setParameter("uuid", uuid);
         try {
             return Optional.of(query.getSingleResult());
         } catch (NoResultException e) {
@@ -108,7 +109,7 @@ public class BannerServiceImpl implements BannerService {
     }
 
     @Override
-    public long save(BannerDto bannerDto) {
+    public UUID save(BannerDto bannerDto) {
         Collection<String> missionIds = Collections2.transform(bannerDto.missions.values(),
             missionDto -> missionDto.id);
         missionService.verifyAvailability(missionIds);
@@ -122,7 +123,7 @@ public class BannerServiceImpl implements BannerService {
         banner.getMissions().putAll(Maps.transformValues(bannerDto.missions,
             missionDto -> entityManager.getReference(Mission.class, missionDto.id)));
         calculateData(banner);
-        return banner.getId();
+        return banner.getUuid();
     }
 
     /**

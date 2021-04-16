@@ -8,6 +8,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Instant;
 import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.bannergress.backend.testutils.builder.BuilderMethods.a;
@@ -69,6 +70,11 @@ public class JavatypeBuilder {
     @NotNull
     public static PojoBuilder<Byte> $Byte() {
         return () -> (byte) getUnique();
+    }
+
+    @NotNull
+    public static PojoBuilder<UUID> $UUID() {
+        return UUID::randomUUID;
     }
 
     @NotNull

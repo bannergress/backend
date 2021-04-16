@@ -17,6 +17,7 @@ import javax.validation.constraints.Max;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -74,21 +75,21 @@ public class BannerController {
      * @param id
      * @return
      */
-    @GetMapping("/banners/{id}")
-    public ResponseEntity<BannerDto> get(@PathVariable final long id) {
-        final Optional<Banner> banner = bannerService.findByIdWithDetails(id);
+    @GetMapping("/banners/{uuid}")
+    public ResponseEntity<BannerDto> get(@PathVariable final UUID uuid) {
+        final Optional<Banner> banner = bannerService.findByUuidWithDetails(uuid);
         return ResponseEntity.of(banner.map(this::toDetails));
     }
 
     @PostMapping("/banners")
     public ResponseEntity<BannerDto> post(@Valid @RequestBody BannerDto banner) {
-        long id = bannerService.save(banner);
-        return get(id);
+        UUID uuid = bannerService.save(banner);
+        return get(uuid);
     }
 
     private BannerDto toSummary(Banner banner) {
         BannerDto dto = new BannerDto();
-        dto.id = banner.getId();
+        dto.uuid = banner.getUuid();
         dto.title = banner.getTitle();
         dto.numberOfMissions = banner.getNumberOfMissions();
         dto.lengthMeters = banner.getLengthMeters();

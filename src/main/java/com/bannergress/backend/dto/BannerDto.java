@@ -13,14 +13,15 @@ import javax.validation.constraints.NotNull;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 @JsonInclude(Include.NON_NULL)
 @GeneratePojoBuilder(withBuilderInterface = PojoBuilder.class)
 public class BannerDto {
     /**
-     * Internal ID without further meaning.
+     * Internal UUID without further meaning.
      */
-    public long id;
+    public UUID uuid;
 
     /**
      * Title.
@@ -82,7 +83,7 @@ public class BannerDto {
             return false;
         }
         final BannerDto bannerDto = (BannerDto) o;
-        return id == bannerDto.id && numberOfMissions == bannerDto.numberOfMissions
+        return Objects.equals(uuid, bannerDto.uuid) && numberOfMissions == bannerDto.numberOfMissions
             && Objects.equals(title, bannerDto.title) && Objects.equals(description, bannerDto.description)
             && Objects.equals(missions, bannerDto.missions) && Objects.equals(startLatitude, bannerDto.startLatitude)
             && Objects.equals(startLongitude, bannerDto.startLongitude)
@@ -92,7 +93,7 @@ public class BannerDto {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, title, description, numberOfMissions, missions, startLatitude, startLongitude,
+        return Objects.hash(uuid, title, description, numberOfMissions, missions, startLatitude, startLongitude,
             lengthMeters, formattedAddress);
     }
 }

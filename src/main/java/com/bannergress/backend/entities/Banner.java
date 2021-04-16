@@ -26,9 +26,9 @@ public class Banner {
      * Internal ID without further meaning.
      */
     @Id
-    @Column(name = "id")
+    @Column(name = "uuid", columnDefinition = "uuid")
     @GeneratedValue
-    private long id;
+    private UUID uuid;
 
     /**
      * Title.
@@ -121,12 +121,12 @@ public class Banner {
     @NotAudited
     private Instant created;
 
-    public long getId() {
-        return id;
+    public UUID getUuid() {
+        return uuid;
     }
 
-    public void setId(final long id) {
-        this.id = id;
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
     }
 
     public String getTitle() {
@@ -234,8 +234,8 @@ public class Banner {
             return false;
         }
         final Banner banner = (Banner) o;
-        return id == banner.id && numberOfMissions == banner.numberOfMissions && complete == banner.complete
-            && online == banner.online && Objects.equals(title, banner.title)
+        return Objects.equals(uuid, banner.uuid) && numberOfMissions == banner.numberOfMissions
+            && complete == banner.complete && online == banner.online && Objects.equals(title, banner.title)
             && Objects.equals(description, banner.description) && Objects.equals(missions, banner.missions)
             && Objects.equals(startLatitude, banner.startLatitude)
             && Objects.equals(startLongitude, banner.startLongitude)
@@ -245,7 +245,7 @@ public class Banner {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, title, description, numberOfMissions, missions, startLatitude, startLongitude,
+        return Objects.hash(uuid, title, description, numberOfMissions, missions, startLatitude, startLongitude,
             lengthMeters, complete, online, picture, startPlaces, created);
     }
 }

@@ -8,6 +8,8 @@ import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
 
+import java.util.UUID;
+
 /**
  * Represents a step that has to be performed in order to complete a mission.
  */
@@ -18,12 +20,12 @@ import javax.persistence.*;
 @GeneratePojoBuilder(withBuilderInterface = PojoBuilder.class)
 public class MissionStep {
     /**
-     * Internal ID without further meaning.
+     * Internal UUID without further meaning.
      */
     @Id
-    @Column(name = "id")
+    @Column(name = "uuid", columnDefinition = "uuid")
     @GeneratedValue
-    private long id;
+    private UUID uuid;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "mission")
@@ -43,12 +45,12 @@ public class MissionStep {
     @Enumerated(EnumType.STRING)
     private Objective objective;
 
-    public long getId() {
-        return id;
+    public UUID getUuid() {
+        return uuid;
     }
 
-    public void setId(long id) {
-        this.id = id;
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
     }
 
     public Mission getMission() {
