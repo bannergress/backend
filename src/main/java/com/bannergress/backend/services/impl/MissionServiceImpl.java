@@ -81,8 +81,8 @@ public class MissionServiceImpl implements MissionService {
 
     private void importMissionStep(IntelMissionStep intelMissionStep, MissionStep missionStep,
                                    Set<String> poisWithBannerAffectingChanges) {
-        double newLatitude = intelMissionStep.latitudeE6 / 1_000_000d;
-        double newLongitude = intelMissionStep.longitudeE6 / 1_000_000d;
+        double newLatitude = fromE6(intelMissionStep.latitudeE6);
+        double newLongitude = fromE6(intelMissionStep.longitudeE6);
         POI poi = entityManager.find(POI.class, intelMissionStep.id);
         if (poi == null) {
             poi = new POI();
@@ -108,8 +108,8 @@ public class MissionServiceImpl implements MissionService {
     public Collection<Mission> importTopMissionsInBounds(IntelTopMissionsInBounds data) {
         Collection<Mission> missions = importMissionSummaries(data.summaries);
         if (missions.size() < INTEL_TOP_MISSIONS_IN_BOUNDS_LIMIT) {
-            setMissionsOfflineInBounds(data.request.southE6 / 1_000_000d, data.request.westE6 / 1_000_000d,
-                data.request.northE6 / 1_000_000d, data.request.eastE6 / 1_000_000d, missions);
+            setMissionsOfflineInBounds(fromE6(data.request.southE6), fromE6(data.request.westE6),
+                fromE6(data.request.northE6), fromE6(data.request.eastE6), missions);
         }
         return missions;
     }
@@ -162,7 +162,7 @@ public class MissionServiceImpl implements MissionService {
 
     private Mission importMissionSummary(IntelMissionSummary data,
                                          Collection<String> missionsWithBannerAffectingChanges) {
-        double newRating = data.ratingE6 / 1_000_000.;
+        double newRating = fromE6(data.ratingE6);
         Mission mission = entityManager.find(Mission.class, data.id);
         if (mission == null) {
             mission = new Mission();
@@ -234,5 +234,9 @@ public class MissionServiceImpl implements MissionService {
         final Set<String> result = new HashSet<>(missionIds);
         latestRefreshableMission = result.size() < amount ? Optional.empty() : Optional.of(missionIds.get(amount - 1));
         return result;
+    }
+
+    private static double fromE6(int e6) {
+        return e6 / 1_000_000d;
     }
 }
