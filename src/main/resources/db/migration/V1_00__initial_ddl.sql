@@ -51,6 +51,7 @@ CREATE INDEX ON "banner" USING gin ((lower("title")) gin_trgm_ops);
 CREATE TABLE "place" (
   "id" text NOT NULL,
   "type" place_type NOT NULL,
+  "number_of_banners" integer NOT NULL,
   PRIMARY KEY ("id")
 );
 CREATE INDEX ON "place" ("type");

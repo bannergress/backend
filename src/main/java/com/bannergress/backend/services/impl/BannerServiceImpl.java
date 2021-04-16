@@ -167,6 +167,7 @@ public class BannerServiceImpl implements BannerService {
             Collection<Place> startPlaces = geocodingService.getPlaces(startLatitude, startLongitude);
             banner.getStartPlaces().clear();
             banner.getStartPlaces().addAll(startPlaces);
+            banner.getStartPlaces().forEach(place -> place.setNumberOfBanners(place.getNumberOfBanners() + 1));
         }
         banner.setLengthMeters(distance);
         bannerPictureService.refresh(banner);
