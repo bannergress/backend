@@ -84,15 +84,18 @@ public class BannerPictureServiceImpl implements BannerPictureService {
         hasher.putInt(IMPLEMENTATION_VERSION).putUnencodedChars(banner.getUuid().toString())
             .putInt(banner.getNumberOfMissions());
         for (Entry<Integer, Mission> entry : banner.getMissions().entrySet()) {
-            hasher.putInt(entry.getKey()).putUnencodedChars(entry.getValue().getPicture().toString());
+            hasher.putInt(entry.getKey()).putUnencodedChars(entry.getValue().getPicture().toString())
+                .putBoolean(entry.getValue().isOnline());
         }
         return hasher.hash().toString();
     }
 
-    protected static final BufferedImage maskImage;
-    static {
-        try (InputStream stream = BannerPictureServiceImpl.class.getResourceAsStream("/mask-96.png")) {
-            maskImage = ImageIO.read(stream);
+    private static final BufferedImage maskImageOnline = loadImage("/mask-96-online.png");
+    private static final BufferedImage maskImageOffline = loadImage("/mask-96-offline.png");
+
+    private static BufferedImage loadImage(String path) {
+        try (InputStream stream = BannerPictureServiceImpl.class.getResourceAsStream(path)) {
+            return ImageIO.read(stream);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
@@ -126,6 +129,8 @@ public class BannerPictureServiceImpl implements BannerPictureService {
             int y2 = y1 + DIAMETER;
             graphics.drawImage(missionImage, x1, y1, x2, y2, 0, 0, missionImage.getWidth(), missionImage.getHeight(),
                 null);
+
+            BufferedImage maskImage = entry.getValue().isOnline() ? maskImageOnline : maskImageOffline;
             graphics.drawImage(maskImage, x1, y1, x2, y2, 0, 0, maskImage.getWidth(), maskImage.getHeight(), null);
         }
 

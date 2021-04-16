@@ -31,9 +31,11 @@ class TestBannerPictureServiceImpl {
             Mission m = new Mission();
             m.setTitle("" + missions.size());
             m.setPicture(new URL(urlSpec));
+            m.setOnline(true);
             missions.put(Integer.valueOf(missions.size()), m);
         }
         banner.setMissions(missions);
+        banner.getMissions().get(3).setOnline(false);
 
         byte[] pngData = bannerPictureService.createPicture(banner);
 
