@@ -29,6 +29,7 @@ dependencies {
   implementation 'org.flywaydb:flyway-core'
 	implementation "com.google.guava:guava:${guava_version}"
 	implementation "com.google.maps:google-maps-services:${google_maps_services_version}"
+  implementation "com.squareup.okhttp3:okhttp:${okhttp_version}"
 
   annotationProcessor "net.karneim:pojobuilder:$pojobuilder_version"
 
