@@ -26,6 +26,10 @@ import java.util.*;
 @Service
 @Transactional(isolation = Isolation.SERIALIZABLE)
 public class MissionServiceImpl implements MissionService {
+    private static final int INTEL_TOP_MISSIONS_IN_BOUNDS_LIMIT = 25;
+
+    private static final int INTEL_TOP_MISSIONS_FOR_PORTAL_LIMIT = 10;
+
     @Autowired
     private EntityManager entityManager;
 
@@ -102,12 +106,48 @@ public class MissionServiceImpl implements MissionService {
 
     @Override
     public Collection<Mission> importTopMissionsInBounds(IntelTopMissionsInBounds data) {
-        return importMissionSummaries(data.summaries);
+        Collection<Mission> missions = importMissionSummaries(data.summaries);
+        if (missions.size() < INTEL_TOP_MISSIONS_IN_BOUNDS_LIMIT) {
+            setMissionsOfflineInBounds(data.request.southE6 / 1_000_000d, data.request.westE6 / 1_000_000d,
+                data.request.northE6 / 1_000_000d, data.request.eastE6 / 1_000_000d, missions);
+        }
+        return missions;
     }
 
     @Override
     public Collection<Mission> importTopMissionsForPortal(IntelTopMissionsForPortal data) {
-        return importMissionSummaries(data.summaries);
+        Collection<Mission> missions = importMissionSummaries(data.summaries);
+        if (missions.size() < INTEL_TOP_MISSIONS_FOR_PORTAL_LIMIT) {
+            setMissionsOfflineForPortal(data.request.guid, missions);
+        }
+        return missions;
+    }
+
+    private void setMissionsOfflineInBounds(double minLatitude, double minLongitude, double maxLatitude,
+                                            double maxLongitude, Collection<Mission> exclude) {
+        TypedQuery<Mission> query = entityManager.createQuery("SELECT m FROM Mission m WHERE m NOT IN :exclude"
+            + " AND m.steps[0].poi.latitude BETWEEN :minLatitude AND :maxLatitude"
+            + " AND m.steps[0].poi.longitude BETWEEN :minLongitude AND :maxLongitude", Mission.class);
+        query.setParameter("exclude", exclude);
+        query.setParameter("minLatitude", minLatitude);
+        query.setParameter("minLongitude", minLongitude);
+        query.setParameter("maxLatitude", maxLatitude);
+        query.setParameter("maxLongitude", maxLongitude);
+        setMissionsOffline(query.getResultList());
+    }
+
+    private void setMissionsOfflineForPortal(String startPoiId, Collection<Mission> exclude) {
+        TypedQuery<Mission> query = entityManager.createQuery(
+            "SELECT m FROM Mission m WHERE m NOT IN :exclude AND m.steps[0].poi.id = :startPoiId", Mission.class);
+        query.setParameter("exclude", exclude);
+        query.setParameter("startPoiId", startPoiId);
+        setMissionsOffline(query.getResultList());
+    }
+
+    private void setMissionsOffline(List<Mission> missions) {
+        for (Mission mission : missions) {
+            mission.setOnline(false);
+        }
     }
 
     private Collection<Mission> importMissionSummaries(List<IntelMissionSummary> summaries) {
