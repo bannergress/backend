@@ -109,7 +109,7 @@ public class BannerServiceImpl implements BannerService {
     }
 
     @Override
-    public UUID save(BannerDto bannerDto) {
+    public UUID create(BannerDto bannerDto) {
         Collection<String> missionIds = Collections2.transform(bannerDto.missions.values(),
             missionDto -> missionDto.id);
         missionService.verifyAvailability(missionIds);
@@ -124,6 +124,24 @@ public class BannerServiceImpl implements BannerService {
             missionDto -> entityManager.getReference(Mission.class, missionDto.id)));
         calculateData(banner);
         return banner.getUuid();
+    }
+
+    @Override
+    public void update(UUID uuid, BannerDto bannerDto) {
+        Banner banner = entityManager.find(Banner.class, uuid);
+        banner.setTitle(bannerDto.title);
+        banner.setDescription(bannerDto.description);
+        banner.setNumberOfMissions(bannerDto.numberOfMissions);
+        banner.getMissions().clear();
+        banner.getMissions().putAll(Maps.transformValues(bannerDto.missions,
+            missionDto -> entityManager.getReference(Mission.class, missionDto.id)));
+        calculateData(banner);
+    }
+
+    @Override
+    public void deleteByUuid(UUID uuid) {
+        Banner banner = entityManager.find(Banner.class, uuid);
+        entityManager.remove(banner);
     }
 
     /**

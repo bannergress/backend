@@ -124,7 +124,7 @@ class BannerControllerTest {
         final BannerDto banner = a($BannerDto());
         final Banner savedBanner = a($Banner());
 
-        when(bannerService.save(banner)).thenReturn(savedBanner.getUuid());
+        when(bannerService.create(banner)).thenReturn(savedBanner.getUuid());
         when(bannerService.findByUuidWithDetails(savedBanner.getUuid())).thenReturn(Optional.of(savedBanner));
 
         // THEN

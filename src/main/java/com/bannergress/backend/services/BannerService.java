@@ -46,7 +46,14 @@ public interface BannerService {
      * @param bannerDto Banner DTO.
      * @return UUID of the newly created banner.
      */
-    UUID save(BannerDto bannerDto);
+    UUID create(BannerDto bannerDto);
+
+    /**
+     * Updates an existing banner.
+     *
+     * @param bannerDto Banner DTO.
+     */
+    void update(UUID uuid, BannerDto bannerDto);
 
     /**
      * Updates information of all banners that contain one of the specified missions.
@@ -61,4 +68,10 @@ public interface BannerService {
      * @param missionIds POI IDs.
      */
     void updateBannersContainingPOI(Collection<String> poiIds);
+
+    /**
+     * Deletes a banner by UUID.
+     * @param uuid UUID to delete.
+     */
+    void deleteByUuid(UUID uuid);
 }

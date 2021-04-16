@@ -4,6 +4,7 @@ import com.bannergress.backend.dto.BannerDto;
 import com.bannergress.backend.entities.Banner;
 import com.bannergress.backend.entities.PlaceInformation;
 import com.bannergress.backend.enums.BannerSortOrder;
+import com.bannergress.backend.security.Roles;
 import com.bannergress.backend.services.BannerService;
 import com.bannergress.backend.services.PlaceService;
 import com.google.common.collect.Maps;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 
@@ -83,8 +85,33 @@ public class BannerController {
 
     @PostMapping("/banners")
     public ResponseEntity<BannerDto> post(@Valid @RequestBody BannerDto banner) {
-        UUID uuid = bannerService.save(banner);
+        UUID uuid = bannerService.create(banner);
         return get(uuid);
+    }
+
+    /**
+     * Updates the banner with the specified UUID.
+     *
+     * @param uuid   UUID.
+     * @param banner Banner data.
+     * @return Updated banner data.
+     */
+    @RolesAllowed(Roles.MANAGE_BANNERS)
+    @PutMapping("/banners/{uuid}")
+    public ResponseEntity<BannerDto> put(@PathVariable final UUID uuid, @Valid @RequestBody BannerDto banner) {
+        bannerService.update(uuid, banner);
+        return get(uuid);
+    }
+
+    /**
+     * Deletes the banner with the specified UUID.
+     *
+     * @param uuid UUID.
+     */
+    @RolesAllowed(Roles.MANAGE_BANNERS)
+    @DeleteMapping("/banners/{uuid}")
+    public void delete(@PathVariable final UUID uuid) {
+        bannerService.deleteByUuid(uuid);
     }
 
     private BannerDto toSummary(Banner banner) {
