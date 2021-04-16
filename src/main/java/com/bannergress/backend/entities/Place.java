@@ -30,6 +30,9 @@ public class Place {
     @Enumerated(EnumType.STRING)
     private PlaceType type;
 
+    @Column(name = "number_of_banners", nullable = false)
+    private int numberOfBanners;
+
     /**
      * Language-specific information.
      */
@@ -58,5 +61,13 @@ public class Place {
 
     public void setInformation(List<PlaceInformation> information) {
         this.information = information;
+    }
+
+    public int getNumberOfBanners() {
+        return numberOfBanners;
+    }
+
+    public void setNumberOfBanners(int numberOfBanners) {
+        this.numberOfBanners = numberOfBanners;
     }
 }

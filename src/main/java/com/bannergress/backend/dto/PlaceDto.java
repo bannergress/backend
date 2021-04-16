@@ -8,4 +8,6 @@ public class PlaceDto {
     public String longName;
 
     public String shortName;
+
+    public int numberOfBanners;
 }

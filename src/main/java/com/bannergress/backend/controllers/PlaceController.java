@@ -47,6 +47,7 @@ public class PlaceController {
         PlaceInformation information = placeService.getPlaceInformation(place, "en");
         PlaceDto placeDto = new PlaceDto();
         placeDto.id = place.getId();
+        placeDto.numberOfBanners = place.getNumberOfBanners();
         placeDto.formattedAddress = information.getFormattedAddress();
         placeDto.longName = information.getLongName();
         placeDto.shortName = information.getShortName();
