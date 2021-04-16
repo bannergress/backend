@@ -11,7 +11,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +25,6 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
@@ -51,9 +49,8 @@ public class BannerPictureServiceImpl implements BannerPictureService {
 
     private final OkHttpClient client;
 
-    public BannerPictureServiceImpl(@Value("${picture.cache.directory:caches/pictures/}") final String cacheDirectory,
-        @Value("${picture.cache.size:1000000000}") final long cacheSize) {
-        client = new OkHttpClient.Builder().cache(new Cache(new File(cacheDirectory), cacheSize)).build();
+    public BannerPictureServiceImpl(Cache cache) {
+        client = new OkHttpClient.Builder().cache(cache).build();
     }
 
     @Override
