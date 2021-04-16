@@ -62,6 +62,15 @@ public interface MissionService {
     Collection<Mission> findByIds(Collection<String> ids);
 
     /**
+     * Finds the next missions that need refreshing of details.
+     * Missions are treated as a circular list. Each request fetches the next elements of that list.
+     *
+     * @param count Number of missions to find.
+     * @return List of at most <code>amount</code> mission IDs that need refreshing.
+     */
+    Collection<String> findNextRequestedMissions(int amount);
+
+    /**
      * Verifies that a collection of missions is available for use in a banner. Throws if at least one of the missions is not available.
      *
      * @param ids Mission IDs.

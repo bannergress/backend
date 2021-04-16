@@ -35,6 +35,8 @@ public class MissionServiceImpl implements MissionService {
     @Autowired
     private BannerService bannerService;
 
+    private Optional<String> latestRefreshableMission = Optional.empty();
+
     @Override
     public Mission importMission(IntelMissionDetails data) {
         Set<String> missionsWithBannerAffectingChanges = new HashSet<>();
@@ -171,5 +173,26 @@ public class MissionServiceImpl implements MissionService {
         if (availableMissions < ids.size()) {
             throw new IllegalArgumentException();
         }
+    }
+
+    @Override
+    public synchronized Collection<String> findNextRequestedMissions(int amount) {
+        final List<String> missionIds = new ArrayList<>();
+        if (latestRefreshableMission.isPresent()) {
+            TypedQuery<String> query = entityManager.createQuery("SELECT m.id FROM Mission m"
+                + " WHERE m.id > :latestId AND m.latestUpdateDetails IS NULL ORDER BY m.id", String.class);
+            query.setMaxResults(amount);
+            query.setParameter("latestId", latestRefreshableMission.get());
+            missionIds.addAll(query.getResultList());
+        }
+        if (missionIds.size() < amount) {
+            TypedQuery<String> query = entityManager.createQuery(
+                "SELECT m.id FROM Mission m WHERE m.latestUpdateDetails IS NULL ORDER BY m.id", String.class);
+            query.setMaxResults(amount - missionIds.size());
+            missionIds.addAll(query.getResultList());
+        }
+        final Set<String> result = new HashSet<>(missionIds);
+        latestRefreshableMission = result.size() < amount ? Optional.empty() : Optional.of(missionIds.get(amount - 1));
+        return result;
     }
 }

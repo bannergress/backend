@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.annotation.security.RolesAllowed;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
@@ -53,6 +55,11 @@ public class MissionController {
             status.latestUpdateDetails = mission.getLatestUpdateDetails();
         }
         return result;
+    }
+
+    @GetMapping("/missions/requested")
+    public Collection<String> getRequestedMissions(@RequestParam(defaultValue = "10") @Min(1) @Max(100) int amount) {
+        return missionService.findNextRequestedMissions(amount);
     }
 
     @GetMapping("/missions/{id}")
