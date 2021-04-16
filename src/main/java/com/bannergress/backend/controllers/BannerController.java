@@ -4,6 +4,7 @@ import com.bannergress.backend.dto.BannerDto;
 import com.bannergress.backend.entities.Banner;
 import com.bannergress.backend.entities.PlaceInformation;
 import com.bannergress.backend.enums.BannerSortOrder;
+import com.bannergress.backend.security.Roles;
 import com.bannergress.backend.services.BannerService;
 import com.bannergress.backend.services.PlaceService;
 import com.google.common.collect.Maps;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 
@@ -81,6 +83,7 @@ public class BannerController {
         return ResponseEntity.of(banner.map(this::toDetails));
     }
 
+    @RolesAllowed(Roles.CREATE_BANNER)
     @PostMapping("/banners")
     public ResponseEntity<BannerDto> post(@Valid @RequestBody BannerDto banner) {
         UUID uuid = bannerService.save(banner);
