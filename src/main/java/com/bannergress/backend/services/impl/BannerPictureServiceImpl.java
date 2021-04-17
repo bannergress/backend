@@ -11,11 +11,16 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
 import javax.persistence.EntityManager;
 
 import java.awt.AlphaComposite;
@@ -43,6 +48,14 @@ public class BannerPictureServiceImpl implements BannerPictureService {
      * an implementation change.
      */
     public static final int IMPLEMENTATION_VERSION = 1;
+
+    /**
+     * Banner picture compression quality, a value between 0 for low and 1 for high quality.
+     *
+     * @see ImageWriteParam#setCompressionQuality(float)
+     */
+    @Value(value = "${picture.quality:0.92f}")
+    private float COMPRESSION_QUALITY;
 
     @Autowired
     EntityManager entityManager;
@@ -141,8 +154,15 @@ public class BannerPictureServiceImpl implements BannerPictureService {
             new Kernel(3, 3, new float[] {0f, 0.125f, 0f, 0.125f, 0.5f, 0.125f, 0f, 0.125f, 0f}), ConvolveOp.EDGE_NO_OP,
             null).filter(bannerImage, null);
 
-        try (ByteArrayOutputStream stream = new ByteArrayOutputStream(16 * 1024 * numberRows)) {
-            ImageIO.write(bannerImage, "jpg", stream);
+        try (ByteArrayOutputStream stream = new ByteArrayOutputStream(24 * 1024 * numberRows);
+            ImageOutputStream imageOutputStream = ImageIO.createImageOutputStream(stream)) {
+            ImageWriter imageWriter = ImageIO.getImageWritersByFormatName("jpg").next();
+            ImageWriteParam imageWriteParam = imageWriter.getDefaultWriteParam();
+            imageWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+            imageWriteParam.setCompressionQuality(COMPRESSION_QUALITY);
+            imageWriter.setOutput(imageOutputStream);
+            imageWriter.write(null, new IIOImage(bannerImage, null, null), imageWriteParam);
+            imageWriter.dispose();
             return stream.toByteArray();
         } catch (IOException ex) {
             throw new RuntimeException("failed to generate banner with id " + banner.getUuid(), ex);

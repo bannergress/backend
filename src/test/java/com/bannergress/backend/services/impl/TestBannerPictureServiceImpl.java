@@ -39,7 +39,7 @@ class TestBannerPictureServiceImpl {
 
         byte[] pngData = bannerPictureService.createPicture(banner);
 
-        try (OutputStream os = new FileOutputStream(new File("banner.png"))) {
+        try (OutputStream os = new FileOutputStream(new File("banner.jpg"))) {
             os.write(pngData);
         }
     }
