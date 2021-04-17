@@ -54,16 +54,16 @@ public class BannerPictureServiceImpl implements BannerPictureService {
      *
      * @see ImageWriteParam#setCompressionQuality(float)
      */
-    @Value(value = "${picture.quality:0.92f}")
-    private float COMPRESSION_QUALITY;
+    private float compressionQuality;
 
     @Autowired
     EntityManager entityManager;
 
     private final OkHttpClient client;
 
-    public BannerPictureServiceImpl(Cache cache) {
+    public BannerPictureServiceImpl(Cache cache, @Value(value = "${picture.quality:0.92f}") float compressionQuality) {
         client = new OkHttpClient.Builder().cache(cache).build();
+        this.compressionQuality = compressionQuality;
     }
 
     @Override
@@ -94,8 +94,8 @@ public class BannerPictureServiceImpl implements BannerPictureService {
      */
     private String hash(Banner banner) {
         Hasher hasher = Hashing.murmur3_128().newHasher();
-        hasher.putInt(IMPLEMENTATION_VERSION).putUnencodedChars(banner.getUuid().toString())
-            .putInt(banner.getNumberOfMissions());
+        hasher.putInt(IMPLEMENTATION_VERSION).putFloat(compressionQuality)
+            .putUnencodedChars(banner.getUuid().toString()).putInt(banner.getNumberOfMissions());
         for (Entry<Integer, Mission> entry : banner.getMissions().entrySet()) {
             hasher.putInt(entry.getKey()).putUnencodedChars(entry.getValue().getPicture().toString())
                 .putBoolean(entry.getValue().isOnline());
@@ -159,7 +159,7 @@ public class BannerPictureServiceImpl implements BannerPictureService {
             ImageWriter imageWriter = ImageIO.getImageWritersByFormatName("jpg").next();
             ImageWriteParam imageWriteParam = imageWriter.getDefaultWriteParam();
             imageWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-            imageWriteParam.setCompressionQuality(COMPRESSION_QUALITY);
+            imageWriteParam.setCompressionQuality(compressionQuality);
             imageWriter.setOutput(imageOutputStream);
             imageWriter.write(null, new IIOImage(bannerImage, null, null), imageWriteParam);
             imageWriter.dispose();

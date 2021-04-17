@@ -17,7 +17,7 @@ class TestBannerPictureServiceImpl {
 
     @Test
     void testCreatePicture() throws IOException {
-        BannerPictureServiceImpl bannerPictureService = new BannerPictureServiceImpl(null);
+        BannerPictureServiceImpl bannerPictureService = new BannerPictureServiceImpl(null, 0.92f);
         Banner banner = new Banner();
         banner.setNumberOfMissions(6);
         SortedMap<Integer, Mission> missions = new TreeMap<>();
