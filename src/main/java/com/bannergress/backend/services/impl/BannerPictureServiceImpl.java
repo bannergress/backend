@@ -55,7 +55,7 @@ public class BannerPictureServiceImpl implements BannerPictureService {
      * @see ImageWriteParam#setCompressionQuality(float)
      */
     @Value(value = "${picture.quality:0.92f}")
-    private float COMPRESSION_QUALITY = 0.92f;
+    private float COMPRESSION_QUALITY;
 
     @Autowired
     EntityManager entityManager;
