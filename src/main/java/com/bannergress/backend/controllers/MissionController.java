@@ -83,6 +83,9 @@ public class MissionController {
     public static MissionDto toDetails(Mission mission) {
         MissionDto dto = toSummary(mission);
         dto.steps = Lists.transform(mission.getSteps(), MissionController::toMissionStepDetails);
+        dto.description = mission.getDescription();
+        dto.type = mission.getType();
+        dto.online = mission.isOnline();
         return dto;
     }
 

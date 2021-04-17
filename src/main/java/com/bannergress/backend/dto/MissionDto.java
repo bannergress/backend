@@ -1,5 +1,6 @@
 package com.bannergress.backend.dto;
 
+import com.bannergress.backend.enums.MissionType;
 import com.bannergress.backend.utils.PojoBuilder;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -21,4 +22,10 @@ public class MissionDto {
     public URL picture;
 
     public List<MissionStepDto> steps;
+
+    public String description;
+
+    public MissionType type;
+
+    public boolean online;
 }
