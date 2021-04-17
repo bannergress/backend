@@ -28,21 +28,21 @@ public class ImportController {
     private MissionService importService;
 
     @RolesAllowed(Roles.IMPORT_DATA)
-    @PostMapping("/importTopMissionsInBounds")
+    @PostMapping("/import/topMissionsInBounds")
     public Map<String, MissionStatus> importTopMissionsInBounds(@RequestBody @Valid IntelTopMissionsInBounds data) {
         Collection<Mission> missions = importService.importTopMissionsInBounds(data);
         return toStatusMap(missions);
     }
 
     @RolesAllowed(Roles.IMPORT_DATA)
-    @PostMapping("/importtopMissionsForPortal")
+    @PostMapping("/import/topMissionsForPortal")
     public Map<String, MissionStatus> importTopMissionsForPortal(@RequestBody @Valid IntelTopMissionsForPortal data) {
         Collection<Mission> missions = importService.importTopMissionsForPortal(data);
         return toStatusMap(missions);
     }
 
     @RolesAllowed(Roles.IMPORT_DATA)
-    @PostMapping("/import")
+    @PostMapping("/import/details")
     public MissionStatus importMissionDetails(@RequestBody @Valid IntelMissionDetails data) {
         Mission mission = importService.importMission(data);
         return toMissionStatus(mission);
