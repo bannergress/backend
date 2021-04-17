@@ -26,6 +26,10 @@ import java.util.*;
 @Service
 @Transactional(isolation = Isolation.SERIALIZABLE)
 public class MissionServiceImpl implements MissionService {
+    private static final int INTEL_TOP_MISSIONS_IN_BOUNDS_LIMIT = 25;
+
+    private static final int INTEL_TOP_MISSIONS_FOR_PORTAL_LIMIT = 10;
+
     @Autowired
     private EntityManager entityManager;
 
@@ -77,8 +81,8 @@ public class MissionServiceImpl implements MissionService {
 
     private void importMissionStep(IntelMissionStep intelMissionStep, MissionStep missionStep,
                                    Set<String> poisWithBannerAffectingChanges) {
-        double newLatitude = intelMissionStep.latitudeE6 / 1_000_000d;
-        double newLongitude = intelMissionStep.longitudeE6 / 1_000_000d;
+        double newLatitude = fromE6(intelMissionStep.latitudeE6);
+        double newLongitude = fromE6(intelMissionStep.longitudeE6);
         POI poi = entityManager.find(POI.class, intelMissionStep.id);
         if (poi == null) {
             poi = new POI();
@@ -102,12 +106,48 @@ public class MissionServiceImpl implements MissionService {
 
     @Override
     public Collection<Mission> importTopMissionsInBounds(IntelTopMissionsInBounds data) {
-        return importMissionSummaries(data.summaries);
+        Collection<Mission> missions = importMissionSummaries(data.summaries);
+        if (missions.size() < INTEL_TOP_MISSIONS_IN_BOUNDS_LIMIT) {
+            setMissionsOfflineInBounds(fromE6(data.request.southE6), fromE6(data.request.westE6),
+                fromE6(data.request.northE6), fromE6(data.request.eastE6), missions);
+        }
+        return missions;
     }
 
     @Override
     public Collection<Mission> importTopMissionsForPortal(IntelTopMissionsForPortal data) {
-        return importMissionSummaries(data.summaries);
+        Collection<Mission> missions = importMissionSummaries(data.summaries);
+        if (missions.size() < INTEL_TOP_MISSIONS_FOR_PORTAL_LIMIT) {
+            setMissionsOfflineForPortal(data.request.guid, missions);
+        }
+        return missions;
+    }
+
+    private void setMissionsOfflineInBounds(double minLatitude, double minLongitude, double maxLatitude,
+                                            double maxLongitude, Collection<Mission> exclude) {
+        TypedQuery<Mission> query = entityManager.createQuery("SELECT m FROM Mission m WHERE m NOT IN :exclude"
+            + " AND m.steps[0].poi.latitude BETWEEN :minLatitude AND :maxLatitude"
+            + " AND m.steps[0].poi.longitude BETWEEN :minLongitude AND :maxLongitude", Mission.class);
+        query.setParameter("exclude", exclude);
+        query.setParameter("minLatitude", minLatitude);
+        query.setParameter("minLongitude", minLongitude);
+        query.setParameter("maxLatitude", maxLatitude);
+        query.setParameter("maxLongitude", maxLongitude);
+        setMissionsOffline(query.getResultList());
+    }
+
+    private void setMissionsOfflineForPortal(String startPoiId, Collection<Mission> exclude) {
+        TypedQuery<Mission> query = entityManager.createQuery(
+            "SELECT m FROM Mission m WHERE m NOT IN :exclude AND m.steps[0].poi.id = :startPoiId", Mission.class);
+        query.setParameter("exclude", exclude);
+        query.setParameter("startPoiId", startPoiId);
+        setMissionsOffline(query.getResultList());
+    }
+
+    private void setMissionsOffline(List<Mission> missions) {
+        for (Mission mission : missions) {
+            mission.setOnline(false);
+        }
     }
 
     private Collection<Mission> importMissionSummaries(List<IntelMissionSummary> summaries) {
@@ -122,7 +162,7 @@ public class MissionServiceImpl implements MissionService {
 
     private Mission importMissionSummary(IntelMissionSummary data,
                                          Collection<String> missionsWithBannerAffectingChanges) {
-        double newRating = data.ratingE6 / 1_000_000.;
+        double newRating = fromE6(data.ratingE6);
         Mission mission = entityManager.find(Mission.class, data.id);
         if (mission == null) {
             mission = new Mission();
@@ -194,5 +234,9 @@ public class MissionServiceImpl implements MissionService {
         final Set<String> result = new HashSet<>(missionIds);
         latestRefreshableMission = result.size() < amount ? Optional.empty() : Optional.of(missionIds.get(amount - 1));
         return result;
+    }
+
+    private static double fromE6(int e6) {
+        return e6 / 1_000_000d;
     }
 }
