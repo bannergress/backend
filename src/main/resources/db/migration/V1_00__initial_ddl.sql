@@ -64,7 +64,7 @@ CREATE TABLE "place_information" (
   "long_name" text NOT NULL,
   "short_name" text NOT NULL,
   "place" text NOT NULL,
-  PRIMARY KEY ("id"),
+  PRIMARY KEY ("uuid"),
   UNIQUE ("place", "language_code"),
   FOREIGN KEY ("place") REFERENCES "place"("id")
 );
@@ -73,7 +73,7 @@ CREATE INDEX ON "place_information" USING gin ((lower("formatted_address")) gin_
 
 
 CREATE TABLE "banner_start_place" (
-  "banner" bigint NOT NULL,
+  "banner" uuid NOT NULL,
   "place" text NOT NULL,
   PRIMARY KEY ("banner", "place"),
   FOREIGN KEY ("banner") REFERENCES "banner"("uuid"),
@@ -135,11 +135,11 @@ CREATE INDEX ON "mission_step" ("poi");
 
 
 CREATE TABLE "banner_mission" (
-  "banner" bigint NOT NULL,
+  "banner" uuid NOT NULL,
   "mission" text NOT NULL,
   "position" integer NOT NULL,
   PRIMARY KEY ("banner", "position") INCLUDE ("mission"),
-  FOREIGN KEY ("banner") REFERENCES "banner"("id"),
+  FOREIGN KEY ("banner") REFERENCES "banner"("uuid"),
   FOREIGN KEY ("mission") REFERENCES "mission"("id")
 );
 CREATE INDEX ON "banner_mission" ("mission") INCLUDE ("banner", "position");
@@ -175,7 +175,7 @@ CREATE TABLE "banner_audit" (
 
 CREATE TABLE "banner_mission_audit" (
   "rev" integer NOT NULL,
-  "banner" bigint NOT NULL,
+  "banner" uuid NOT NULL,
   "mission" text NOT NULL,
   "position" integer NOT NULL,
   "revtype" smallint,
@@ -200,7 +200,7 @@ CREATE TABLE "mission_audit" (
 
 
 CREATE TABLE "mission_step_audit" (
-  "uuid" bigint NOT NULL,
+  "uuid" uuid NOT NULL,
   "rev" integer NOT NULL,
   "revtype" smallint,
   "objective" objective,
