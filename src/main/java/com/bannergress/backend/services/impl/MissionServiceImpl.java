@@ -150,7 +150,7 @@ public class MissionServiceImpl implements MissionService {
         }
     }
 
-    private Collection<Mission> importMissionSummaries(List<IntelMissionSummary> summaries) {
+    public Collection<Mission> importMissionSummaries(List<IntelMissionSummary> summaries) {
         List<Mission> imported = new ArrayList<>();
         Set<String> missionsWithBannerAffectingChanges = new HashSet<>();
         for (IntelMissionSummary summary : summaries) {

@@ -1,9 +1,6 @@
 package com.bannergress.backend.controllers;
 
-import com.bannergress.backend.dto.IntelMissionDetails;
-import com.bannergress.backend.dto.IntelTopMissionsForPortal;
-import com.bannergress.backend.dto.IntelTopMissionsInBounds;
-import com.bannergress.backend.dto.MissionStatus;
+import com.bannergress.backend.dto.*;
 import com.bannergress.backend.entities.Mission;
 import com.bannergress.backend.security.Roles;
 import com.bannergress.backend.services.MissionService;
@@ -16,6 +13,7 @@ import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -28,24 +26,31 @@ public class ImportController {
     private MissionService importService;
 
     @RolesAllowed(Roles.IMPORT_DATA)
-    @PostMapping("/importTopMissionsInBounds")
+    @PostMapping("/import/topMissionsInBounds")
     public Map<String, MissionStatus> importTopMissionsInBounds(@RequestBody @Valid IntelTopMissionsInBounds data) {
         Collection<Mission> missions = importService.importTopMissionsInBounds(data);
         return toStatusMap(missions);
     }
 
     @RolesAllowed(Roles.IMPORT_DATA)
-    @PostMapping("/importtopMissionsForPortal")
+    @PostMapping("/import/topMissionsForPortal")
     public Map<String, MissionStatus> importTopMissionsForPortal(@RequestBody @Valid IntelTopMissionsForPortal data) {
         Collection<Mission> missions = importService.importTopMissionsForPortal(data);
         return toStatusMap(missions);
     }
 
     @RolesAllowed(Roles.IMPORT_DATA)
-    @PostMapping("/import")
+    @PostMapping("/import/details")
     public MissionStatus importMissionDetails(@RequestBody @Valid IntelMissionDetails data) {
         Mission mission = importService.importMission(data);
         return toMissionStatus(mission);
+    }
+
+    @RolesAllowed(Roles.IMPORT_DATA)
+    @PostMapping("/import/summaries")
+    public Map<String, MissionStatus> importMissionSummaries(@RequestBody List<@Valid IntelMissionSummary> summaries) {
+        Collection<Mission> missions = importService.importMissionSummaries(summaries);
+        return toStatusMap(missions);
     }
 
     private Map<String, MissionStatus> toStatusMap(Collection<Mission> imported) {
