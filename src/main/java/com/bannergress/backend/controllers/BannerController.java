@@ -86,8 +86,33 @@ public class BannerController {
     @RolesAllowed(Roles.CREATE_BANNER)
     @PostMapping("/banners")
     public ResponseEntity<BannerDto> post(@Valid @RequestBody BannerDto banner) {
-        UUID uuid = bannerService.save(banner);
+        UUID uuid = bannerService.create(banner);
         return get(uuid);
+    }
+
+    /**
+     * Updates the banner with the specified UUID.
+     *
+     * @param uuid   UUID.
+     * @param banner Banner data.
+     * @return Updated banner data.
+     */
+    @RolesAllowed(Roles.MANAGE_BANNERS)
+    @PutMapping("/banners/{uuid}")
+    public ResponseEntity<BannerDto> put(@PathVariable final UUID uuid, @Valid @RequestBody BannerDto banner) {
+        bannerService.update(uuid, banner);
+        return get(uuid);
+    }
+
+    /**
+     * Deletes the banner with the specified UUID.
+     *
+     * @param uuid UUID.
+     */
+    @RolesAllowed(Roles.MANAGE_BANNERS)
+    @DeleteMapping("/banners/{uuid}")
+    public void delete(@PathVariable final UUID uuid) {
+        bannerService.deleteByUuid(uuid);
     }
 
     private BannerDto toSummary(Banner banner) {

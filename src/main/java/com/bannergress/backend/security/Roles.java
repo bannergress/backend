@@ -18,4 +18,9 @@ public interface Roles {
      * Role which allows to manage news items.
      */
     String MANAGE_NEWS = "manage-news";
+
+    /**
+     * Role which allows to manage banners.
+     */
+    String MANAGE_BANNERS = "manage-banners";
 }
