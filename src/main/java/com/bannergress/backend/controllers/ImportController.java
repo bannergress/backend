@@ -41,9 +41,9 @@ public class ImportController {
 
     @RolesAllowed(Roles.IMPORT_DATA)
     @PostMapping("/import/details")
-    public MissionStatus importMissionDetails(@RequestBody @Valid IntelMissionDetails data) {
+    public Map<String, MissionStatus> importMissionDetails(@RequestBody @Valid IntelMissionDetails data) {
         Mission mission = importService.importMission(data);
-        return toMissionStatus(mission);
+        return toStatusMap(List.of(mission));
     }
 
     @RolesAllowed(Roles.IMPORT_DATA)
