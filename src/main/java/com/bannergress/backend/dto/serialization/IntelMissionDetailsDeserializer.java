@@ -35,7 +35,7 @@ public class IntelMissionDetailsDeserializer extends JsonDeserializer<IntelMissi
         result.numberCompleted = array.get(7).asInt();
         result.type = parseMissionType(array.get(8).asInt());
         result.steps = deserializeSteps((ArrayNode) array.get(9));
-        result.picture = new URL(array.get(10).textValue());
+        result.picture = array.get(10).isNull() ? null : new URL(array.get(10).textValue());
         return result;
     }
 
@@ -54,7 +54,7 @@ public class IntelMissionDetailsDeserializer extends JsonDeserializer<IntelMissi
                 ArrayNode poiNode = (ArrayNode) node.get(5);
                 step.latitudeE6 = poiNode.get(2).asInt();
                 step.longitudeE6 = poiNode.get(3).asInt();
-                step.picture = new URL(poiNode.get(7).textValue());
+                step.picture = poiNode.get(7).isNull() ? null : new URL(poiNode.get(7).textValue());
             }
             result.add(step);
         }
