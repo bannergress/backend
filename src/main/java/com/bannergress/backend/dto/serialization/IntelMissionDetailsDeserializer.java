@@ -52,9 +52,19 @@ public class IntelMissionDetailsDeserializer extends JsonDeserializer<IntelMissi
                 step.title = node.get(2).textValue();
                 step.type = parsePOIType(node.get(3).intValue());
                 ArrayNode poiNode = (ArrayNode) node.get(5);
-                step.latitudeE6 = poiNode.get(2).asInt();
-                step.longitudeE6 = poiNode.get(3).asInt();
-                step.picture = poiNode.get(7).isNull() ? null : new URL(poiNode.get(7).textValue());
+                switch (step.type) {
+                    case portal:
+                        step.latitudeE6 = poiNode.get(2).asInt();
+                        step.longitudeE6 = poiNode.get(3).asInt();
+                        step.picture = poiNode.get(7).isNull() ? null : new URL(poiNode.get(7).textValue());
+                        break;
+                    case fieldTripWaypoint:
+                        step.latitudeE6 = poiNode.get(1).asInt();
+                        step.longitudeE6 = poiNode.get(2).asInt();
+                        break;
+                    default:
+                        break;
+                }
             }
             result.add(step);
         }
