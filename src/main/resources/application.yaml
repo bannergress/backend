@@ -11,6 +11,11 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
+  web:
+    resources:
+      cache:
+        cachecontrol:
+          no-store: false
 
 keycloak:
   bearer-only: true
