@@ -81,15 +81,16 @@ public class MissionServiceImpl implements MissionService {
 
     private void importMissionStep(IntelMissionStep intelMissionStep, MissionStep missionStep,
                                    Set<String> poisWithBannerAffectingChanges) {
-        double newLatitude = fromE6(intelMissionStep.latitudeE6);
-        double newLongitude = fromE6(intelMissionStep.longitudeE6);
+        Double newLatitude = fromE6(intelMissionStep.latitudeE6);
+        Double newLongitude = fromE6(intelMissionStep.longitudeE6);
         POI poi = entityManager.find(POI.class, intelMissionStep.id);
         if (poi == null) {
             poi = new POI();
             poi.setId(intelMissionStep.id);
         } else if (!Objects.equals(missionStep.getObjective(), intelMissionStep.objective)
-            || !Objects.equals(poi.getType(), intelMissionStep.type) || !Objects.equals(poi.getLatitude(), newLatitude)
-            || !Objects.equals(poi.getLongitude(), newLongitude)) {
+            || !Objects.equals(poi.getType(), intelMissionStep.type)
+            || (intelMissionStep.type != POIType.unavailable && !Objects.equals(poi.getLatitude(), newLatitude))
+            || (intelMissionStep.type != POIType.unavailable && !Objects.equals(poi.getLongitude(), newLongitude))) {
             poisWithBannerAffectingChanges.add(intelMissionStep.id);
         }
         missionStep.setObjective(intelMissionStep.objective);
@@ -236,7 +237,7 @@ public class MissionServiceImpl implements MissionService {
         return result;
     }
 
-    private static double fromE6(int e6) {
-        return e6 / 1_000_000d;
+    private static Double fromE6(Integer e6) {
+        return e6 == null ? null : e6 / 1_000_000d;
     }
 }
