@@ -6,6 +6,7 @@ import com.bannergress.backend.entities.MissionStep;
 import com.bannergress.backend.entities.NamedAgent;
 import com.bannergress.backend.entities.POI;
 import com.bannergress.backend.enums.POIType;
+import com.bannergress.backend.exceptions.MissionAlreadyUsedException;
 import com.bannergress.backend.services.AgentService;
 import com.bannergress.backend.services.BannerService;
 import com.bannergress.backend.services.MissionService;
@@ -205,13 +206,13 @@ public class MissionServiceImpl implements MissionService {
     }
 
     @Override
-    public void verifyAvailability(Collection<String> ids) {
+    public void verifyAvailability(Collection<String> ids) throws MissionAlreadyUsedException {
         TypedQuery<Long> query = entityManager.createQuery("SELECT COUNT(m) FROM Mission m WHERE m.id IN :ids "
             + "AND NOT EXISTS (SELECT b FROM Banner b WHERE m MEMBER OF b.missions)", Long.class);
         query.setParameter("ids", ids);
         long availableMissions = query.getSingleResult();
         if (availableMissions < ids.size()) {
-            throw new IllegalArgumentException();
+            throw new MissionAlreadyUsedException();
         }
     }
 

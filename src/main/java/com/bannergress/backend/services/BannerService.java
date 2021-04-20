@@ -3,6 +3,7 @@ package com.bannergress.backend.services;
 import com.bannergress.backend.dto.BannerDto;
 import com.bannergress.backend.entities.Banner;
 import com.bannergress.backend.enums.BannerSortOrder;
+import com.bannergress.backend.exceptions.MissionAlreadyUsedException;
 import org.springframework.data.domain.Sort.Direction;
 
 import java.util.Collection;
@@ -45,8 +46,9 @@ public interface BannerService {
      *
      * @param bannerDto Banner DTO.
      * @return UUID of the newly created banner.
+     * @throws MissionAlreadyUsedException If a mission is already used by another banner.
      */
-    UUID create(BannerDto bannerDto);
+    UUID create(BannerDto bannerDto) throws MissionAlreadyUsedException;
 
     /**
      * Updates an existing banner.

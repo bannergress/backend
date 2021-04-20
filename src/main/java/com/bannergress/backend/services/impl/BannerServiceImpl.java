@@ -6,6 +6,7 @@ import com.bannergress.backend.entities.Mission;
 import com.bannergress.backend.entities.MissionStep;
 import com.bannergress.backend.entities.Place;
 import com.bannergress.backend.enums.BannerSortOrder;
+import com.bannergress.backend.exceptions.MissionAlreadyUsedException;
 import com.bannergress.backend.services.BannerPictureService;
 import com.bannergress.backend.services.BannerService;
 import com.bannergress.backend.services.GeocodingService;
@@ -109,7 +110,7 @@ public class BannerServiceImpl implements BannerService {
     }
 
     @Override
-    public UUID create(BannerDto bannerDto) {
+    public UUID create(BannerDto bannerDto) throws MissionAlreadyUsedException {
         Collection<String> missionIds = Collections2.transform(bannerDto.missions.values(),
             missionDto -> missionDto.id);
         missionService.verifyAvailability(missionIds);

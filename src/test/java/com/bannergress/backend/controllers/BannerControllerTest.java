@@ -2,6 +2,7 @@ package com.bannergress.backend.controllers;
 
 import com.bannergress.backend.dto.BannerDto;
 import com.bannergress.backend.entities.Banner;
+import com.bannergress.backend.exceptions.MissionAlreadyUsedException;
 import com.bannergress.backend.services.BannerService;
 import com.bannergress.backend.services.impl.PlaceServiceImpl;
 import org.junit.jupiter.api.Test;
@@ -119,7 +120,7 @@ class BannerControllerTest {
     }
 
     @Test
-    void post() {
+    void post() throws MissionAlreadyUsedException {
         // WHEN
         final BannerDto banner = a($BannerDto());
         final Banner savedBanner = a($Banner());
