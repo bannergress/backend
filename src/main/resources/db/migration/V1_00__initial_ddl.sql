@@ -166,7 +166,6 @@ CREATE TABLE "banner_audit" (
   "rev" integer NOT NULL,
   "revtype" smallint,
   "description" text,
-  "number_of_missions" integer,
   "title" text,
   PRIMARY KEY ("uuid", "rev"),
   FOREIGN KEY ("rev") REFERENCES "revision"("id")
