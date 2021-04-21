@@ -4,6 +4,7 @@ import com.bannergress.backend.dto.BannerDto;
 import com.bannergress.backend.entities.Banner;
 import com.bannergress.backend.entities.PlaceInformation;
 import com.bannergress.backend.enums.BannerSortOrder;
+import com.bannergress.backend.exceptions.MissionAlreadyUsedException;
 import com.bannergress.backend.security.Roles;
 import com.bannergress.backend.services.BannerService;
 import com.bannergress.backend.services.PlaceService;
@@ -85,7 +86,7 @@ public class BannerController {
 
     @RolesAllowed(Roles.CREATE_BANNER)
     @PostMapping("/banners")
-    public ResponseEntity<BannerDto> post(@Valid @RequestBody BannerDto banner) {
+    public ResponseEntity<BannerDto> post(@Valid @RequestBody BannerDto banner) throws MissionAlreadyUsedException {
         UUID uuid = bannerService.create(banner);
         return get(uuid);
     }

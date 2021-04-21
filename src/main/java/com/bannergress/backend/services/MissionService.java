@@ -5,6 +5,7 @@ import com.bannergress.backend.dto.IntelMissionSummary;
 import com.bannergress.backend.dto.IntelTopMissionsForPortal;
 import com.bannergress.backend.dto.IntelTopMissionsInBounds;
 import com.bannergress.backend.entities.Mission;
+import com.bannergress.backend.exceptions.MissionAlreadyUsedException;
 
 import javax.validation.Valid;
 
@@ -87,5 +88,5 @@ public interface MissionService {
      *
      * @param ids Mission IDs.
      */
-    void verifyAvailability(Collection<String> ids);
+    void assertNotAlreadyUsedInBanners(Collection<String> ids) throws MissionAlreadyUsedException;
 }
