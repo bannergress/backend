@@ -88,5 +88,5 @@ public interface MissionService {
      *
      * @param ids Mission IDs.
      */
-    void verifyAvailability(Collection<String> ids) throws MissionAlreadyUsedException;
+    void assertNotAlreadyUsedInBanners(Collection<String> ids) throws MissionAlreadyUsedException;
 }

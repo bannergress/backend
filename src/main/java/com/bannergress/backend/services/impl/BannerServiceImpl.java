@@ -113,7 +113,7 @@ public class BannerServiceImpl implements BannerService {
     public UUID create(BannerDto bannerDto) throws MissionAlreadyUsedException {
         Collection<String> missionIds = Collections2.transform(bannerDto.missions.values(),
             missionDto -> missionDto.id);
-        missionService.verifyAvailability(missionIds);
+        missionService.assertNotAlreadyUsedInBanners(missionIds);
         Banner banner = new Banner();
         banner.setTitle(bannerDto.title);
         banner.setDescription(bannerDto.description);

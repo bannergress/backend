@@ -206,7 +206,7 @@ public class MissionServiceImpl implements MissionService {
     }
 
     @Override
-    public void verifyAvailability(Collection<String> ids) throws MissionAlreadyUsedException {
+    public void assertNotAlreadyUsedInBanners(Collection<String> ids) throws MissionAlreadyUsedException {
         TypedQuery<Long> query = entityManager.createQuery("SELECT COUNT(m) FROM Mission m WHERE m.id IN :ids "
             + "AND NOT EXISTS (SELECT b FROM Banner b WHERE m MEMBER OF b.missions)", Long.class);
         query.setParameter("ids", ids);
