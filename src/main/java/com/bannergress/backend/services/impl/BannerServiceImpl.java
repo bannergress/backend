@@ -6,14 +6,15 @@ import com.bannergress.backend.entities.Mission;
 import com.bannergress.backend.entities.MissionStep;
 import com.bannergress.backend.entities.Place;
 import com.bannergress.backend.enums.BannerSortOrder;
+import com.bannergress.backend.event.BannerChangedEvent;
 import com.bannergress.backend.exceptions.MissionAlreadyUsedException;
-import com.bannergress.backend.services.BannerPictureService;
 import com.bannergress.backend.services.BannerService;
 import com.bannergress.backend.services.GeocodingService;
 import com.bannergress.backend.services.MissionService;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Maps;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -45,7 +46,7 @@ public class BannerServiceImpl implements BannerService {
     private GeocodingService geocodingService;
 
     @Autowired
-    private BannerPictureService bannerPictureService;
+    private ApplicationEventPublisher publisher;
 
     @Override
     public List<Banner> find(Optional<String> placeId, Optional<Double> minLatitude, Optional<Double> maxLatitude,
@@ -122,7 +123,7 @@ public class BannerServiceImpl implements BannerService {
         banner.getMissions().clear();
         banner.getMissions().putAll(Maps.transformValues(bannerDto.missions,
             missionDto -> entityManager.getReference(Mission.class, missionDto.id)));
-        calculateData(banner);
+        publisher.publishEvent(new BannerChangedEvent(banner));
         return banner.getUuid();
     }
 
@@ -134,7 +135,7 @@ public class BannerServiceImpl implements BannerService {
         banner.getMissions().clear();
         banner.getMissions().putAll(Maps.transformValues(bannerDto.missions,
             missionDto -> entityManager.getReference(Mission.class, missionDto.id)));
-        calculateData(banner);
+        publisher.publishEvent(new BannerChangedEvent(banner));
     }
 
     @Override
@@ -143,12 +144,8 @@ public class BannerServiceImpl implements BannerService {
         entityManager.remove(banner);
     }
 
-    /**
-     * Calculates derived data of a banner.
-     *
-     * @param banner Banner.
-     */
-    private void calculateData(Banner banner) {
+    @Override
+    public void calculateData(Banner banner) {
         Double startLatitude = null;
         Double startLongitude = null;
         Double prevLatitude = null;
@@ -188,7 +185,6 @@ public class BannerServiceImpl implements BannerService {
             banner.getStartPlaces().forEach(place -> place.setNumberOfBanners(place.getNumberOfBanners() + 1));
         }
         banner.setLengthMeters(distance);
-        bannerPictureService.refresh(banner);
     }
 
     private static Double getDistance(Double lat1, Double lon1, Double lat2, Double lon2) {
@@ -203,35 +199,5 @@ public class BannerServiceImpl implements BannerService {
 
     private static Double toRad(Double value) {
         return value * Math.PI / 180;
-    }
-
-    @Override
-    public void updateBannersContainingMission(Collection<String> missionIds) {
-        if (!missionIds.isEmpty()) {
-            TypedQuery<Banner> query = entityManager.createQuery(
-                "SELECT b FROM Banner b LEFT JOIN FETCH b.missions m LEFT JOIN FETCH m.steps s LEFT JOIN FETCH s.poi"
-                    + " JOIN b.missions m2 WHERE m2.id IN :ids",
-                Banner.class);
-            query.setParameter("ids", missionIds);
-            List<Banner> banners = query.getResultList();
-            for (Banner banner : banners) {
-                calculateData(banner);
-            }
-        }
-    }
-
-    @Override
-    public void updateBannersContainingPOI(Collection<String> poiIds) {
-        if (!poiIds.isEmpty()) {
-            TypedQuery<Banner> query = entityManager.createQuery(
-                "SELECT b FROM Banner b LEFT JOIN FETCH b.missions m LEFT JOIN FETCH m.steps s LEFT JOIN FETCH s.poi"
-                    + " JOIN b.missions m2 JOIN m2.steps s2 JOIN s2.poi p2 WHERE p2.id IN :ids",
-                Banner.class);
-            query.setParameter("ids", poiIds);
-            List<Banner> banners = query.getResultList();
-            for (Banner banner : banners) {
-                calculateData(banner);
-            }
-        }
     }
 }
