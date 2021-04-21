@@ -35,6 +35,8 @@ import java.io.InputStream;
 import java.time.Instant;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
 
 /**
  * Default implementation of {@link BannerPictureService}.
@@ -48,6 +50,8 @@ public class BannerPictureServiceImpl implements BannerPictureService {
      * an implementation change.
      */
     public static final int IMPLEMENTATION_VERSION = 1;
+
+    private static ForkJoinPool threadPool = new ForkJoinPool(20);
 
     /**
      * Banner picture compression quality, a value between 0 for low and 1 for high quality.
@@ -127,24 +131,30 @@ public class BannerPictureServiceImpl implements BannerPictureService {
         graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER));
 
         // loads, draws and masks the individual mission images to the banner image.
-        for (Entry<Integer, Mission> entry : banner.getMissions().entrySet()) {
-            BufferedImage missionImage;
-            Request request = new Request.Builder().url(entry.getValue().getPicture()).build();
-            try (Response response = client.newCall(request).execute()) {
-                missionImage = ImageIO.read(response.body().byteStream());
-            } catch (IOException ex) {
-                throw new RuntimeException("failed ro read image: " + entry.getValue().getPicture(), ex);
-            }
-            int missionPosition = banner.getNumberOfMissions() - entry.getKey().intValue() - 1;
-            int x1 = DISTANCE_CIRCLES + (missionPosition % numberColumns) * MISSIONSIZE;
-            int y1 = DISTANCE_CIRCLES + (missionPosition / numberColumns) * MISSIONSIZE;
-            int x2 = x1 + DIAMETER;
-            int y2 = y1 + DIAMETER;
-            graphics.drawImage(missionImage, x1, y1, x2, y2, 0, 0, missionImage.getWidth(), missionImage.getHeight(),
-                null);
-
-            BufferedImage maskImage = entry.getValue().isOnline() ? maskImageOnline : maskImageOffline;
-            graphics.drawImage(maskImage, x1, y1, x2, y2, 0, 0, maskImage.getWidth(), maskImage.getHeight(), null);
+        try {
+            threadPool.submit(() -> banner.getMissions().entrySet().parallelStream().forEach(entry -> {
+                BufferedImage missionImage;
+                Request request = new Request.Builder().url(entry.getValue().getPicture()).build();
+                try (Response response = client.newCall(request).execute()) {
+                    missionImage = ImageIO.read(response.body().byteStream());
+                } catch (IOException ex) {
+                    throw new RuntimeException("failed ro read image: " + entry.getValue().getPicture(), ex);
+                }
+                int missionPosition = banner.getNumberOfMissions() - entry.getKey().intValue() - 1;
+                int x1 = DISTANCE_CIRCLES + (missionPosition % numberColumns) * MISSIONSIZE;
+                int y1 = DISTANCE_CIRCLES + (missionPosition / numberColumns) * MISSIONSIZE;
+                int x2 = x1 + DIAMETER;
+                int y2 = y1 + DIAMETER;
+                synchronized (graphics) {
+                    graphics.drawImage(missionImage, x1, y1, x2, y2, 0, 0, missionImage.getWidth(),
+                        missionImage.getHeight(), null);
+                    BufferedImage maskImage = entry.getValue().isOnline() ? maskImageOnline : maskImageOffline;
+                    graphics.drawImage(maskImage, x1, y1, x2, y2, 0, 0, maskImage.getWidth(), maskImage.getHeight(),
+                        null);
+                }
+            })).get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
         }
 
         graphics.dispose();
