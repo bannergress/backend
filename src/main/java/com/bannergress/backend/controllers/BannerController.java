@@ -136,6 +136,7 @@ public class BannerController {
     private BannerDto toDetails(Banner banner) {
         BannerDto dto = toSummary(banner);
         dto.missions = Maps.transformValues(banner.getMissions(), MissionController::toDetails);
+        dto.type = banner.getType();
         return dto;
     }
 }

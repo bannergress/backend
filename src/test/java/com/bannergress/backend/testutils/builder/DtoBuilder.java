@@ -5,6 +5,7 @@ import com.bannergress.backend.dto.BannerDtoBuilder;
 import com.bannergress.backend.dto.MissionDtoBuilder;
 import com.bannergress.backend.dto.MissionStepDtoBuilder;
 import com.bannergress.backend.dto.PoiDtoBuilder;
+import com.bannergress.backend.enums.BannerType;
 import com.bannergress.backend.enums.Objective;
 import com.bannergress.backend.enums.POIType;
 
@@ -31,7 +32,8 @@ public class DtoBuilder {
             .withStartLatitude(a($Double()))
             .withStartLongitude(a($Double()))
             .withLengthMeters(a($Double()))
-            .withFormattedAddress(a($String("address")));
+            .withFormattedAddress(a($String("address")))
+            .withType(BannerType.sequential);
     }
 
     @NotNull

@@ -27,7 +27,8 @@ public class EntityBuilder {
             .withOnline(a($Boolean()))
             .withPicture(a($BannerPicture()))
             .withStartPlaces(setWith($Place()))
-            .withCreated(a($Instant()));
+            .withCreated(a($Instant()))
+            .withType(BannerType.sequential);
     }
 
     @NotNull

@@ -1,5 +1,6 @@
 package com.bannergress.backend.entities;
 
+import com.bannergress.backend.enums.BannerType;
 import com.bannergress.backend.utils.PojoBuilder;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
 import org.hibernate.annotations.SortNatural;
@@ -122,6 +123,13 @@ public class Banner {
     @NotAudited
     private Instant created;
 
+    /**
+     * Type of banner (sequential or any order).
+     */
+    @Column(name = "type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private BannerType type;
+
     public UUID getUuid() {
         return uuid;
     }
@@ -226,6 +234,14 @@ public class Banner {
         this.created = created;
     }
 
+    public BannerType getType() {
+        return type;
+    }
+
+    public void setType(BannerType type) {
+        this.type = type;
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -241,12 +257,13 @@ public class Banner {
             && Objects.equals(startLatitude, banner.startLatitude)
             && Objects.equals(startLongitude, banner.startLongitude)
             && Objects.equals(lengthMeters, banner.lengthMeters) && Objects.equals(picture, banner.picture)
-            && Objects.equals(startPlaces, banner.startPlaces) && Objects.equals(created, banner.created);
+            && Objects.equals(startPlaces, banner.startPlaces) && Objects.equals(created, banner.created)
+            && type == banner.type;
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(uuid, title, description, numberOfMissions, missions, startLatitude, startLongitude,
-            lengthMeters, complete, online, picture, startPlaces, created);
+            lengthMeters, complete, online, picture, startPlaces, created, type);
     }
 }

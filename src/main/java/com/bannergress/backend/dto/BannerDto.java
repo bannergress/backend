@@ -1,5 +1,6 @@
 package com.bannergress.backend.dto;
 
+import com.bannergress.backend.enums.BannerType;
 import com.bannergress.backend.utils.PojoBuilder;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -69,6 +70,12 @@ public class BannerDto {
      */
     public String picture;
 
+    /**
+     * Banner type (sequential or any order).
+     */
+    @NotNull
+    public BannerType type;
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -83,12 +90,12 @@ public class BannerDto {
             && Objects.equals(missions, bannerDto.missions) && Objects.equals(startLatitude, bannerDto.startLatitude)
             && Objects.equals(startLongitude, bannerDto.startLongitude)
             && Objects.equals(lengthMeters, bannerDto.lengthMeters)
-            && Objects.equals(formattedAddress, bannerDto.formattedAddress);
+            && Objects.equals(formattedAddress, bannerDto.formattedAddress) && type == bannerDto.type;
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(uuid, title, description, numberOfMissions, missions, startLatitude, startLongitude,
-            lengthMeters, formattedAddress);
+            lengthMeters, formattedAddress, type);
     }
 }

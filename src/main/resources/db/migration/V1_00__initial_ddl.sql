@@ -4,6 +4,9 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
 CREATE SEQUENCE "hibernate_sequence";
 
 
+CREATE TYPE banner_type AS ENUM ('sequential', 'anyOrder');
+CREATE CAST (varchar AS banner_type) WITH INOUT AS IMPLICIT;
+
 CREATE TYPE faction AS ENUM ('enlightened', 'resistance');
 CREATE CAST (varchar AS faction) WITH INOUT AS IMPLICIT;
 
@@ -40,6 +43,7 @@ CREATE TABLE "banner" (
   "start_longitude" double precision,
   "title" text NOT NULL,
   "picture" text,
+  "type" banner_type NOT NULL,
   PRIMARY KEY ("uuid"),
   FOREIGN KEY ("picture") REFERENCES "banner_picture"("hash")
 );
@@ -167,6 +171,7 @@ CREATE TABLE "banner_audit" (
   "revtype" smallint,
   "description" text,
   "title" text,
+  "type" banner_type,
   PRIMARY KEY ("uuid", "rev"),
   FOREIGN KEY ("rev") REFERENCES "revision"("id")
 );
