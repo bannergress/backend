@@ -131,7 +131,6 @@ public class Banner {
      * Type of banner (sequential or any order).
      */
     @Column(name = "type", nullable = false)
-    @Enumerated(EnumType.STRING)
     private BannerType type;
 
     public UUID getUuid() {
