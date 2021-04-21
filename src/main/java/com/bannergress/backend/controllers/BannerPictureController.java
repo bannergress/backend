@@ -19,7 +19,7 @@ public class BannerPictureController {
     @Autowired
     private BannerPictureService bannerPictureService;
 
-    @GetMapping(value = "/banners/pictures/{hash}", produces = MediaType.IMAGE_JPEG_VALUE)
+    @GetMapping(value = "/bnrs/pictures/{hash}", produces = MediaType.IMAGE_JPEG_VALUE)
     public ResponseEntity<byte[]> getFile(@PathVariable String hash) {
         Optional<BannerPicture> bannerPicture = bannerPictureService.findByHash(hash);
         if (bannerPicture.isEmpty()) {
