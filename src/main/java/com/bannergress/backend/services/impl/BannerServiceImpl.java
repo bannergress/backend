@@ -117,7 +117,6 @@ public class BannerServiceImpl implements BannerService {
         Banner banner = new Banner();
         banner.setTitle(bannerDto.title);
         banner.setDescription(bannerDto.description);
-        banner.setNumberOfMissions(bannerDto.numberOfMissions);
         banner.setCreated(Instant.now());
         entityManager.persist(banner);
         banner.getMissions().clear();
@@ -132,7 +131,6 @@ public class BannerServiceImpl implements BannerService {
         Banner banner = entityManager.find(Banner.class, uuid);
         banner.setTitle(bannerDto.title);
         banner.setDescription(bannerDto.description);
-        banner.setNumberOfMissions(bannerDto.numberOfMissions);
         banner.getMissions().clear();
         banner.getMissions().putAll(Maps.transformValues(bannerDto.missions,
             missionDto -> entityManager.getReference(Mission.class, missionDto.id)));
@@ -182,6 +180,7 @@ public class BannerServiceImpl implements BannerService {
         banner.setStartLongitude(startLongitude);
         banner.setComplete(complete);
         banner.setOnline(online);
+        banner.setNumberOfMissions(banner.getMissions().size());
         if (startLatitude != null && banner.getStartPlaces().isEmpty()) {
             Collection<Place> startPlaces = geocodingService.getPlaces(startLatitude, startLongitude);
             banner.getStartPlaces().clear();

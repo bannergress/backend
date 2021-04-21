@@ -46,6 +46,7 @@ public class Banner {
      * Number of missions.
      */
     @Column(name = "number_of_missions", nullable = false)
+    @NotAudited
     private int numberOfMissions;
 
     /**

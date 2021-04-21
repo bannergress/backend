@@ -1,12 +1,10 @@
 package com.bannergress.backend.dto;
 
 import com.bannergress.backend.utils.PojoBuilder;
-import com.bannergress.backend.validation.MultipleOfSix;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
 
-import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -37,9 +35,6 @@ public class BannerDto {
     /**
      * Number of missions.
      */
-    @MultipleOfSix
-    @Min(6)
-    @Max(996)
     public int numberOfMissions;
 
     /**
