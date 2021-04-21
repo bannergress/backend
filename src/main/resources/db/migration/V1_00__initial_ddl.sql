@@ -37,6 +37,7 @@ CREATE TABLE "banner" (
   "created" timestamp with time zone NOT NULL,
   "description" text,
   "length_meters" double precision,
+  "width" integer NOT NULL,
   "number_of_missions" integer NOT NULL,
   "online" boolean NOT NULL,
   "start_latitude" double precision,

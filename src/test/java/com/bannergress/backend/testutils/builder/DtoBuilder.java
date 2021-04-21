@@ -27,6 +27,7 @@ public class DtoBuilder {
             .withUuid(a($UUID()))
             .withTitle(a($String("title")))
             .withDescription(a($String("description")))
+            .withWidth(6)
             .withNumberOfMissions(a($Int()))
             .withMissions(Collections.singletonMap(0, a($MissionDto())))
             .withStartLatitude(a($Double()))

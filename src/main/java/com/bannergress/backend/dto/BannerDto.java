@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
 
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -32,6 +33,14 @@ public class BannerDto {
      * Description.
      */
     public String description;
+
+    /**
+     * Width.
+     */
+    @Min(1)
+    @Max(6)
+    @NotNull
+    public Integer width;
 
     /**
      * Number of missions.

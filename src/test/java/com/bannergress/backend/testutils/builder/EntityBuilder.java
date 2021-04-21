@@ -18,6 +18,7 @@ public class EntityBuilder {
             .withUuid(a($UUID()))
             .withTitle(a($String("title")))
             .withDescription(a($String("description")))
+            .withWidth(6)
             .withNumberOfMissions(a($Int()))
             .withMissions(sortedMapWith(0, $Mission()))
             .withStartLatitude(a($Double()))

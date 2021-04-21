@@ -19,7 +19,7 @@ class TestBannerPictureServiceImpl {
     void testCreatePicture() throws IOException {
         BannerPictureServiceImpl bannerPictureService = new BannerPictureServiceImpl(null, 0.92f);
         Banner banner = new Banner();
-        banner.setNumberOfMissions(6);
+        banner.setWidth(6);
         SortedMap<Integer, Mission> missions = new TreeMap<>();
         for (String urlSpec : Arrays.asList(
             "https://lh3.googleusercontent.com/dEd_m6qhPJYxl1U4zkf4Jyhud524gAgiWzsMzQ7iZZ3Cz-kVWAEMzjO7gt13I8D9mE7zmz9npVE__AuWSK_EWg",
