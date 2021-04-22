@@ -23,7 +23,7 @@ public class EntityBuilder {
             .withMissions(sortedMapWith(0, $Mission()))
             .withStartLatitude(a($Double()))
             .withStartLongitude(a($Double()))
-            .withLengthMeters(a($Double()))
+            .withLengthMeters(a($Int()))
             .withComplete(a($Boolean()))
             .withOnline(a($Boolean()))
             .withPicture(a($BannerPicture()))

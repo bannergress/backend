@@ -67,7 +67,7 @@ public class BannerDto {
     /**
      * Length in meters.
      */
-    public Double lengthMeters;
+    public Integer lengthMeters;
 
     /**
      * Address.
