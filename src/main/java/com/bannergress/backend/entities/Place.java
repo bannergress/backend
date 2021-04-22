@@ -39,6 +39,12 @@ public class Place {
     @OneToMany(mappedBy = "place", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PlaceInformation> information = new ArrayList<>();
 
+    /**
+     * Coordinates this place belongs to.
+     */
+    @OneToMany(mappedBy = "place", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PlaceCoordinate> coordinates = new ArrayList<>();
+
     public String getId() {
         return id;
     }
@@ -69,5 +75,13 @@ public class Place {
 
     public void setNumberOfBanners(int numberOfBanners) {
         this.numberOfBanners = numberOfBanners;
+    }
+
+    public List<PlaceCoordinate> getCoordinates() {
+        return coordinates;
+    }
+
+    public void setCoordinates(List<PlaceCoordinate> coordinates) {
+        this.coordinates = coordinates;
     }
 }

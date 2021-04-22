@@ -32,6 +32,15 @@ public interface PlaceService {
     PlaceInformation getPlaceInformation(Place place, String languagePreference);
 
     /**
+     * Retrieves all places a coordinate belongs to.
+     *
+     * @param latitude  Latitude.
+     * @param longitude Longitude.
+     * @return Multiple places with differing accuracy (i.e. one place with country accuracy, one place with locality accuracy, ...).
+     */
+    Collection<Place> getPlaces(double latitude, double longitude);
+
+    /**
      * Gets localized information about the most specific place.
      *
      * @param places             Places.

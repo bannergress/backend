@@ -9,8 +9,8 @@ import com.bannergress.backend.enums.BannerSortOrder;
 import com.bannergress.backend.event.BannerChangedEvent;
 import com.bannergress.backend.exceptions.MissionAlreadyUsedException;
 import com.bannergress.backend.services.BannerService;
-import com.bannergress.backend.services.GeocodingService;
 import com.bannergress.backend.services.MissionService;
+import com.bannergress.backend.services.PlaceService;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Maps;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +43,7 @@ public class BannerServiceImpl implements BannerService {
     private MissionService missionService;
 
     @Autowired
-    private GeocodingService geocodingService;
+    private PlaceService placesService;
 
     @Autowired
     private ApplicationEventPublisher publisher;
@@ -183,7 +183,7 @@ public class BannerServiceImpl implements BannerService {
         banner.setOnline(online);
         banner.setNumberOfMissions(banner.getMissions().size());
         if (startLatitude != null && banner.getStartPlaces().isEmpty()) {
-            Collection<Place> startPlaces = geocodingService.getPlaces(startLatitude, startLongitude);
+            Collection<Place> startPlaces = placesService.getPlaces(startLatitude, startLongitude);
             banner.getStartPlaces().clear();
             banner.getStartPlaces().addAll(startPlaces);
             banner.getStartPlaces().forEach(place -> place.setNumberOfBanners(place.getNumberOfBanners() + 1));

@@ -1,8 +1,10 @@
 package com.bannergress.backend.services.impl;
 
 import com.bannergress.backend.entities.Place;
+import com.bannergress.backend.entities.PlaceCoordinate;
 import com.bannergress.backend.entities.PlaceInformation;
 import com.bannergress.backend.enums.PlaceType;
+import com.bannergress.backend.services.GeocodingService;
 import com.bannergress.backend.services.PlaceService;
 import com.google.common.collect.ImmutableSet;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,7 @@ import javax.transaction.Transactional;
 
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -24,6 +27,9 @@ import java.util.Optional;
 public class PlaceServiceImpl implements PlaceService {
     @Autowired
     private EntityManager entityManager;
+
+    @Autowired
+    private GeocodingService geocodingService;
 
     @Override
     public Collection<Place> findUsedPlaces(final Optional<String> parentPlaceId, final Optional<String> queryString,
@@ -62,5 +68,27 @@ public class PlaceServiceImpl implements PlaceService {
                                                                       String languagePreference) {
         return places.stream().sorted(Comparator.comparing(Place::getType).reversed()).findFirst()
             .map(place -> getPlaceInformation(place, languagePreference));
+    }
+
+    @Override
+    public Collection<Place> getPlaces(double latitude, double longitude) {
+        TypedQuery<Place> query = entityManager.createQuery("SELECT DISTINCT p FROM Place p JOIN p.coordinates c"
+            + " WHERE c.latitude = :latitude AND c.longitude = :longitude", Place.class);
+        query.setParameter("latitude", latitude);
+        query.setParameter("longitude", longitude);
+        List<Place> results = query.getResultList();
+        if (results.isEmpty()) {
+            Collection<Place> places = geocodingService.getPlaces(latitude, longitude);
+            for (Place place : places) {
+                PlaceCoordinate coordinate = new PlaceCoordinate();
+                coordinate.setLatitude(latitude);
+                coordinate.setLongitude(longitude);
+                coordinate.setPlace(place);
+                entityManager.persist(coordinate);
+            }
+            return places;
+        } else {
+            return results;
+        }
     }
 }
