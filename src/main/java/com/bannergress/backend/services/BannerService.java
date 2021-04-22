@@ -6,7 +6,6 @@ import com.bannergress.backend.enums.BannerSortOrder;
 import com.bannergress.backend.exceptions.MissionAlreadyUsedException;
 import org.springframework.data.domain.Sort.Direction;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -58,22 +57,16 @@ public interface BannerService {
     void update(UUID uuid, BannerDto bannerDto);
 
     /**
-     * Updates information of all banners that contain one of the specified missions.
-     *
-     * @param missionIds Mission IDs.
-     */
-    void updateBannersContainingMission(Collection<String> missionIds);
-
-    /**
-     * Updates information of all banners that contain one of the specified POIs.
-     *
-     * @param missionIds POI IDs.
-     */
-    void updateBannersContainingPOI(Collection<String> poiIds);
-
-    /**
      * Deletes a banner by UUID.
+     *
      * @param uuid UUID to delete.
      */
     void deleteByUuid(UUID uuid);
+
+    /**
+     * Calculates derived data of a banner.
+     *
+     * @param banner Banner.
+     */
+    void calculateData(Banner banner);
 }
