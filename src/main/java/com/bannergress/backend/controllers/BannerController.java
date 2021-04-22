@@ -52,7 +52,7 @@ public class BannerController {
      * @param limit        Maximum number of results.
      * @return Banners.
      */
-    @GetMapping(value = "/banners")
+    @GetMapping(value = "/bnrs")
     public ResponseEntity<List<BannerDto>> list(@RequestParam final Optional<String> placeId,
                                                 @RequestParam final Optional<Double> minLatitude,
                                                 @RequestParam final Optional<Double> maxLatitude,
@@ -78,14 +78,14 @@ public class BannerController {
      * @param id
      * @return
      */
-    @GetMapping("/banners/{uuid}")
+    @GetMapping("/bnrs/{uuid}")
     public ResponseEntity<BannerDto> get(@PathVariable final UUID uuid) {
         final Optional<Banner> banner = bannerService.findByUuidWithDetails(uuid);
         return ResponseEntity.of(banner.map(this::toDetails));
     }
 
     @RolesAllowed(Roles.CREATE_BANNER)
-    @PostMapping("/banners")
+    @PostMapping("/bnrs")
     public ResponseEntity<BannerDto> post(@Valid @RequestBody BannerDto banner) throws MissionAlreadyUsedException {
         UUID uuid = bannerService.create(banner);
         return get(uuid);
@@ -99,7 +99,7 @@ public class BannerController {
      * @return Updated banner data.
      */
     @RolesAllowed(Roles.MANAGE_BANNERS)
-    @PutMapping("/banners/{uuid}")
+    @PutMapping("/bnrs/{uuid}")
     public ResponseEntity<BannerDto> put(@PathVariable final UUID uuid, @Valid @RequestBody BannerDto banner) {
         bannerService.update(uuid, banner);
         return get(uuid);
@@ -111,7 +111,7 @@ public class BannerController {
      * @param uuid UUID.
      */
     @RolesAllowed(Roles.MANAGE_BANNERS)
-    @DeleteMapping("/banners/{uuid}")
+    @DeleteMapping("/bnrs/{uuid}")
     public void delete(@PathVariable final UUID uuid) {
         bannerService.deleteByUuid(uuid);
     }
@@ -124,7 +124,7 @@ public class BannerController {
         dto.lengthMeters = banner.getLengthMeters();
         dto.startLatitude = banner.getStartLatitude();
         dto.startLongitude = banner.getStartLongitude();
-        dto.picture = "/banners/pictures/" + banner.getPicture().getHash();
+        dto.picture = "/bnrs/pictures/" + banner.getPicture().getHash();
         Optional<PlaceInformation> placeInformation = placeService
             .getMostAccuratePlaceInformation(banner.getStartPlaces(), "en");
         if (placeInformation.isPresent()) {
