@@ -22,6 +22,6 @@ public class PlaceDto {
     public Double boundaryMaxLatitude;
 
     public Double boundaryMaxLongitude;
-    
+
     public PlaceDto parentPlace;
 }
