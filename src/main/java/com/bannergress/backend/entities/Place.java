@@ -69,6 +69,10 @@ public class Place {
     @Column(name = "boundary_max_longitude", nullable = false)
     private Double boundaryMaxLongitude;
 
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "parent_place")
+    private Place parentPlace;
+
     public String getId() {
         return id;
     }
@@ -139,5 +143,13 @@ public class Place {
 
     public void setBoundaryMaxLongitude(Double boundaryMaxLongitude) {
         this.boundaryMaxLongitude = boundaryMaxLongitude;
+    }
+
+    public Place getParentPlace() {
+        return parentPlace;
+    }
+
+    public void setParentPlace(Place parentPlace) {
+        this.parentPlace = parentPlace;
     }
 }

@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Default implementation of {@link PlaceService}.
@@ -83,14 +84,18 @@ public class PlaceServiceImpl implements PlaceService {
         query.setParameter("longitude", longitude);
         List<Place> results = query.getResultList();
         if (results.isEmpty()) {
-            Collection<Place> places = geocodingService.getPlaces(latitude, longitude);
+            List<Place> places = geocodingService.getPlaces(latitude, longitude).stream()
+                .sorted(Comparator.comparing(Place::getType)).collect(Collectors.toList());
+            Place parentPlace = null;
             for (Place place : places) {
+                place.setParentPlace(parentPlace);
                 Place merged = entityManager.merge(place);
                 PlaceCoordinate coordinate = new PlaceCoordinate();
                 coordinate.setLatitude(latitude);
                 coordinate.setLongitude(longitude);
                 coordinate.setPlace(merged);
                 entityManager.persist(coordinate);
+                parentPlace = place;
             }
             return places;
         } else {

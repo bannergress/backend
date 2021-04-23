@@ -61,9 +61,12 @@ CREATE TABLE "place" (
   "boundary_min_longitude" numeric(9,6) NOT NULL,
   "boundary_max_latitude" numeric(8,6) NOT NULL,
   "boundary_max_longitude" numeric(9,6) NOT NULL,
-  PRIMARY KEY ("id")
+  "parent_place" text,
+  PRIMARY KEY ("id"),
+  FOREIGN KEY ("parent_place") REFERENCES "place"("id")
 );
 CREATE INDEX ON "place" ("type");
+CREATE INDEX ON "place" ("parent_place");
 
 
 CREATE TABLE "place_information" (
