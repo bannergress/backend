@@ -77,6 +77,17 @@ CREATE INDEX ON "place_information" USING gin ((lower("long_name")) gin_trgm_ops
 CREATE INDEX ON "place_information" USING gin ((lower("formatted_address")) gin_trgm_ops);
 
 
+CREATE TABLE "place_coordinate" (
+  "uuid" uuid NOT NULL,
+  "place" text NOT NULL,
+  "latitude" numeric(8,6) NOT NULL,
+  "longitude" numeric(9,6) NOT NULL,
+  PRIMARY KEY ("uuid"),
+  UNIQUE ("latitude", "longitude", "place"),
+  FOREIGN KEY ("place") REFERENCES "place"("id")
+);
+
+
 CREATE TABLE "banner_start_place" (
   "banner" uuid NOT NULL,
   "place" text NOT NULL,
