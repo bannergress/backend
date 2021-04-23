@@ -119,6 +119,7 @@ public class BannerServiceImpl implements BannerService {
         banner.setTitle(bannerDto.title);
         banner.setDescription(bannerDto.description);
         banner.setCreated(Instant.now());
+        banner.setWidth(bannerDto.width);
         banner.setType(bannerDto.type);
         entityManager.persist(banner);
         banner.getMissions().clear();
@@ -133,6 +134,7 @@ public class BannerServiceImpl implements BannerService {
         Banner banner = entityManager.find(Banner.class, uuid);
         banner.setTitle(bannerDto.title);
         banner.setDescription(bannerDto.description);
+        banner.setWidth(bannerDto.width);
         banner.setType(bannerDto.type);
         banner.getMissions().clear();
         banner.getMissions().putAll(Maps.transformValues(bannerDto.missions,

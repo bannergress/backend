@@ -99,7 +99,7 @@ public class BannerPictureServiceImpl implements BannerPictureService {
     private String hash(Banner banner) {
         Hasher hasher = Hashing.murmur3_128().newHasher();
         hasher.putInt(IMPLEMENTATION_VERSION).putFloat(compressionQuality)
-            .putUnencodedChars(banner.getUuid().toString()).putInt(banner.getNumberOfMissions());
+            .putUnencodedChars(banner.getUuid().toString()).putInt(banner.getWidth());
         for (Entry<Integer, Mission> entry : banner.getMissions().entrySet()) {
             hasher.putInt(entry.getKey()).putUnencodedChars(entry.getValue().getPicture().toString())
                 .putBoolean(entry.getValue().isOnline());
@@ -119,8 +119,8 @@ public class BannerPictureServiceImpl implements BannerPictureService {
     }
 
     protected byte[] createPicture(Banner banner) {
-        final int numberColumns = 6;
-        final int numberRows = banner.getNumberOfMissions() / numberColumns;
+        final int numberColumns = banner.getWidth();
+        final int numberRows = banner.getMissions().lastKey() / numberColumns + 1;
         final int DISTANCE_CIRCLES = 4;
         final int DIAMETER = 96;
         final int MISSIONSIZE = DIAMETER + DISTANCE_CIRCLES;
@@ -140,7 +140,7 @@ public class BannerPictureServiceImpl implements BannerPictureService {
                 } catch (IOException ex) {
                     throw new RuntimeException("failed ro read image: " + entry.getValue().getPicture(), ex);
                 }
-                int missionPosition = banner.getNumberOfMissions() - entry.getKey().intValue() - 1;
+                int missionPosition = numberColumns * numberRows - entry.getKey().intValue() - 1;
                 int x1 = DISTANCE_CIRCLES + (missionPosition % numberColumns) * MISSIONSIZE;
                 int y1 = DISTANCE_CIRCLES + (missionPosition / numberColumns) * MISSIONSIZE;
                 int x2 = x1 + DIAMETER;

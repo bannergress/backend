@@ -43,6 +43,10 @@ public class Banner {
     @Column(name = "description", nullable = true)
     private String description;
 
+    /** Width of the banner in missions. */
+    @Column(name = "width", nullable = false)
+    private int width;
+
     /**
      * Number of missions.
      */
@@ -156,6 +160,14 @@ public class Banner {
 
     public int getNumberOfMissions() {
         return numberOfMissions;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
     }
 
     public void setNumberOfMissions(int numberOfMissions) {
