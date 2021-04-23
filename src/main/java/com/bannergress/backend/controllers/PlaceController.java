@@ -42,7 +42,7 @@ public class PlaceController {
                                @RequestParam(required = false) final String query) {
         Collection<Place> usedPlaces = placeService.findUsedPlaces(Optional.ofNullable(parentPlaceId),
             Optional.ofNullable(query), Optional.ofNullable(type));
-        return usedPlaces.stream().map(this::toDetails).collect(Collectors.toList());
+        return usedPlaces.stream().map(this::toSummary).collect(Collectors.toList());
     }
 
     /**
@@ -57,6 +57,15 @@ public class PlaceController {
     }
 
     private PlaceDto toDetails(Place place) {
+        PlaceDto placeDto = toSummary(place);
+        placeDto.boundaryMinLatitude = place.getBoundaryMinLatitude();
+        placeDto.boundaryMinLongitude = place.getBoundaryMinLongitude();
+        placeDto.boundaryMaxLatitude = place.getBoundaryMaxLatitude();
+        placeDto.boundaryMaxLongitude = place.getBoundaryMaxLongitude();
+        return placeDto;
+    }
+
+    private PlaceDto toSummary(Place place) {
         PlaceInformation information = placeService.getPlaceInformation(place, "en");
         PlaceDto placeDto = new PlaceDto();
         placeDto.id = place.getId();
