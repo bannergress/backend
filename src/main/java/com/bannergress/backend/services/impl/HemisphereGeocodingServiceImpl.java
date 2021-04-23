@@ -19,7 +19,7 @@ import java.util.List;
  */
 @Service
 @Transactional
-@Profile("!googlemaps")
+@Profile("!googlemaps & !nominatim")
 public class HemisphereGeocodingServiceImpl implements GeocodingService {
     @Autowired
     private EntityManager entityManager;
