@@ -5,7 +5,9 @@ import com.bannergress.backend.entities.Place;
 import com.bannergress.backend.entities.PlaceInformation;
 import com.bannergress.backend.enums.PlaceType;
 import com.bannergress.backend.services.PlaceService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -41,6 +43,17 @@ public class PlaceController {
         Collection<Place> usedPlaces = placeService.findUsedPlaces(Optional.ofNullable(parentPlaceId),
             Optional.ofNullable(query), Optional.ofNullable(type));
         return usedPlaces.stream().map(this::toDetails).collect(Collectors.toList());
+    }
+
+    /**
+     * Gets a place with a specified ID.
+     *
+     * @param id ID.
+     * @return Place.
+     */
+    @GetMapping("/places/{id}")
+    public ResponseEntity<PlaceDto> get(@PathVariable final String id) {
+        return ResponseEntity.of(placeService.findPlaceById(id).map(this::toDetails));
     }
 
     private PlaceDto toDetails(Place place) {

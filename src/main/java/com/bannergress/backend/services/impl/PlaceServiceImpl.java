@@ -58,6 +58,11 @@ public class PlaceServiceImpl implements PlaceService {
     }
 
     @Override
+    public Optional<Place> findPlaceById(String id) {
+        return Optional.ofNullable(entityManager.find(Place.class, id));
+    }
+
+    @Override
     public PlaceInformation getPlaceInformation(Place place, String languageCode) {
         // languageCode is ignored for now, we always fetch the first (english) translation
         return place.getInformation().get(0);
