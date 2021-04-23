@@ -45,6 +45,30 @@ public class Place {
     @OneToMany(mappedBy = "place", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PlaceCoordinate> coordinates = new ArrayList<>();
 
+    /**
+     * Minimum latitude of the boundary.
+     */
+    @Column(name = "boundary_min_latitude", nullable = false)
+    private Double boundaryMinLatitude;
+
+    /**
+     * Minimum longitude of the boundary.
+     */
+    @Column(name = "boundary_min_longitude", nullable = false)
+    private Double boundaryMinLongitude;
+
+    /**
+     * Minimum latitude of the boundary.
+     */
+    @Column(name = "boundary_max_latitude", nullable = false)
+    private Double boundaryMaxLatitude;
+
+    /**
+     * Minimum longitude of the boundary.
+     */
+    @Column(name = "boundary_max_longitude", nullable = false)
+    private Double boundaryMaxLongitude;
+
     public String getId() {
         return id;
     }
@@ -83,5 +107,37 @@ public class Place {
 
     public void setCoordinates(List<PlaceCoordinate> coordinates) {
         this.coordinates = coordinates;
+    }
+
+    public Double getBoundaryMinLatitude() {
+        return boundaryMinLatitude;
+    }
+
+    public void setBoundaryMinLatitude(Double boundaryMinLatitude) {
+        this.boundaryMinLatitude = boundaryMinLatitude;
+    }
+
+    public Double getBoundaryMinLongitude() {
+        return boundaryMinLongitude;
+    }
+
+    public void setBoundaryMinLongitude(Double boundaryMinLongitude) {
+        this.boundaryMinLongitude = boundaryMinLongitude;
+    }
+
+    public Double getBoundaryMaxLatitude() {
+        return boundaryMaxLatitude;
+    }
+
+    public void setBoundaryMaxLatitude(Double boundaryMaxLatitude) {
+        this.boundaryMaxLatitude = boundaryMaxLatitude;
+    }
+
+    public Double getBoundaryMaxLongitude() {
+        return boundaryMaxLongitude;
+    }
+
+    public void setBoundaryMaxLongitude(Double boundaryMaxLongitude) {
+        this.boundaryMaxLongitude = boundaryMaxLongitude;
     }
 }

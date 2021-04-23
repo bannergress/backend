@@ -68,6 +68,10 @@ public class GoogleMapsGeocodingServiceImpl implements GeocodingService {
             result = new Place();
             result.setId(geocodingResult.placeId);
             result.setType(type);
+            result.setBoundaryMinLatitude(geocodingResult.geometry.viewport.southwest.lat);
+            result.setBoundaryMinLongitude(geocodingResult.geometry.viewport.southwest.lng);
+            result.setBoundaryMaxLatitude(geocodingResult.geometry.viewport.northeast.lat);
+            result.setBoundaryMaxLongitude(geocodingResult.geometry.viewport.northeast.lng);
             entityManager.persist(result);
         }
         importPlaceInformation(result, geocodingResult, languageCode);

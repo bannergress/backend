@@ -57,6 +57,10 @@ CREATE TABLE "place" (
   "id" text NOT NULL,
   "type" place_type NOT NULL,
   "number_of_banners" integer NOT NULL,
+  "boundary_min_latitude" numeric(8,6) NOT NULL,
+  "boundary_min_longitude" numeric(9,6) NOT NULL,
+  "boundary_max_latitude" numeric(8,6) NOT NULL,
+  "boundary_max_longitude" numeric(9,6) NOT NULL,
   PRIMARY KEY ("id")
 );
 CREATE INDEX ON "place" ("type");
