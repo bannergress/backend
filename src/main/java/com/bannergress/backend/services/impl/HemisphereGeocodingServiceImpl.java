@@ -4,12 +4,8 @@ import com.bannergress.backend.entities.Place;
 import com.bannergress.backend.entities.PlaceInformation;
 import com.bannergress.backend.enums.PlaceType;
 import com.bannergress.backend.services.GeocodingService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
-
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
 
 import java.util.List;
 
@@ -18,12 +14,8 @@ import java.util.List;
  * after that in Western/Eastern Hemisphere.
  */
 @Service
-@Transactional
 @Profile("!googlemaps & !nominatim")
 public class HemisphereGeocodingServiceImpl implements GeocodingService {
-    @Autowired
-    private EntityManager entityManager;
-
     @Override
     public List<Place> getPlaces(double latitude, double longitude) {
         Place country;
@@ -65,25 +57,20 @@ public class HemisphereGeocodingServiceImpl implements GeocodingService {
 
     private Place createPlace(PlaceType placeType, String id, String longName, String formattedAddress,
                               double minLatitude, double minLongitude, double maxLatitude, double maxLongitude) {
-        Place place = entityManager.find(Place.class, id);
-        if (place == null) {
-            place = new Place();
-            place.setId(id);
-            place.setType(placeType);
-            place.setBoundaryMinLatitude(minLatitude);
-            place.setBoundaryMinLongitude(minLongitude);
-            place.setBoundaryMaxLatitude(maxLatitude);
-            place.setBoundaryMaxLongitude(maxLongitude);
-            entityManager.persist(place);
-            PlaceInformation placeInformation = new PlaceInformation();
-            placeInformation.setPlace(place);
-            placeInformation.setLanguageCode("en");
-            placeInformation.setLongName(longName);
-            placeInformation.setFormattedAddress(formattedAddress);
-            placeInformation.setShortName(id);
-            place.getInformation().add(placeInformation);
-            entityManager.persist(placeInformation);
-        }
+        Place place = new Place();
+        place.setId(id);
+        place.setType(placeType);
+        place.setBoundaryMinLatitude(minLatitude);
+        place.setBoundaryMinLongitude(minLongitude);
+        place.setBoundaryMaxLatitude(maxLatitude);
+        place.setBoundaryMaxLongitude(maxLongitude);
+        PlaceInformation placeInformation = new PlaceInformation();
+        placeInformation.setPlace(place);
+        placeInformation.setLanguageCode("en");
+        placeInformation.setLongName(longName);
+        placeInformation.setFormattedAddress(formattedAddress);
+        placeInformation.setShortName(id);
+        place.getInformation().add(placeInformation);
         return place;
     }
 }

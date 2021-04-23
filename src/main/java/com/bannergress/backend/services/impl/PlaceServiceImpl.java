@@ -85,10 +85,11 @@ public class PlaceServiceImpl implements PlaceService {
         if (results.isEmpty()) {
             Collection<Place> places = geocodingService.getPlaces(latitude, longitude);
             for (Place place : places) {
+                Place merged = entityManager.merge(place);
                 PlaceCoordinate coordinate = new PlaceCoordinate();
                 coordinate.setLatitude(latitude);
                 coordinate.setLongitude(longitude);
-                coordinate.setPlace(place);
+                coordinate.setPlace(merged);
                 entityManager.persist(coordinate);
             }
             return places;
