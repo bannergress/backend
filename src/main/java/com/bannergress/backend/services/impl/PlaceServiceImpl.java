@@ -35,15 +35,13 @@ public class PlaceServiceImpl implements PlaceService {
     @Override
     public Collection<Place> findUsedPlaces(final Optional<String> parentPlaceId, final Optional<String> queryString,
                                             final Optional<PlaceType> type) {
-        String baseFragment = parentPlaceId.isPresent()
-            ? "SELECT DISTINCT p FROM Banner b JOIN b.startPlaces p JOIN b.startPlaces p2 "
-                + "LEFT JOIN FETCH p.information i WHERE p2.id = :parentPlaceId"
-            : "SELECT DISTINCT p FROM Banner b JOIN b.startPlaces p "
-                + "LEFT JOIN FETCH p.information i WHERE true = true";
+        String baseFragment = "SELECT DISTINCT p FROM Banner b JOIN b.startPlaces p "
+            + "LEFT JOIN FETCH p.information i WHERE true = true";
+        String parentPlaceFragment = parentPlaceId.isPresent() ? " AND p.parentPlace.id = :parentPlaceId" : "";
         String typeFragment = type.isPresent() ? " AND p.type = :type" : "";
         String queryStringFragment = queryString.isPresent() ? " AND LOWER(i.longName) LIKE :queryString" : "";
-        TypedQuery<Place> query = entityManager.createQuery(baseFragment + typeFragment + queryStringFragment,
-            Place.class);
+        TypedQuery<Place> query = entityManager
+            .createQuery(baseFragment + parentPlaceFragment + typeFragment + queryStringFragment, Place.class);
         if (type.isPresent()) {
             query.setParameter("type", type.get());
         }
