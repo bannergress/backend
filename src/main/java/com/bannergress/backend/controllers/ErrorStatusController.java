@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletRequest;
  * Handles error requests.
  */
 @RestController
-public class DefaultController implements ErrorController {
+public class ErrorStatusController implements ErrorController {
     @RequestMapping(value = "/error")
     public ResponseEntity<Void> error(HttpServletRequest request) {
         Integer errorCode = (Integer) request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
