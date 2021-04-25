@@ -27,7 +27,7 @@ public class MissionStep {
     @GeneratedValue
     private UUID uuid;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = true)
     @JoinColumn(name = "mission")
     private Mission mission;
 
