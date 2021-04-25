@@ -184,6 +184,7 @@ CREATE TABLE "banner_audit" (
   "description" text,
   "title" text,
   "type" banner_type,
+  "width" integer NOT NULL,
   PRIMARY KEY ("uuid", "rev"),
   FOREIGN KEY ("rev") REFERENCES "revision"("id")
 );
