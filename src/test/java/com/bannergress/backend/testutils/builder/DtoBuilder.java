@@ -32,7 +32,7 @@ public class DtoBuilder {
             .withMissions(Collections.singletonMap(0, a($MissionDto())))
             .withStartLatitude(a($Double()))
             .withStartLongitude(a($Double()))
-            .withLengthMeters(a($Double()))
+            .withLengthMeters(a($Int()))
             .withFormattedAddress(a($String("address")))
             .withType(BannerType.sequential);
     }

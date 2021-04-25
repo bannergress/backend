@@ -188,7 +188,7 @@ public class BannerServiceImpl implements BannerService {
             banner.getStartPlaces().addAll(startPlaces);
             banner.getStartPlaces().forEach(place -> place.setNumberOfBanners(place.getNumberOfBanners() + 1));
         }
-        banner.setLengthMeters(distance);
+        banner.setLengthMeters((int) Math.round(distance));
     }
 
     private static Double getDistance(Double lat1, Double lon1, Double lat2, Double lon2) {

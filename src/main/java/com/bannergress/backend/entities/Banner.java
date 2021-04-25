@@ -86,7 +86,7 @@ public class Banner {
      */
     @Column(name = "length_meters", nullable = true)
     @NotAudited
-    private Double lengthMeters;
+    private Integer lengthMeters;
 
     /**
      * All mission information is present.
@@ -198,11 +198,11 @@ public class Banner {
         this.startLongitude = startLongitude;
     }
 
-    public Double getLengthMeters() {
+    public Integer getLengthMeters() {
         return lengthMeters;
     }
 
-    public void setLengthMeters(Double lengthMeters) {
+    public void setLengthMeters(Integer lengthMeters) {
         this.lengthMeters = lengthMeters;
     }
 
