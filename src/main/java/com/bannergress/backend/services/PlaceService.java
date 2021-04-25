@@ -23,6 +23,14 @@ public interface PlaceService {
                                      Optional<PlaceType> type);
 
     /**
+     * Retrieves a place.
+     *
+     * @param id ID of the place.
+     * @return Place.
+     */
+    Optional<Place> findPlaceById(String id);
+
+    /**
      * Gets localized information about a place.
      *
      * @param place              Place.

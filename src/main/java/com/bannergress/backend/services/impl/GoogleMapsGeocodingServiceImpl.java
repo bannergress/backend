@@ -7,13 +7,9 @@ import com.bannergress.backend.services.GeocodingService;
 import com.google.maps.GeoApiContext;
 import com.google.maps.GeocodingApi;
 import com.google.maps.model.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
-
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,16 +18,12 @@ import java.util.List;
  * Geocoding using Google Maps API.
  */
 @Service
-@Transactional
 @Profile("googlemaps")
 public class GoogleMapsGeocodingServiceImpl implements GeocodingService {
 
     private static final String DEFAULT_LANGUAGE = "en";
 
     private final GeoApiContext apiContext;
-
-    @Autowired
-    private EntityManager entityManager;
 
     public GoogleMapsGeocodingServiceImpl(@Value("${google.api-key}") String apiKey) {
         apiContext = new GeoApiContext.Builder().apiKey(apiKey).build();
@@ -63,37 +55,27 @@ public class GoogleMapsGeocodingServiceImpl implements GeocodingService {
     }
 
     private Place importPlace(GeocodingResult geocodingResult, PlaceType type, String languageCode) {
-        Place result = entityManager.find(Place.class, geocodingResult.placeId);
-        if (result == null) {
-            result = new Place();
-            result.setId(geocodingResult.placeId);
-            result.setType(type);
-            entityManager.persist(result);
-        }
+        Place result = new Place();
+        result.setId(geocodingResult.placeId);
+        result.setType(type);
+        result.setBoundaryMinLatitude(geocodingResult.geometry.viewport.southwest.lat);
+        result.setBoundaryMinLongitude(geocodingResult.geometry.viewport.southwest.lng);
+        result.setBoundaryMaxLatitude(geocodingResult.geometry.viewport.northeast.lat);
+        result.setBoundaryMaxLongitude(geocodingResult.geometry.viewport.northeast.lng);
         importPlaceInformation(result, geocodingResult, languageCode);
         return result;
     }
 
     private PlaceInformation importPlaceInformation(Place place, GeocodingResult geocodingResult, String languageCode) {
-        PlaceInformation result = null;
-        for (PlaceInformation placeInformation : place.getInformation()) {
-            if (placeInformation.getLanguageCode().equals(languageCode)) {
-                result = placeInformation;
-                break;
-            }
-        }
-        if (result == null) {
-            result = new PlaceInformation();
-            result.setPlace(place);
-            result.setLanguageCode(languageCode);
-        }
+        PlaceInformation result = new PlaceInformation();
+        result.setPlace(place);
+        result.setLanguageCode(languageCode);
         result.setFormattedAddress(geocodingResult.formattedAddress);
         for (AddressComponent addressComponent : geocodingResult.addressComponents) {
             for (AddressComponentType type : addressComponent.types) {
                 if (isRelevantAddressComponentType(place.getType(), type)) {
                     result.setLongName(addressComponent.longName);
                     result.setShortName(addressComponent.shortName);
-                    entityManager.persist(result);
                     return result;
                 }
             }

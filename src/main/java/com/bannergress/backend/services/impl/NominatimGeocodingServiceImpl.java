@@ -13,8 +13,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -24,7 +22,6 @@ import java.util.stream.Collectors;
  * Geocoding using Google Maps API.
  */
 @Service
-@Transactional
 @Profile("nominatim")
 public class NominatimGeocodingServiceImpl implements GeocodingService {
     private static final String DEFAULT_LANGUAGE = "en";
@@ -84,6 +81,10 @@ public class NominatimGeocodingServiceImpl implements GeocodingService {
                 Place result = new Place();
                 result.setId(String.valueOf(apiResult.place_id));
                 result.setType(mappedTypes.get(zoom));
+                result.setBoundaryMinLatitude(Double.parseDouble(apiResult.boundingbox.get(0)));
+                result.setBoundaryMinLongitude(Double.parseDouble(apiResult.boundingbox.get(2)));
+                result.setBoundaryMaxLatitude(Double.parseDouble(apiResult.boundingbox.get(1)));
+                result.setBoundaryMaxLongitude(Double.parseDouble(apiResult.boundingbox.get(3)));
                 PlaceInformation information = new PlaceInformation();
                 information.setFormattedAddress(apiResult.display_name);
                 information.setLanguageCode(language);
@@ -121,5 +122,7 @@ public class NominatimGeocodingServiceImpl implements GeocodingService {
         public String name;
 
         public String display_name;
+
+        public List<String> boundingbox;
     }
 }

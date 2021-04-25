@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Default implementation of {@link PlaceService}.
@@ -34,15 +35,13 @@ public class PlaceServiceImpl implements PlaceService {
     @Override
     public Collection<Place> findUsedPlaces(final Optional<String> parentPlaceId, final Optional<String> queryString,
                                             final Optional<PlaceType> type) {
-        String baseFragment = parentPlaceId.isPresent()
-            ? "SELECT DISTINCT p FROM Banner b JOIN b.startPlaces p JOIN b.startPlaces p2 "
-                + "LEFT JOIN FETCH p.information i WHERE p2.id = :parentPlaceId"
-            : "SELECT DISTINCT p FROM Banner b JOIN b.startPlaces p "
-                + "LEFT JOIN FETCH p.information i WHERE true = true";
+        String baseFragment = "SELECT DISTINCT p FROM Banner b JOIN b.startPlaces p "
+            + "LEFT JOIN FETCH p.information i WHERE true = true";
+        String parentPlaceFragment = parentPlaceId.isPresent() ? " AND p.parentPlace.id = :parentPlaceId" : "";
         String typeFragment = type.isPresent() ? " AND p.type = :type" : "";
         String queryStringFragment = queryString.isPresent() ? " AND LOWER(i.longName) LIKE :queryString" : "";
-        TypedQuery<Place> query = entityManager.createQuery(baseFragment + typeFragment + queryStringFragment,
-            Place.class);
+        TypedQuery<Place> query = entityManager
+            .createQuery(baseFragment + parentPlaceFragment + typeFragment + queryStringFragment, Place.class);
         if (type.isPresent()) {
             query.setParameter("type", type.get());
         }
@@ -55,6 +54,11 @@ public class PlaceServiceImpl implements PlaceService {
             query.setParameter("queryString", "%" + queryString.get().toLowerCase() + "%");
         }
         return ImmutableSet.copyOf(query.getResultList());
+    }
+
+    @Override
+    public Optional<Place> findPlaceById(String id) {
+        return Optional.ofNullable(entityManager.find(Place.class, id));
     }
 
     @Override
@@ -78,13 +82,18 @@ public class PlaceServiceImpl implements PlaceService {
         query.setParameter("longitude", longitude);
         List<Place> results = query.getResultList();
         if (results.isEmpty()) {
-            Collection<Place> places = geocodingService.getPlaces(latitude, longitude);
+            List<Place> places = geocodingService.getPlaces(latitude, longitude).stream()
+                .sorted(Comparator.comparing(Place::getType)).collect(Collectors.toList());
+            Place parentPlace = null;
             for (Place place : places) {
+                place.setParentPlace(parentPlace);
+                Place merged = entityManager.merge(place);
                 PlaceCoordinate coordinate = new PlaceCoordinate();
                 coordinate.setLatitude(latitude);
                 coordinate.setLongitude(longitude);
-                coordinate.setPlace(place);
+                coordinate.setPlace(merged);
                 entityManager.persist(coordinate);
+                parentPlace = place;
             }
             return places;
         } else {
