@@ -180,9 +180,9 @@ public class MissionServiceImpl implements MissionService {
 
     @Override
     public Collection<Mission> findUnusedMissions(String search, int maxResults) {
-        TypedQuery<Mission> query = entityManager.createQuery("SELECT m FROM Mission m WHERE m.title LIKE :search "
+        TypedQuery<Mission> query = entityManager.createQuery("SELECT m FROM Mission m WHERE LOWER(m.title) LIKE :search "
             + "AND NOT EXISTS (SELECT b FROM Banner b WHERE m MEMBER OF b.missions)", Mission.class);
-        query.setParameter("search", "%" + search + "%");
+        query.setParameter("search", "%" + search.toLowerCase() + "%");
         query.setMaxResults(maxResults);
         return query.getResultList();
     }

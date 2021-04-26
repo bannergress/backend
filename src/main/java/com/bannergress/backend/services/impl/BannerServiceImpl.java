@@ -50,7 +50,7 @@ public class BannerServiceImpl implements BannerService {
 
     @Override
     public List<Banner> find(Optional<String> placeId, Optional<Double> minLatitude, Optional<Double> maxLatitude,
-                             Optional<Double> minLongitude, Optional<Double> maxLongitude,
+                             Optional<Double> minLongitude, Optional<Double> maxLongitude, Optional<String> search,
                              Optional<BannerSortOrder> sortBy, Direction dir, int offset, int limit) {
         String queryString = "SELECT b FROM Banner b";
         if (placeId.isPresent()) {
@@ -63,6 +63,9 @@ public class BannerServiceImpl implements BannerService {
         if (minLatitude.isPresent()) {
             queryString += " AND b.startLatitude BETWEEN :minLatitude AND :maxLatitude "
                 + "AND b.startLongitude BETWEEN :minLongitude AND :maxLongitude";
+        }
+        if (search.isPresent()) {
+            queryString += " AND LOWER(b.title) LIKE :search";
         }
         if (sortBy.isPresent()) {
             switch (sortBy.get()) {
@@ -80,6 +83,9 @@ public class BannerServiceImpl implements BannerService {
             query.setParameter("maxLatitude", maxLatitude.get());
             query.setParameter("minLongitude", minLongitude.get());
             query.setParameter("maxLongitude", maxLongitude.get());
+        }
+        if (search.isPresent()) {
+            query.setParameter("search", "%" + search.get().toLowerCase() + "%");
         }
         query.setMaxResults(limit);
         List<Banner> banners = query.getResultList();
