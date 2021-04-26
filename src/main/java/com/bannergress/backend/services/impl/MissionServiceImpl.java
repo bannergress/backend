@@ -75,6 +75,9 @@ public class MissionServiceImpl implements MissionService {
         for (int i = mission.getSteps().size() - 1; i >= steps.size(); i--) {
             mission.getSteps().remove(i);
         }
+        if (mission.isOnline() && isOfflineBecauseNoStepAvailable(mission)) {
+            mission.setOnline(false);
+        }
         return mission;
     }
 
@@ -173,9 +176,18 @@ public class MissionServiceImpl implements MissionService {
         mission.setPicture(data.picture);
         mission.setAverageDurationMilliseconds(data.averageDurationMilliseconds);
         mission.setRating(newRating);
-        mission.setOnline(true);
+        if (!mission.isOnline() && !isOfflineBecauseNoStepAvailable(mission)) {
+            mission.setOnline(true);
+        }
         entityManager.persist(mission);
         return mission;
+    }
+
+    private boolean isOfflineBecauseNoStepAvailable(Mission mission) {
+        // A mission where all steps are unavailable is counted as an offline mission
+        // Hidden steps are counted as available
+        return mission.getSteps().size() > 0 && mission.getSteps().stream()
+            .noneMatch(step -> step.getPoi() == null || step.getPoi().getType() != POIType.unavailable);
     }
 
     @Override
