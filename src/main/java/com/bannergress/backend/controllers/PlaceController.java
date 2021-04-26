@@ -58,10 +58,6 @@ public class PlaceController {
 
     private PlaceDto toDetails(Place place) {
         PlaceDto placeDto = toSummary(place);
-        placeDto.boundaryMinLatitude = place.getBoundaryMinLatitude();
-        placeDto.boundaryMinLongitude = place.getBoundaryMinLongitude();
-        placeDto.boundaryMaxLatitude = place.getBoundaryMaxLatitude();
-        placeDto.boundaryMaxLongitude = place.getBoundaryMaxLongitude();
         if (place.getParentPlace() != null) {
             placeDto.parentPlace = toDetails(place.getParentPlace());
         }
@@ -76,6 +72,10 @@ public class PlaceController {
         placeDto.formattedAddress = information.getFormattedAddress();
         placeDto.longName = information.getLongName();
         placeDto.shortName = information.getShortName();
+        placeDto.boundaryMinLatitude = place.getBoundaryMinLatitude();
+        placeDto.boundaryMinLongitude = place.getBoundaryMinLongitude();
+        placeDto.boundaryMaxLatitude = place.getBoundaryMaxLatitude();
+        placeDto.boundaryMaxLongitude = place.getBoundaryMaxLongitude();
         return placeDto;
     }
 }
