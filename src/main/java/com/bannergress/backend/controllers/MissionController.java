@@ -39,8 +39,8 @@ public class MissionController {
 
     @RolesAllowed(Roles.CREATE_BANNER)
     @GetMapping("/missions/unused")
-    public Collection<MissionDto> getUnused(@RequestParam @NotEmpty String search) {
-        Collection<Mission> unusedMissions = missionService.findUnusedMissions(search, 300);
+    public Collection<MissionDto> getUnused(@RequestParam @NotEmpty String query) {
+        Collection<Mission> unusedMissions = missionService.findUnusedMissions(query, 300);
         return Collections2.transform(unusedMissions, MissionController::toSummary);
     }
 
