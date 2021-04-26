@@ -72,6 +72,15 @@ public class BannerServiceImpl implements BannerService {
                 case created:
                     queryString += " ORDER BY b.created " + dir.toString();
                     break;
+                case lengthMeters:
+                    queryString += " ORDER BY b.lengthMeters " + dir.toString();
+                    break;
+                case numberOfMissions:
+                    queryString += " ORDER BY b.numberOfMissions " + dir.toString();
+                    break;
+                case title:
+                    queryString += " ORDER BY b.title " + dir.toString();
+                    break;
             }
         }
         TypedQuery<Banner> query = entityManager.createQuery(queryString, Banner.class);
@@ -87,6 +96,7 @@ public class BannerServiceImpl implements BannerService {
         if (search.isPresent()) {
             query.setParameter("search", "%" + search.get().toLowerCase() + "%");
         }
+        query.setFirstResult(offset);
         query.setMaxResults(limit);
         List<Banner> banners = query.getResultList();
         preloadPlaceInformation(banners);
