@@ -146,7 +146,7 @@ CREATE INDEX ON "mission" ("author");
 CREATE TABLE "mission_step" (
   "uuid" uuid NOT NULL,
   "objective" objective,
-  "mission" text NOT NULL,
+  "mission" text,
   "poi" text,
   "position" integer,
   PRIMARY KEY ("uuid"),
