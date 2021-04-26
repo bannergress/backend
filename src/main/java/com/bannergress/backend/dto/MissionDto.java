@@ -27,5 +27,5 @@ public class MissionDto {
 
     public MissionType type;
 
-    public boolean online;
+    public Boolean online;
 }
