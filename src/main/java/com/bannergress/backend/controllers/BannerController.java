@@ -117,6 +117,12 @@ public class BannerController {
         bannerService.deleteByUuid(uuid);
     }
 
+    @RolesAllowed(Roles.MANAGE_BANNERS)
+    @PostMapping("/bnrs/recalculate")
+    public void calculateAllBanners() {
+        bannerService.calculateAllBanners();
+    }
+
     private BannerDto toSummary(Banner banner) {
         BannerDto dto = new BannerDto();
         dto.uuid = banner.getUuid();

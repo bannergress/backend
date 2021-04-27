@@ -70,4 +70,9 @@ public interface BannerService {
      * @param banner Banner.
      */
     void calculateData(Banner banner);
+
+    /**
+     * Calculates derived data of all banners.
+     */
+    void calculateAllBanners();
 }
