@@ -53,18 +53,21 @@ public class NominatimGeocodingServiceImpl implements GeocodingService {
     }
 
     private static final ImmutableMap<Integer, String> acceptedTypes = ImmutableMap.<Integer, String>builder()
-        .put(3, "country").put(5, "state").put(8, "county").put(10, "city").build();
+        .put(10, "city").put(8, "county").put(5, "state").put(3, "country").build();
 
     private static final ImmutableMap<Integer, PlaceType> mappedTypes = ImmutableMap.<Integer, PlaceType>builder()
-        .put(3, PlaceType.country).put(5, PlaceType.administrative_area_level_1)
-        .put(8, PlaceType.administrative_area_level_2).put(10, PlaceType.locality).build();
+        .put(10, PlaceType.locality).put(8, PlaceType.administrative_area_level_2)
+        .put(5, PlaceType.administrative_area_level_1).put(3, PlaceType.country).build();
 
     @Override
-    public List<Place> getPlaces(double latitude, double longitude) {
+    public Optional<Place> getPlaceHierarchy(double latitude, double longitude) {
         List<Place> result = mappedTypes.keySet().stream().map(zoom -> {
             return queryOnePlace(latitude, longitude, zoom, DEFAULT_LANGUAGE);
         }).flatMap(Optional::stream).collect(Collectors.toList());
-        return result;
+        return result.stream().reduce((a, b) -> {
+            b.setParentPlace(a);
+            return b;
+        });
     }
 
     @Override

@@ -3,20 +3,20 @@ package com.bannergress.backend.services;
 import com.bannergress.backend.entities.Place;
 import com.bannergress.backend.entities.PlaceInformation;
 
-import java.util.Collection;
+import java.util.Optional;
 
 /**
  * Service for Geocoding.
  */
 public interface GeocodingService {
     /**
-     * Retrieves all places a coordinate belongs to.
+     * Retrieves the hierarchy of places a coordinate belongs to.
      *
      * @param latitude  Latitude.
      * @param longitude Longitude.
-     * @return Multiple places with differing accuracy (i.e. one place with country accuracy, one place with locality accuracy, ...).
+     * @return Place hierarchy.
      */
-    Collection<Place> getPlaces(double latitude, double longitude);
+    Optional<Place> getPlaceHierarchy(double latitude, double longitude);
 
     /**
      * Retrieves human-readable information about a place.
