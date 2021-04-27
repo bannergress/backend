@@ -28,8 +28,10 @@ public class IntelMissionDetailsDeserializer extends JsonDeserializer<IntelMissi
         result.id = array.get(0).textValue();
         result.title = array.get(1).textValue();
         result.description = array.get(2).textValue();
-        result.authorName = array.get(3).textValue();
-        result.authorFaction = parseFaction(array.get(4).textValue());
+        if (!array.get(4).textValue().equals("N")) {
+            result.authorName = array.get(3).textValue();
+            result.authorFaction = parseFaction(array.get(4).textValue());
+        }
         result.ratingE6 = array.get(5).asInt();
         result.averageDurationMilliseconds = array.get(6).asLong();
         result.numberCompleted = array.get(7).asInt();
