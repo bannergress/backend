@@ -3,6 +3,8 @@ package com.bannergress.backend.dto;
 import com.bannergress.backend.enums.POIType;
 import com.bannergress.backend.utils.PojoBuilder;
 import com.bannergress.backend.validation.NianticId;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
 
 import javax.validation.constraints.Max;
@@ -12,6 +14,7 @@ import javax.validation.constraints.NotNull;
 
 import java.net.URL;
 
+@JsonInclude(Include.NON_NULL)
 @GeneratePojoBuilder(withBuilderInterface = PojoBuilder.class)
 public class PoiDto {
     /**
