@@ -5,7 +5,9 @@ import com.bannergress.backend.dto.IntelMissionSummary;
 import com.bannergress.backend.dto.IntelTopMissionsForPortal;
 import com.bannergress.backend.dto.IntelTopMissionsInBounds;
 import com.bannergress.backend.entities.Mission;
+import com.bannergress.backend.enums.MissionSortOrder;
 import com.bannergress.backend.exceptions.MissionAlreadyUsedException;
+import org.springframework.data.domain.Sort.Direction;
 
 import javax.validation.Valid;
 
@@ -52,11 +54,15 @@ public interface MissionService {
     /**
      * Finds missions contain a string in their titles and that are not part of any banner.
      *
-     * @param query      Query string to filter the title with.
-     * @param maxResults Maximum number of results.
+     * @param query          Query string to filter the title with.
+     * @param orderBy        Optional sort order.
+     * @param orderDirection Sort direction.
+     * @param offset         Offset of the first result.
+     * @param limit          Maximum number of results.
      * @return Found missions.
      */
-    Collection<Mission> findUnusedMissions(String query, int maxResults);
+    Collection<Mission> findUnusedMissions(String query, Optional<MissionSortOrder> orderBy, Direction orderDirection,
+                                           int offset, int limit);
 
     /**
      * Find mission by ID.

@@ -7,6 +7,7 @@ import com.bannergress.backend.dto.PoiDto;
 import com.bannergress.backend.entities.Mission;
 import com.bannergress.backend.entities.MissionStep;
 import com.bannergress.backend.entities.POI;
+import com.bannergress.backend.enums.MissionSortOrder;
 import com.bannergress.backend.security.Roles;
 import com.bannergress.backend.services.MissionService;
 import com.bannergress.backend.validation.NianticId;
@@ -14,6 +15,7 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -39,8 +41,13 @@ public class MissionController {
 
     @RolesAllowed(Roles.CREATE_BANNER)
     @GetMapping("/missions/unused")
-    public Collection<MissionDto> getUnused(@RequestParam @NotEmpty String query) {
-        Collection<Mission> unusedMissions = missionService.findUnusedMissions(query, 300);
+    public Collection<MissionDto> getUnused(@RequestParam @NotEmpty String query,
+                                            @RequestParam final Optional<MissionSortOrder> orderBy,
+                                            @RequestParam(defaultValue = "ASC") final Direction orderDirection,
+                                            @RequestParam(defaultValue = "0") final int offset,
+                                            @RequestParam(defaultValue = "20") @Max(50) final int limit) {
+        Collection<Mission> unusedMissions = missionService.findUnusedMissions(query, orderBy, orderDirection, offset,
+            limit);
         return Collections2.transform(unusedMissions, MissionController::toSummary);
     }
 
