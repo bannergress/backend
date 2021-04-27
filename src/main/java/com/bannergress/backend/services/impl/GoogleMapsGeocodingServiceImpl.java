@@ -74,6 +74,7 @@ public class GoogleMapsGeocodingServiceImpl implements GeocodingService {
     private PlaceInformation importPlaceInformation(Place place, GeocodingResult geocodingResult, String languageCode) {
         PlaceInformation result = new PlaceInformation();
         result.setPlace(place);
+        place.getInformation().add(result);
         result.setLanguageCode(languageCode);
         result.setFormattedAddress(geocodingResult.formattedAddress);
         for (AddressComponent addressComponent : geocodingResult.addressComponents) {
