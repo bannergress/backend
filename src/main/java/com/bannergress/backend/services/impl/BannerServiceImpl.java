@@ -51,7 +51,7 @@ public class BannerServiceImpl implements BannerService {
     @Override
     public List<Banner> find(Optional<String> placeId, Optional<Double> minLatitude, Optional<Double> maxLatitude,
                              Optional<Double> minLongitude, Optional<Double> maxLongitude, Optional<String> search,
-                             Optional<BannerSortOrder> sortBy, Direction dir, int offset, int limit) {
+                             Optional<BannerSortOrder> orderBy, Direction orderDirection, int offset, int limit) {
         String queryString = "SELECT b FROM Banner b";
         if (placeId.isPresent()) {
             queryString += " JOIN b.startPlaces p";
@@ -67,19 +67,19 @@ public class BannerServiceImpl implements BannerService {
         if (search.isPresent()) {
             queryString += " AND LOWER(b.title) LIKE :search";
         }
-        if (sortBy.isPresent()) {
-            switch (sortBy.get()) {
+        if (orderBy.isPresent()) {
+            switch (orderBy.get()) {
                 case created:
-                    queryString += " ORDER BY b.created " + dir.toString();
+                    queryString += " ORDER BY b.created " + orderDirection.toString();
                     break;
                 case lengthMeters:
-                    queryString += " ORDER BY b.lengthMeters " + dir.toString();
+                    queryString += " ORDER BY b.lengthMeters " + orderDirection.toString();
                     break;
                 case numberOfMissions:
-                    queryString += " ORDER BY b.numberOfMissions " + dir.toString();
+                    queryString += " ORDER BY b.numberOfMissions " + orderDirection.toString();
                     break;
                 case title:
-                    queryString += " ORDER BY b.title " + dir.toString();
+                    queryString += " ORDER BY b.title " + orderDirection.toString();
                     break;
             }
         }

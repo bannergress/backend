@@ -41,15 +41,15 @@ public class BannerController {
     /**
      * Lists banners.
      *
-     * @param placeId      Place ID the banner belongs to.
-     * @param minLatitude  Minimum latitude of the bounding box.
-     * @param maxLatitude  Maximum latitude of the bounding box.
-     * @param minLongitude Minimum longitude of the bounding box.
-     * @param maxLongitude Maximum longitude of the bounding box.
-     * @param sortBy       Sort order.
-     * @param dir          Sort direction.
-     * @param offset       Offset of the first result.
-     * @param limit        Maximum number of results.
+     * @param placeId        Place ID the banner belongs to.
+     * @param minLatitude    Minimum latitude of the bounding box.
+     * @param maxLatitude    Maximum latitude of the bounding box.
+     * @param minLongitude   Minimum longitude of the bounding box.
+     * @param maxLongitude   Maximum longitude of the bounding box.
+     * @param orderBy        Sort order.
+     * @param orderDirection Sort direction.
+     * @param offset         Offset of the first result.
+     * @param limit          Maximum number of results.
      * @return Banners.
      */
     @GetMapping(value = "/bnrs")
@@ -59,8 +59,8 @@ public class BannerController {
                                                 @RequestParam final Optional<Double> minLongitude,
                                                 @RequestParam final Optional<Double> maxLongitude,
                                                 @RequestParam final Optional<String> query,
-                                                @RequestParam final Optional<BannerSortOrder> sortBy,
-                                                @RequestParam(defaultValue = "ASC") final Direction dir,
+                                                @RequestParam final Optional<BannerSortOrder> orderBy,
+                                                @RequestParam(defaultValue = "ASC") final Direction orderDirection,
                                                 @RequestParam(defaultValue = "0") final int offset,
                                                 @RequestParam(defaultValue = "20") @Max(50) final int limit) {
         int numberOfBounds = (minLatitude.isPresent() ? 1 : 0) + (maxLatitude.isPresent() ? 1 : 0)
@@ -69,7 +69,7 @@ public class BannerController {
             return ResponseEntity.badRequest().build();
         }
         final Collection<Banner> banners = bannerService.find(placeId, minLatitude, maxLatitude, minLongitude,
-            maxLongitude, query, sortBy, dir, offset, limit);
+            maxLongitude, query, orderBy, orderDirection, offset, limit);
         return ResponseEntity.ok(banners.stream().map(this::toSummary).collect(Collectors.toUnmodifiableList()));
     }
 
