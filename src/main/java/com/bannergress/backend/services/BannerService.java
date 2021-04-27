@@ -17,21 +17,21 @@ public interface BannerService {
     /**
      * Finds banners.
      *
-     * @param placeId      Optional place ID.
-     * @param minLatitude  Optional minimum latitude.
-     * @param maxLatitude  Optional maximum latitude.
-     * @param minLongitude Optional minimum longitude.
-     * @param maxLongitude Optional maximum longitude.
-     * @param query        Optional query string.
-     * @param sortBy       Optional sort order.
-     * @param dir          Sort direction.
-     * @param offset       Offset of the first result.
-     * @param limit        Maximum number of results.
+     * @param placeId        Optional place ID.
+     * @param minLatitude    Optional minimum latitude.
+     * @param maxLatitude    Optional maximum latitude.
+     * @param minLongitude   Optional minimum longitude.
+     * @param maxLongitude   Optional maximum longitude.
+     * @param query          Optional query string.
+     * @param orderBy        Optional sort order.
+     * @param orderDirection Sort direction.
+     * @param offset         Offset of the first result.
+     * @param limit          Maximum number of results.
      * @return Banners that were found.
      */
     List<Banner> find(Optional<String> placeId, Optional<Double> minLatitude, Optional<Double> maxLatitude,
                       Optional<Double> minLongitude, Optional<Double> maxLongitude, Optional<String> query,
-                      Optional<BannerSortOrder> sortBy, Direction dir, int offset, int limit);
+                      Optional<BannerSortOrder> orderBy, Direction orderDirection, int offset, int limit);
 
     /**
      * Finds a banner by its internal UUID, including details down to mission level.
