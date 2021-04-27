@@ -171,7 +171,7 @@ public class BannerServiceImpl implements BannerService {
         Double prevLatitude = null;
         Double prevLongitude = null;
         double distance = 0;
-        boolean complete = banner.getMissions().size() == banner.getNumberOfMissions();
+        boolean complete = true;
         boolean online = complete;
 
         for (Mission mission : banner.getMissions().values()) {
@@ -180,16 +180,20 @@ public class BannerServiceImpl implements BannerService {
                 complete = false;
             }
             for (MissionStep step : mission.getSteps()) {
-                if (step.getPoi() != null && step.getPoi().getLatitude() != null) {
-                    if (prevLatitude != null) {
-                        distance += getDistance(startLatitude, startLongitude, prevLatitude, prevLongitude);
+                if (step.getPoi() != null) {
+                    Double latitude = step.getPoi().getLatitude();
+                    Double longitude = step.getPoi().getLongitude();
+                    if (latitude != null) {
+                        if (prevLatitude != null) {
+                            distance += getDistance(latitude, longitude, prevLatitude, prevLongitude);
+                        }
+                        if (startLatitude == null) {
+                            startLatitude = latitude;
+                            startLongitude = longitude;
+                        }
+                        prevLatitude = latitude;
+                        prevLongitude = longitude;
                     }
-                    if (startLatitude == null) {
-                        startLatitude = step.getPoi().getLatitude();
-                        startLongitude = step.getPoi().getLongitude();
-                    }
-                    prevLatitude = step.getPoi().getLatitude();
-                    prevLongitude = step.getPoi().getLongitude();
                 }
             }
         }
