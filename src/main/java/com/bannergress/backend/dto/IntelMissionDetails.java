@@ -15,10 +15,8 @@ public class IntelMissionDetails extends IntelMissionSummary {
     @NotEmpty
     public String description;
 
-    @NotEmpty
     public String authorName;
 
-    @NotNull
     public Faction authorFaction;
 
     public int numberCompleted;

@@ -47,7 +47,8 @@ public class MissionServiceImpl implements MissionService {
     @Override
     public Mission importMission(IntelMissionDetails data) {
         Mission mission = importMissionSummary(data);
-        NamedAgent author = agentService.importAgent(data.authorName, data.authorFaction);
+        NamedAgent author = data.authorName == null ? null
+            : agentService.importAgent(data.authorName, data.authorFaction);
         if (mission.getLatestUpdateDetails() == null) {
             publisher.publishEvent(new MissionChangedEvent(mission));
         }
@@ -192,8 +193,9 @@ public class MissionServiceImpl implements MissionService {
 
     @Override
     public Collection<Mission> findUnusedMissions(String search, int maxResults) {
-        TypedQuery<Mission> query = entityManager.createQuery("SELECT m FROM Mission m WHERE LOWER(m.title) LIKE :search "
-            + "AND NOT EXISTS (SELECT b FROM Banner b WHERE m MEMBER OF b.missions)", Mission.class);
+        TypedQuery<Mission> query = entityManager
+            .createQuery("SELECT m FROM Mission m WHERE LOWER(m.title) LIKE :search "
+                + "AND NOT EXISTS (SELECT b FROM Banner b WHERE m MEMBER OF b.missions)", Mission.class);
         query.setParameter("search", "%" + search.toLowerCase() + "%");
         query.setMaxResults(maxResults);
         return query.getResultList();
