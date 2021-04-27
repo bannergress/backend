@@ -19,6 +19,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Default implementation of {@link PlaceService}.
@@ -82,22 +83,41 @@ public class PlaceServiceImpl implements PlaceService {
         query.setParameter("longitude", longitude);
         List<Place> results = query.getResultList();
         if (results.isEmpty()) {
-            List<Place> places = geocodingService.getPlaces(latitude, longitude).stream()
-                .sorted(Comparator.comparing(Place::getType)).collect(Collectors.toList());
-            Place parentPlace = null;
-            for (Place place : places) {
-                place.setParentPlace(parentPlace);
-                Place merged = entityManager.merge(place);
-                PlaceCoordinate coordinate = new PlaceCoordinate();
-                coordinate.setLatitude(latitude);
-                coordinate.setLongitude(longitude);
-                coordinate.setPlace(merged);
-                entityManager.persist(coordinate);
-                parentPlace = place;
+            Optional<Place> place = geocodingService.getPlaceHierarchy(latitude, longitude);
+            if (place.isPresent()) {
+                mergePlace(place.get(), latitude, longitude);
             }
-            return places;
+            return place.stream().flatMap(this::expandPlaces).collect(Collectors.toList());
         } else {
             return results;
+        }
+    }
+
+    private Place mergePlace(Place place, double latitude, double longitude) {
+        Place parentPlace = place.getParentPlace();
+        if (parentPlace != null) {
+            parentPlace = mergePlace(parentPlace, latitude, longitude);
+        }
+        place.setParentPlace(parentPlace);
+        Place existing = entityManager.find(Place.class, place.getId());
+        if (existing == null) {
+            entityManager.persist(place);
+        } else {
+            place = existing;
+        }
+        PlaceCoordinate coordinate = new PlaceCoordinate();
+        coordinate.setLatitude(latitude);
+        coordinate.setLongitude(longitude);
+        coordinate.setPlace(place);
+        entityManager.persist(coordinate);
+        return place;
+    }
+
+    private Stream<Place> expandPlaces(Place place) {
+        if (place.getParentPlace() == null) {
+            return Stream.of(place);
+        } else {
+            return Stream.concat(Stream.of(place), expandPlaces(place.getParentPlace()));
         }
     }
 }

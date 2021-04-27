@@ -13,10 +13,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Geocoding using Google Maps API.
@@ -34,9 +35,12 @@ public class NominatimGeocodingServiceImpl implements GeocodingService {
 
     private final ObjectMapper objectMapper;
 
+    private final EntityManager entityManager;
+
     public NominatimGeocodingServiceImpl(
         @Value("${nominatim.baseUrl:https://nominatim.openstreetmap.org/}") String baseUrl,
-        @Value("${nominatim.userAgent:#{null}}") Optional<String> userAgent) {
+        @Value("${nominatim.userAgent:#{null}}") Optional<String> userAgent, EntityManager entityManager) {
+        this.entityManager = entityManager;
         this.baseUrl = HttpUrl.parse(baseUrl);
         client = new OkHttpClient.Builder().addInterceptor(new Interceptor() {
             @Override
@@ -53,17 +57,33 @@ public class NominatimGeocodingServiceImpl implements GeocodingService {
     }
 
     private static final ImmutableMap<Integer, String> acceptedTypes = ImmutableMap.<Integer, String>builder()
-        .put(3, "country").put(5, "state").put(8, "county").put(10, "city").build();
+        .put(10, "city").put(8, "county").put(5, "state").put(3, "country").build();
 
     private static final ImmutableMap<Integer, PlaceType> mappedTypes = ImmutableMap.<Integer, PlaceType>builder()
-        .put(3, PlaceType.country).put(5, PlaceType.administrative_area_level_1)
-        .put(8, PlaceType.administrative_area_level_2).put(10, PlaceType.locality).build();
+        .put(10, PlaceType.locality).put(8, PlaceType.administrative_area_level_2)
+        .put(5, PlaceType.administrative_area_level_1).put(3, PlaceType.country).build();
 
     @Override
-    public List<Place> getPlaces(double latitude, double longitude) {
-        List<Place> result = mappedTypes.keySet().stream().map(zoom -> {
-            return queryOnePlace(latitude, longitude, zoom, DEFAULT_LANGUAGE);
-        }).flatMap(Optional::stream).collect(Collectors.toList());
+    public Optional<Place> getPlaceHierarchy(double latitude, double longitude) {
+        Optional<Place> result = Optional.empty();
+        Optional<Place> child = Optional.empty();
+        for (int zoom : mappedTypes.keySet()) {
+            Optional<Place> place = queryOnePlace(latitude, longitude, zoom, DEFAULT_LANGUAGE);
+            if (place.isPresent()) {
+                if (result.isEmpty()) {
+                    result = place;
+                }
+                if (child.isPresent()) {
+                    child.get().setParentPlace(place.get());
+                }
+                Place existing = entityManager.find(Place.class, place.get().getId());
+                if (existing != null) {
+                    place.get().setParentPlace(existing.getParentPlace());
+                    return result;
+                }
+                child = place;
+            }
+        }
         return result;
     }
 

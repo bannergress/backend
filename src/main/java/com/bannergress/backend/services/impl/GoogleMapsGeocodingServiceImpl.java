@@ -12,7 +12,9 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Geocoding using Google Maps API.
@@ -30,7 +32,7 @@ public class GoogleMapsGeocodingServiceImpl implements GeocodingService {
     }
 
     @Override
-    public List<Place> getPlaces(double latitude, double longitude) {
+    public Optional<Place> getPlaceHierarchy(double latitude, double longitude) {
         try {
             GeocodingResult[] geocodingResults = GeocodingApi //
                 .reverseGeocode(apiContext, new LatLng(latitude, longitude)) //
@@ -48,7 +50,10 @@ public class GoogleMapsGeocodingServiceImpl implements GeocodingService {
                     }
                 }
             }
-            return result;
+            return result.stream().sorted(Comparator.comparing(Place::getType)).reduce((a, b) -> {
+                b.setParentPlace(a);
+                return b;
+            });
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -69,6 +74,7 @@ public class GoogleMapsGeocodingServiceImpl implements GeocodingService {
     private PlaceInformation importPlaceInformation(Place place, GeocodingResult geocodingResult, String languageCode) {
         PlaceInformation result = new PlaceInformation();
         result.setPlace(place);
+        place.getInformation().add(result);
         result.setLanguageCode(languageCode);
         result.setFormattedAddress(geocodingResult.formattedAddress);
         for (AddressComponent addressComponent : geocodingResult.addressComponents) {
