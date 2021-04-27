@@ -5,6 +5,7 @@ import com.bannergress.backend.entities.Mission;
 import com.bannergress.backend.entities.MissionStep;
 import com.bannergress.backend.entities.NamedAgent;
 import com.bannergress.backend.entities.POI;
+import com.bannergress.backend.enums.MissionSortOrder;
 import com.bannergress.backend.enums.POIType;
 import com.bannergress.backend.event.MissionChangedEvent;
 import com.bannergress.backend.event.POIChangedEvent;
@@ -13,6 +14,7 @@ import com.bannergress.backend.services.AgentService;
 import com.bannergress.backend.services.MissionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -192,12 +194,21 @@ public class MissionServiceImpl implements MissionService {
     }
 
     @Override
-    public Collection<Mission> findUnusedMissions(String search, int maxResults) {
-        TypedQuery<Mission> query = entityManager
-            .createQuery("SELECT m FROM Mission m WHERE LOWER(m.title) LIKE :search "
-                + "AND NOT EXISTS (SELECT b FROM Banner b WHERE m MEMBER OF b.missions)", Mission.class);
+    public Collection<Mission> findUnusedMissions(String search, Optional<MissionSortOrder> orderBy,
+                                                  Direction orderDirection, int offset, int limit) {
+        String queryString = "SELECT m FROM Mission m WHERE LOWER(m.title) LIKE :search "
+            + "AND NOT EXISTS (SELECT b FROM Banner b WHERE m MEMBER OF b.missions)";
+        if (orderBy.isPresent()) {
+            switch (orderBy.get()) {
+                case title:
+                    queryString += " ORDER BY m.title " + orderDirection.toString();
+                    break;
+            }
+        }
+        TypedQuery<Mission> query = entityManager.createQuery(queryString, Mission.class);
         query.setParameter("search", "%" + search.toLowerCase() + "%");
-        query.setMaxResults(maxResults);
+        query.setFirstResult(offset);
+        query.setMaxResults(limit);
         return query.getResultList();
     }
 
