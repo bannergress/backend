@@ -85,28 +85,33 @@ public class MissionServiceImpl implements MissionService {
     }
 
     private void importMissionStep(IntelMissionStep intelMissionStep, MissionStep missionStep) {
-        Double newLatitude = fromE6(intelMissionStep.latitudeE6);
-        Double newLongitude = fromE6(intelMissionStep.longitudeE6);
-        POI poi = entityManager.find(POI.class, intelMissionStep.id);
-        if (poi == null) {
-            poi = new POI();
-            poi.setId(intelMissionStep.id);
-        } else if (!Objects.equals(missionStep.getObjective(), intelMissionStep.objective)
-            || !Objects.equals(poi.getType(), intelMissionStep.type)
-            || (intelMissionStep.type != POIType.unavailable && !Objects.equals(poi.getLatitude(), newLatitude))
-            || (intelMissionStep.type != POIType.unavailable && !Objects.equals(poi.getLongitude(), newLongitude))) {
-            publisher.publishEvent(new POIChangedEvent(poi));
+        if (intelMissionStep.hidden) {
+            missionStep.setPoi(null);
+        } else {
+            Double newLatitude = fromE6(intelMissionStep.latitudeE6);
+            Double newLongitude = fromE6(intelMissionStep.longitudeE6);
+            POI poi = entityManager.find(POI.class, intelMissionStep.id);
+            if (poi == null) {
+                poi = new POI();
+                poi.setId(intelMissionStep.id);
+            } else if (!Objects.equals(missionStep.getObjective(), intelMissionStep.objective)
+                || !Objects.equals(poi.getType(), intelMissionStep.type)
+                || (intelMissionStep.type != POIType.unavailable && !Objects.equals(poi.getLatitude(), newLatitude))
+                || (intelMissionStep.type != POIType.unavailable
+                    && !Objects.equals(poi.getLongitude(), newLongitude))) {
+                publisher.publishEvent(new POIChangedEvent(poi));
+            }
+            poi.setType(intelMissionStep.type);
+            if (intelMissionStep.type != POIType.unavailable) {
+                poi.setLatitude(newLatitude);
+                poi.setLongitude(newLongitude);
+                poi.setTitle(intelMissionStep.title);
+                poi.setPicture(intelMissionStep.picture);
+            }
+            missionStep.setPoi(poi);
+            entityManager.persist(poi);
         }
         missionStep.setObjective(intelMissionStep.objective);
-        poi.setType(intelMissionStep.type);
-        if (intelMissionStep.type != POIType.unavailable) {
-            poi.setLatitude(newLatitude);
-            poi.setLongitude(newLongitude);
-            poi.setTitle(intelMissionStep.title);
-            poi.setPicture(intelMissionStep.picture);
-        }
-        missionStep.setPoi(poi);
-        entityManager.persist(poi);
     }
 
     @Override
