@@ -25,7 +25,7 @@ public class BannerRecalculationListeners {
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     void onPOIChanged(POIChangedEvent event) {
         TypedQuery<Banner> query = entityManager.createQuery(
-            "SELECT b FROM Banner b JOIN b.missions m JOIN m.steps s JOIN s WHERE s.poi = :poi", Banner.class);
+            "SELECT b FROM Banner b JOIN b.missions m JOIN m.steps s WHERE s.poi = :poi", Banner.class);
         query.setParameter("poi", event.getPoi());
         query.getResultList().stream().forEach((banner) -> {
             bannerService.calculateData(banner);
