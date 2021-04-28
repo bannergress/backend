@@ -36,7 +36,10 @@ public class GoogleMapsGeocodingServiceImpl implements GeocodingService {
         try {
             GeocodingResult[] geocodingResults = GeocodingApi //
                 .reverseGeocode(apiContext, new LatLng(latitude, longitude)) //
-                .resultType(AddressType.COUNTRY, AddressType.ADMINISTRATIVE_AREA_LEVEL_1, AddressType.LOCALITY)
+                .resultType(AddressType.COUNTRY, AddressType.ADMINISTRATIVE_AREA_LEVEL_1,
+                    AddressType.ADMINISTRATIVE_AREA_LEVEL_2, AddressType.ADMINISTRATIVE_AREA_LEVEL_3,
+                    AddressType.ADMINISTRATIVE_AREA_LEVEL_4, AddressType.ADMINISTRATIVE_AREA_LEVEL_5,
+                    AddressType.LOCALITY)
                 .language(DEFAULT_LANGUAGE) //
                 .await();
             List<Place> result = new ArrayList<>();
