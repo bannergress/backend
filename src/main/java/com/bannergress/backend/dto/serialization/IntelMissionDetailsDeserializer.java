@@ -47,25 +47,27 @@ public class IntelMissionDetailsDeserializer extends JsonDeserializer<IntelMissi
             IntelMissionStep step = new IntelMissionStep();
             step.hidden = node.get(0).booleanValue();
             step.id = node.get(1).textValue();
-            step.objective = parseObjective(node.get(4).intValue());
-            if (node.get(5).isNull()) {
-                step.type = POIType.unavailable;
-            } else {
-                step.title = node.get(2).textValue();
-                step.type = parsePOIType(node.get(3).intValue());
-                ArrayNode poiNode = (ArrayNode) node.get(5);
-                switch (step.type) {
-                    case portal:
-                        step.latitudeE6 = poiNode.get(2).asInt();
-                        step.longitudeE6 = poiNode.get(3).asInt();
-                        step.picture = poiNode.get(7).isNull() ? null : new URL(poiNode.get(7).textValue());
-                        break;
-                    case fieldTripWaypoint:
-                        step.latitudeE6 = poiNode.get(1).asInt();
-                        step.longitudeE6 = poiNode.get(2).asInt();
-                        break;
-                    default:
-                        break;
+            if (!step.hidden) {
+                step.objective = parseObjective(node.get(4).intValue());
+                if (node.get(5).isNull()) {
+                    step.type = POIType.unavailable;
+                } else {
+                    step.title = node.get(2).textValue();
+                    step.type = parsePOIType(node.get(3).intValue());
+                    ArrayNode poiNode = (ArrayNode) node.get(5);
+                    switch (step.type) {
+                        case portal:
+                            step.latitudeE6 = poiNode.get(2).asInt();
+                            step.longitudeE6 = poiNode.get(3).asInt();
+                            step.picture = poiNode.get(7).isNull() ? null : new URL(poiNode.get(7).textValue());
+                            break;
+                        case fieldTripWaypoint:
+                            step.latitudeE6 = poiNode.get(1).asInt();
+                            step.longitudeE6 = poiNode.get(2).asInt();
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
             result.add(step);

@@ -55,4 +55,15 @@ public class TestIntelMissionDetailsDeserializer {
         assertThat(details.authorFaction).isNull();
         assertThat(details.authorName).isNull();
     }
+
+    @Test
+    public void testDeserializationHidden() throws Exception {
+        String data = "[\"c0daa664c12e4507a3549d535351e777.1c\",\"\\u5357\\u84dd\\u4eba\\u7269\\u5fd7\\u4e4b\\u2014\\u2014\\u7f9e\\u7f9e\\u5929\\u7bc7\",\"\\u7f9e\\u7f9e\\u5929\\uff0c\\u5357\\u84dd\\u8457\\u540d\\u63a2\\u5458\\uff0c\\u6211\\u4eec\\u6765\\u770b\\u770b\\u4ed6\\u5728\\u4e1c\\u5357\\u5927\\u5b66\\u4e5d\\u9f99\\u6e56\\u6821\\u533a\\u7559\\u4e0b\\u4e86\\u600e\\u6837\\u7684\\u4f20\\u5947\\u6545\\u4e8b\\u2026\\u2026\",\"CaptainArt\",\"R\",1000000,1634202,3,3,[[false,\"073ba19437ac4fefa61dfe8266f64edd.16\",\"\\u4e1c\\u5357\\u5927\\u5b66\\u5357\\u5927\\u95e8\",1,1,[\"p\",\"N\",31883130,118814760,1,0,0,\"http://lh3.googleusercontent.com/CoUP13qHlHZfgImCjKAoRGY1KtqgZz1tYWXgOvZV117l3_l7cyf8FlM14HnN0z8QCYxUaBteW84dotBXmLxyZG5lPXA\",\"\\u4e1c\\u5357\\u5927\\u5b66\\u5357\\u5927\\u95e8\",[],true,true,null,1609497344766]],[true,\"\",\"\",0,0,null],[true,\"\",\"\",0,0,null],[true,\"\",\"\",0,0,null],[true,\"\",\"\",0,0,null],[true,\"\",\"\",0,0,null]],\"https://lh3.googleusercontent.com/oYDl-eKGbMzjwKQuvjTicLbe5Gix5uA9EwZIVKW4Wbu6VQez8R9pE45lvjNdGvrI8q0eiaPeNWDt3uYA4Jw\"]";
+        ObjectMapper mapper = new ObjectMapper();
+        IntelMissionDetails details = mapper.readValue(data, IntelMissionDetails.class);
+        assertThat(details.steps.get(0).hidden).isFalse();
+        assertThat(details.steps.get(0).objective).isNotNull();
+        assertThat(details.steps.get(1).hidden).isTrue();
+        assertThat(details.steps.get(1).objective).isNull();
+    }
 }
