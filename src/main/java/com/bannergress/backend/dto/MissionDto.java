@@ -28,4 +28,8 @@ public class MissionDto {
     public MissionType type;
 
     public Boolean online;
+
+    public Double startLatitude;
+
+    public Double startLongitude;
 }
