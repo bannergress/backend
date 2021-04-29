@@ -48,7 +48,7 @@ public class MissionController {
                                             @RequestParam(defaultValue = "20") @Max(50) final int limit) {
         Collection<Mission> unusedMissions = missionService.findUnusedMissions(query, orderBy, orderDirection, offset,
             limit);
-        return Collections2.transform(unusedMissions, MissionController::toSummary);
+        return Collections2.transform(unusedMissions, MissionController::toSummaryForUnused);
     }
 
     @PostMapping("/missions/status")
@@ -84,6 +84,18 @@ public class MissionController {
         dto.id = mission.getId();
         dto.title = mission.getTitle();
         dto.picture = mission.getPicture();
+        return dto;
+    }
+
+    public static MissionDto toSummaryForUnused(Mission mission) {
+        MissionDto dto = toSummary(mission);
+        dto.description = mission.getDescription();
+        Optional<MissionStep> stepWithCoordinates = mission.getSteps().stream()
+            .filter(step -> step.getPoi() != null && step.getPoi().getLatitude() != null).findFirst();
+        if (stepWithCoordinates.isPresent()) {
+            dto.startLatitude = stepWithCoordinates.get().getPoi().getLatitude();
+            dto.startLongitude = stepWithCoordinates.get().getPoi().getLongitude();
+        }
         return dto;
     }
 
