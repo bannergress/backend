@@ -12,7 +12,6 @@ import java.util.List;
 
 @JsonDeserialize(using = IntelMissionDetailsDeserializer.class)
 public class IntelMissionDetails extends IntelMissionSummary {
-    @NotEmpty
     public String description;
 
     public String authorName;
