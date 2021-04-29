@@ -76,6 +76,7 @@ public class PlaceController {
         placeDto.boundaryMinLongitude = place.getBoundaryMinLongitude();
         placeDto.boundaryMaxLatitude = place.getBoundaryMaxLatitude();
         placeDto.boundaryMaxLongitude = place.getBoundaryMaxLongitude();
+        placeDto.type = place.getType();
         return placeDto;
     }
 }
