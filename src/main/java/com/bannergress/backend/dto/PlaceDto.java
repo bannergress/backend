@@ -1,5 +1,6 @@
 package com.bannergress.backend.dto;
 
+import com.bannergress.backend.enums.PlaceType;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
@@ -24,4 +25,6 @@ public class PlaceDto {
     public Double boundaryMaxLongitude;
 
     public PlaceDto parentPlace;
+
+    public PlaceType type;
 }
