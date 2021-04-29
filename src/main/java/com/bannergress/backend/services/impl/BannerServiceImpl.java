@@ -211,6 +211,14 @@ public class BannerServiceImpl implements BannerService {
         banner.setLengthMeters((int) Math.round(distance));
     }
 
+    @Override
+    public void calculateAllBanners() {
+        TypedQuery<Banner> query = entityManager.createQuery("SELECT b FROM Banner b", Banner.class);
+        for (Banner banner : query.getResultList()) {
+            publisher.publishEvent(new BannerChangedEvent(banner));
+        }
+    }
+
     private static Double getDistance(Double lat1, Double lon1, Double lat2, Double lon2) {
         final int radius_meters = 6_371_000;
         Double latDistance = toRad(lat2 - lat1);
