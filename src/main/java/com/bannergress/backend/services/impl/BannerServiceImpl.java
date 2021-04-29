@@ -8,6 +8,7 @@ import com.bannergress.backend.entities.Place;
 import com.bannergress.backend.enums.BannerSortOrder;
 import com.bannergress.backend.event.BannerChangedEvent;
 import com.bannergress.backend.exceptions.MissionAlreadyUsedException;
+import com.bannergress.backend.services.BannerPictureService;
 import com.bannergress.backend.services.BannerService;
 import com.bannergress.backend.services.MissionService;
 import com.bannergress.backend.services.PlaceService;
@@ -47,6 +48,9 @@ public class BannerServiceImpl implements BannerService {
 
     @Autowired
     private ApplicationEventPublisher publisher;
+
+    @Autowired
+    private BannerPictureService pictureService;
 
     @Override
     public List<Banner> find(Optional<String> placeId, Optional<Double> minLatitude, Optional<Double> maxLatitude,
@@ -128,6 +132,13 @@ public class BannerServiceImpl implements BannerService {
 
     @Override
     public UUID create(BannerDto bannerDto) throws MissionAlreadyUsedException {
+        Banner banner = generatePreview(bannerDto);
+        entityManager.persist(banner);
+        banner.getStartPlaces().forEach(place -> place.setNumberOfBanners(place.getNumberOfBanners() + 1));
+        return banner.getUuid();
+    }
+
+    private Banner createTransient(BannerDto bannerDto) throws MissionAlreadyUsedException {
         Collection<String> missionIds = Collections2.transform(bannerDto.missions.values(),
             missionDto -> missionDto.id);
         missionService.assertNotAlreadyUsedInBanners(missionIds);
@@ -137,12 +148,19 @@ public class BannerServiceImpl implements BannerService {
         banner.setCreated(Instant.now());
         banner.setWidth(bannerDto.width);
         banner.setType(bannerDto.type);
-        entityManager.persist(banner);
         banner.getMissions().clear();
         banner.getMissions().putAll(Maps.transformValues(bannerDto.missions,
             missionDto -> entityManager.getReference(Mission.class, missionDto.id)));
-        publisher.publishEvent(new BannerChangedEvent(banner));
-        return banner.getUuid();
+        calculateData(banner);
+        pictureService.refresh(banner);
+        return banner;
+    }
+
+    @Override
+    public Banner generatePreview(BannerDto bannerDto) throws MissionAlreadyUsedException {
+        Banner banner = createTransient(bannerDto);
+        banner.getPicture().setExpiration(Instant.now().plusSeconds(3_600));
+        return banner;
     }
 
     @Override
@@ -206,7 +224,6 @@ public class BannerServiceImpl implements BannerService {
             Collection<Place> startPlaces = placesService.getPlaces(startLatitude, startLongitude);
             banner.getStartPlaces().clear();
             banner.getStartPlaces().addAll(startPlaces);
-            banner.getStartPlaces().forEach(place -> place.setNumberOfBanners(place.getNumberOfBanners() + 1));
         }
         banner.setLengthMeters((int) Math.round(distance));
     }
