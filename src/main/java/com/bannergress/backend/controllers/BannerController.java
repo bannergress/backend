@@ -92,6 +92,12 @@ public class BannerController {
         return get(uuid);
     }
 
+    @RolesAllowed(Roles.CREATE_BANNER)
+    @PostMapping("/bnrs/preview")
+    public BannerDto preview(@Valid @RequestBody BannerDto banner) throws MissionAlreadyUsedException {
+        return toDetails(bannerService.generatePreview(banner));
+    }
+
     /**
      * Updates the banner with the specified UUID.
      *

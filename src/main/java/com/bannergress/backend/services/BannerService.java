@@ -51,6 +51,15 @@ public interface BannerService {
     UUID create(BannerDto bannerDto) throws MissionAlreadyUsedException;
 
     /**
+     * Generates a preview of a new banner without actually persisting it. Banner missions must not be used by any other banner.
+     *
+     * @param bannerDto Banner DTO.
+     * @return Newly created banner.
+     * @throws MissionAlreadyUsedException If a mission is already used by another banner.
+     */
+    Banner generatePreview(BannerDto bannerDto) throws MissionAlreadyUsedException;
+
+    /**
      * Updates an existing banner.
      *
      * @param bannerDto Banner DTO.

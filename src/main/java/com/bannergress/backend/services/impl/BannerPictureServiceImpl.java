@@ -72,22 +72,24 @@ public class BannerPictureServiceImpl implements BannerPictureService {
 
     @Override
     public void refresh(Banner banner) {
+        BannerPicture oldPicture = banner.getPicture();
+        if (oldPicture != null) {
+            oldPicture.setExpiration(Instant.now().plusSeconds(60));
+        }
         String hash = hash(banner);
-        if (banner.getPicture() != null && hash.equals(banner.getPicture().getHash())) {
-            return;
+        BannerPicture newPicture = entityManager.find(BannerPicture.class, hash);
+        if (newPicture == null) {
+            // Create a new picture
+            byte[] picture = createPicture(banner);
+            newPicture = new BannerPicture();
+            newPicture.setHash(hash);
+            newPicture.setPicture(picture);
+            entityManager.persist(newPicture);
+        } else {
+            // Reuse the existing picture, clear potential expiration
+            newPicture.setExpiration(null);
         }
-        byte[] picture = createPicture(banner);
-        BannerPicture bannerPicture = new BannerPicture();
-        bannerPicture.setHash(hash);
-
-        if (banner.getPicture() != null) {
-            banner.getPicture().setExpiration(Instant.now().plusSeconds(60));
-            entityManager.persist(banner.getPicture());
-        }
-
-        bannerPicture.setPicture(picture);
-        banner.setPicture(bannerPicture);
-        entityManager.persist(bannerPicture);
+        banner.setPicture(newPicture);
     }
 
     /**
@@ -98,8 +100,7 @@ public class BannerPictureServiceImpl implements BannerPictureService {
      */
     private String hash(Banner banner) {
         Hasher hasher = Hashing.murmur3_128().newHasher();
-        hasher.putInt(IMPLEMENTATION_VERSION).putFloat(compressionQuality)
-            .putUnencodedChars(banner.getUuid().toString()).putInt(banner.getWidth());
+        hasher.putInt(IMPLEMENTATION_VERSION).putFloat(compressionQuality).putInt(banner.getWidth());
         for (Entry<Integer, Mission> entry : banner.getMissions().entrySet()) {
             hasher.putInt(entry.getKey()).putUnencodedChars(entry.getValue().getPicture().toString())
                 .putBoolean(entry.getValue().isOnline());
