@@ -24,11 +24,10 @@ import javax.imageio.stream.ImageOutputStream;
 import javax.persistence.EntityManager;
 
 import java.awt.AlphaComposite;
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
-import java.awt.image.ConvolveOp;
-import java.awt.image.Kernel;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,7 +48,7 @@ public class BannerPictureServiceImpl implements BannerPictureService {
      * The version of this implementation. Change in order to have banner images re-created after
      * an implementation change.
      */
-    public static final int IMPLEMENTATION_VERSION = 1;
+    public static final int IMPLEMENTATION_VERSION = 3;
 
     private static ForkJoinPool threadPool = new ForkJoinPool(20);
 
@@ -128,6 +127,8 @@ public class BannerPictureServiceImpl implements BannerPictureService {
         BufferedImage bannerImage = new BufferedImage(numberColumns * MISSIONSIZE + DISTANCE_CIRCLES,
             numberRows * MISSIONSIZE + DISTANCE_CIRCLES, BufferedImage.TYPE_INT_RGB);
         Graphics2D graphics = bannerImage.createGraphics();
+        graphics.setPaint(new Color(46, 46, 46));
+        graphics.fillRect(0, 0, bannerImage.getWidth(), bannerImage.getHeight());
         graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
         graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER));
 
@@ -159,11 +160,6 @@ public class BannerPictureServiceImpl implements BannerPictureService {
         }
 
         graphics.dispose();
-
-        // blurs a bit
-        bannerImage = new ConvolveOp(
-            new Kernel(3, 3, new float[] {0f, 0.125f, 0f, 0.125f, 0.5f, 0.125f, 0f, 0.125f, 0f}), ConvolveOp.EDGE_NO_OP,
-            null).filter(bannerImage, null);
 
         try (ByteArrayOutputStream stream = new ByteArrayOutputStream(24 * 1024 * numberRows);
             ImageOutputStream imageOutputStream = ImageIO.createImageOutputStream(stream)) {
