@@ -132,7 +132,7 @@ public class BannerServiceImpl implements BannerService {
 
     @Override
     public UUID create(BannerDto bannerDto) throws MissionAlreadyUsedException {
-        Banner banner = generatePreview(bannerDto);
+        Banner banner = createTransient(bannerDto);
         entityManager.persist(banner);
         banner.getStartPlaces().forEach(place -> place.setNumberOfBanners(place.getNumberOfBanners() + 1));
         return banner.getUuid();
