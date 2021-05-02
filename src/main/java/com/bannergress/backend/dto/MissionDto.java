@@ -32,4 +32,6 @@ public class MissionDto {
     public Double startLatitude;
 
     public Double startLongitude;
+    
+    public NamedAgentDto author;
 }
