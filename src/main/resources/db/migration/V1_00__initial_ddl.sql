@@ -141,6 +141,7 @@ CREATE TABLE "mission" (
 );
 CREATE INDEX ON "mission" USING gin ((lower("title")) gin_trgm_ops);
 CREATE INDEX ON "mission" ("author");
+CREATE INDEX ON "mission" ((lower("author")));
 
 
 CREATE TABLE "mission_step" (

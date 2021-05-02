@@ -201,7 +201,8 @@ public class MissionServiceImpl implements MissionService {
     @Override
     public Collection<Mission> findUnusedMissions(String search, Optional<MissionSortOrder> orderBy,
                                                   Direction orderDirection, int offset, int limit) {
-        String queryString = "SELECT m FROM Mission m WHERE LOWER(m.title) LIKE :search "
+        String queryString = "SELECT m FROM Mission m WHERE (LOWER(m.title) LIKE :search "
+            + "OR LOWER(m.author.name) = :searchExact)"
             + "AND NOT EXISTS (SELECT b FROM Banner b WHERE m MEMBER OF b.missions)";
         if (orderBy.isPresent()) {
             switch (orderBy.get()) {
@@ -212,6 +213,7 @@ public class MissionServiceImpl implements MissionService {
         }
         TypedQuery<Mission> query = entityManager.createQuery(queryString, Mission.class);
         query.setParameter("search", "%" + search.toLowerCase() + "%");
+        query.setParameter("searchExact", search.toLowerCase());
         query.setFirstResult(offset);
         query.setMaxResults(limit);
         return query.getResultList();

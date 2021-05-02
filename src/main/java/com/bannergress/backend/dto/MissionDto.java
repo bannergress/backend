@@ -28,6 +28,6 @@ public class MissionDto {
     public MissionType type;
 
     public Boolean online;
-    
+
     public NamedAgentDto author;
 }

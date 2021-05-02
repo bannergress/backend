@@ -52,9 +52,9 @@ public interface MissionService {
     Collection<Mission> importMissionSummaries(List<@Valid IntelMissionSummary> summaries);
 
     /**
-     * Finds missions contain a string in their titles and that are not part of any banner.
+     * Finds missions where the query matches with the title (partial search) or the author (exact search), and that are not part of any banner.
      *
-     * @param query          Query string to filter the title with.
+     * @param query          Query string to filter the title or the author with.
      * @param orderBy        Optional sort order.
      * @param orderDirection Sort direction.
      * @param offset         Offset of the first result.
