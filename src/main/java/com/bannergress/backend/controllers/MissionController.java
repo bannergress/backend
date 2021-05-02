@@ -88,12 +88,6 @@ public class MissionController {
     public static MissionDto toSummaryForUnused(Mission mission) {
         MissionDto dto = toSummary(mission);
         dto.description = mission.getDescription();
-        Optional<MissionStep> stepWithCoordinates = mission.getSteps().stream()
-            .filter(step -> step.getPoi() != null && step.getPoi().getLatitude() != null).findFirst();
-        if (stepWithCoordinates.isPresent()) {
-            dto.startLatitude = stepWithCoordinates.get().getPoi().getLatitude();
-            dto.startLongitude = stepWithCoordinates.get().getPoi().getLongitude();
-        }
         dto.author = mission.getAuthor() == null ? null : toAgentSummary(mission.getAuthor());
         return dto;
     }
