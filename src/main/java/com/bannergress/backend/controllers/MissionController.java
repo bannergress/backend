@@ -1,11 +1,9 @@
 package com.bannergress.backend.controllers;
 
-import com.bannergress.backend.dto.MissionDto;
-import com.bannergress.backend.dto.MissionStatus;
-import com.bannergress.backend.dto.MissionStepDto;
-import com.bannergress.backend.dto.PoiDto;
+import com.bannergress.backend.dto.*;
 import com.bannergress.backend.entities.Mission;
 import com.bannergress.backend.entities.MissionStep;
+import com.bannergress.backend.entities.NamedAgent;
 import com.bannergress.backend.entities.POI;
 import com.bannergress.backend.enums.MissionSortOrder;
 import com.bannergress.backend.security.Roles;
@@ -90,13 +88,15 @@ public class MissionController {
     public static MissionDto toSummaryForUnused(Mission mission) {
         MissionDto dto = toSummary(mission);
         dto.description = mission.getDescription();
-        Optional<MissionStep> stepWithCoordinates = mission.getSteps().stream()
-            .filter(step -> step.getPoi() != null && step.getPoi().getLatitude() != null).findFirst();
-        if (stepWithCoordinates.isPresent()) {
-            dto.startLatitude = stepWithCoordinates.get().getPoi().getLatitude();
-            dto.startLongitude = stepWithCoordinates.get().getPoi().getLongitude();
-        }
+        dto.author = mission.getAuthor() == null ? null : toAgentSummary(mission.getAuthor());
         return dto;
+    }
+
+    public static NamedAgentDto toAgentSummary(NamedAgent agent) {
+        NamedAgentDto result = new NamedAgentDto();
+        result.name = agent.getName();
+        result.faction = agent.getFaction();
+        return result;
     }
 
     public static MissionDto toDetails(Mission mission) {

@@ -29,7 +29,5 @@ public class MissionDto {
 
     public Boolean online;
 
-    public Double startLatitude;
-
-    public Double startLongitude;
+    public NamedAgentDto author;
 }
