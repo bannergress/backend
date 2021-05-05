@@ -6,7 +6,9 @@ import com.bannergress.backend.entities.PlaceInformation;
 import com.bannergress.backend.enums.PlaceType;
 import com.bannergress.backend.services.GeocodingService;
 import com.bannergress.backend.services.PlaceService;
+import com.bannergress.backend.utils.SlugGenerator;
 import com.google.common.collect.ImmutableSet;
+import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,11 +36,11 @@ public class PlaceServiceImpl implements PlaceService {
     private GeocodingService geocodingService;
 
     @Override
-    public Collection<Place> findUsedPlaces(final Optional<String> parentPlaceId, final Optional<String> queryString,
+    public Collection<Place> findUsedPlaces(final Optional<String> parentPlaceSlug, final Optional<String> queryString,
                                             final Optional<PlaceType> type) {
         String baseFragment = "SELECT DISTINCT p FROM Banner b JOIN b.startPlaces p "
             + "LEFT JOIN FETCH p.information i WHERE true = true";
-        String parentPlaceFragment = parentPlaceId.isPresent() ? " AND p.parentPlace.id = :parentPlaceId" : "";
+        String parentPlaceFragment = parentPlaceSlug.isPresent() ? " AND p.parentPlace.slug = :parentPlaceSlug" : "";
         String typeFragment = type.isPresent() ? " AND p.type = :type" : "";
         String queryStringFragment = queryString.isPresent() ? " AND LOWER(i.longName) LIKE :queryString" : "";
         TypedQuery<Place> query = entityManager
@@ -46,8 +48,8 @@ public class PlaceServiceImpl implements PlaceService {
         if (type.isPresent()) {
             query.setParameter("type", type.get());
         }
-        if (parentPlaceId.isPresent()) {
-            query.setParameter("parentPlaceId", parentPlaceId.get());
+        if (parentPlaceSlug.isPresent()) {
+            query.setParameter("parentPlaceSlug", parentPlaceSlug.get());
         }
         if (queryString.isPresent()) {
             // Right now, the query string filters only on the long name of the place.
@@ -58,8 +60,8 @@ public class PlaceServiceImpl implements PlaceService {
     }
 
     @Override
-    public Optional<Place> findPlaceById(String id) {
-        return Optional.ofNullable(entityManager.find(Place.class, id));
+    public Optional<Place> findPlaceBySlug(String slug) {
+        return entityManager.unwrap(Session.class).bySimpleNaturalId(Place.class).loadOptional(slug);
     }
 
     @Override
@@ -101,6 +103,7 @@ public class PlaceServiceImpl implements PlaceService {
         place.setParentPlace(parentPlace);
         Place existing = entityManager.find(Place.class, place.getId());
         if (existing == null) {
+            place.setSlug(deriveSlug(place));
             entityManager.persist(place);
         } else {
             place = existing;
@@ -111,6 +114,12 @@ public class PlaceServiceImpl implements PlaceService {
         coordinate.setPlace(place);
         entityManager.persist(coordinate);
         return place;
+    }
+
+    private String deriveSlug(Place place) {
+        String longName = place.getInformation().get(0).getLongName();
+        return SlugGenerator.generateSlug(longName,
+            slug -> entityManager.unwrap(Session.class).bySimpleNaturalId(Place.class).loadOptional(slug).isEmpty());
     }
 
     private Stream<Place> expandPlaces(Place place) {

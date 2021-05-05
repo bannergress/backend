@@ -24,7 +24,7 @@ public class DtoBuilder {
     @NotNull
     public static BannerDtoBuilder $BannerDto() {
         return new BannerDtoBuilder()
-            .withUuid(a($UUID()))
+            .withId(a($String()))
             .withTitle(a($String("title")))
             .withDescription(a($String("description")))
             .withWidth(6)

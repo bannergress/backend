@@ -8,7 +8,6 @@ import org.springframework.data.domain.Sort.Direction;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Service for banner-related tasks.
@@ -17,7 +16,7 @@ public interface BannerService {
     /**
      * Finds banners.
      *
-     * @param placeId        Optional place ID.
+     * @param placeSlug      Optional place Slug.
      * @param minLatitude    Optional minimum latitude.
      * @param maxLatitude    Optional maximum latitude.
      * @param minLongitude   Optional minimum longitude.
@@ -29,26 +28,26 @@ public interface BannerService {
      * @param limit          Maximum number of results.
      * @return Banners that were found.
      */
-    List<Banner> find(Optional<String> placeId, Optional<Double> minLatitude, Optional<Double> maxLatitude,
+    List<Banner> find(Optional<String> placeSlug, Optional<Double> minLatitude, Optional<Double> maxLatitude,
                       Optional<Double> minLongitude, Optional<Double> maxLongitude, Optional<String> query,
                       Optional<BannerSortOrder> orderBy, Direction orderDirection, int offset, int limit);
 
     /**
-     * Finds a banner by its internal UUID, including details down to mission level.
+     * Finds a banner by its slug, including details down to mission level.
      *
-     * @param uuid Internal UUID.
+     * @param id Slug.
      * @return Banner.
      */
-    Optional<Banner> findByUuidWithDetails(UUID uuid);
+    Optional<Banner> findBySlugWithDetails(String slug);
 
     /**
      * Creates a new banner. Banner missions must not be used by any other banner.
      *
      * @param bannerDto Banner DTO.
-     * @return UUID of the newly created banner.
+     * @return Slug of the newly created banner.
      * @throws MissionAlreadyUsedException If a mission is already used by another banner.
      */
-    UUID create(BannerDto bannerDto) throws MissionAlreadyUsedException;
+    String create(BannerDto bannerDto) throws MissionAlreadyUsedException;
 
     /**
      * Generates a preview of a new banner without actually persisting it. Banner missions must not be used by any other banner.
@@ -64,14 +63,14 @@ public interface BannerService {
      *
      * @param bannerDto Banner DTO.
      */
-    void update(UUID uuid, BannerDto bannerDto);
+    void update(String slug, BannerDto bannerDto);
 
     /**
-     * Deletes a banner by UUID.
+     * Deletes a banner by slug.
      *
-     * @param uuid UUID to delete.
+     * @param slug Slug to delete.
      */
-    void deleteByUuid(UUID uuid);
+    void deleteBySlug(String slug);
 
     /**
      * Calculates derived data of a banner.

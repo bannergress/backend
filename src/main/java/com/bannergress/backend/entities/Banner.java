@@ -3,6 +3,7 @@ package com.bannergress.backend.entities;
 import com.bannergress.backend.enums.BannerType;
 import com.bannergress.backend.utils.PojoBuilder;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
+import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.SortNatural;
 import org.hibernate.envers.AuditJoinTable;
 import org.hibernate.envers.AuditTable;
@@ -30,6 +31,14 @@ public class Banner {
     @Column(name = "uuid", columnDefinition = "uuid")
     @GeneratedValue
     private UUID uuid;
+
+    /**
+     * Slug (ID which is suitable for use in URLs).
+     */
+    @NaturalId
+    @Column(name = "slug", nullable = false)
+    @NotAudited
+    private String slug;
 
     /**
      * Title.
@@ -140,6 +149,14 @@ public class Banner {
 
     public void setUuid(UUID uuid) {
         this.uuid = uuid;
+    }
+
+    public String getSlug() {
+        return slug;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
     }
 
     public String getTitle() {
@@ -270,12 +287,12 @@ public class Banner {
             && Objects.equals(startLongitude, banner.startLongitude)
             && Objects.equals(lengthMeters, banner.lengthMeters) && Objects.equals(picture, banner.picture)
             && Objects.equals(startPlaces, banner.startPlaces) && Objects.equals(created, banner.created)
-            && type == banner.type;
+            && type == banner.type && Objects.equals(slug, banner.slug);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(uuid, title, description, numberOfMissions, missions, startLatitude, startLongitude,
-            lengthMeters, complete, online, picture, startPlaces, created, type);
+            lengthMeters, complete, online, picture, startPlaces, created, type, slug);
     }
 }

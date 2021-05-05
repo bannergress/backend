@@ -12,14 +12,12 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import static com.bannergress.backend.testutils.builder.BuilderMethods.a;
 import static com.bannergress.backend.testutils.builder.DtoBuilder.$BannerDto;
 import static com.bannergress.backend.testutils.builder.EntityBuilder.$Banner;
 import static com.bannergress.backend.testutils.builder.JavatypeBuilder.$Double;
 import static com.bannergress.backend.testutils.builder.JavatypeBuilder.$String;
-import static com.bannergress.backend.testutils.builder.JavatypeBuilder.$UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -51,7 +49,7 @@ class BannerControllerTest {
         assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(result.getBody()).hasSize(1);
         final var bannerDto = result.getBody().get(0);
-        assertThat(bannerDto.uuid).isEqualTo(banner.getUuid());
+        assertThat(bannerDto.id).isEqualTo(banner.getSlug());
         assertThat(bannerDto.numberOfMissions).isEqualTo(banner.getNumberOfMissions());
         assertThat(bannerDto.lengthMeters).isEqualTo(banner.getLengthMeters());
     }
@@ -76,7 +74,7 @@ class BannerControllerTest {
         assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(result.getBody()).hasSize(1);
         final var bannerDto = result.getBody().get(0);
-        assertThat(bannerDto.uuid).isEqualTo(banner.getUuid());
+        assertThat(bannerDto.id).isEqualTo(banner.getSlug());
         assertThat(bannerDto.numberOfMissions).isEqualTo(banner.getNumberOfMissions());
         assertThat(bannerDto.lengthMeters).isEqualTo(banner.getLengthMeters());
         assertThat(bannerDto.startLatitude).isEqualTo(banner.getStartLatitude());
@@ -86,19 +84,19 @@ class BannerControllerTest {
     @Test
     void get() {
         // WHEN
-        final UUID uuid = a($UUID());
+        final String slug = a($String());
         final Banner banner = a($Banner());
 
-        when(bannerService.findByUuidWithDetails(uuid)).thenReturn(Optional.of(banner));
+        when(bannerService.findBySlugWithDetails(slug)).thenReturn(Optional.of(banner));
 
         // THEN
-        final var response = testController.get(uuid);
+        final var response = testController.get(slug);
 
         // VERIFY
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         final BannerDto bannerDto = response.getBody();
         assertThat(bannerDto).isNotNull();
-        assertThat(bannerDto.uuid).isEqualTo(banner.getUuid());
+        assertThat(bannerDto.id).isEqualTo(banner.getSlug());
         assertThat(bannerDto.numberOfMissions).isEqualTo(banner.getNumberOfMissions());
         assertThat(bannerDto.lengthMeters).isEqualTo(banner.getLengthMeters());
         assertThat(bannerDto.startLatitude).isEqualTo(banner.getStartLatitude());
@@ -110,12 +108,12 @@ class BannerControllerTest {
     @Test
     void get_notFound() {
         // WHEN
-        final UUID uuid = a($UUID());
+        final String slug = a($String());
 
-        when(bannerService.findByUuidWithDetails(uuid)).thenReturn(Optional.empty());
+        when(bannerService.findBySlugWithDetails(slug)).thenReturn(Optional.empty());
 
         // THEN
-        final var response = testController.get(uuid);
+        final var response = testController.get(slug);
 
         // VERIFY
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
@@ -127,8 +125,8 @@ class BannerControllerTest {
         final BannerDto banner = a($BannerDto());
         final Banner savedBanner = a($Banner());
 
-        when(bannerService.create(banner)).thenReturn(savedBanner.getUuid());
-        when(bannerService.findByUuidWithDetails(savedBanner.getUuid())).thenReturn(Optional.of(savedBanner));
+        when(bannerService.create(banner)).thenReturn(savedBanner.getSlug());
+        when(bannerService.findBySlugWithDetails(savedBanner.getSlug())).thenReturn(Optional.of(savedBanner));
 
         // THEN
         final var response = testController.post(banner);
@@ -137,7 +135,7 @@ class BannerControllerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         final BannerDto bannerDto = response.getBody();
         assertThat(bannerDto).isNotNull();
-        assertThat(bannerDto.uuid).isEqualTo(savedBanner.getUuid());
+        assertThat(bannerDto.id).isEqualTo(savedBanner.getSlug());
         assertThat(bannerDto.numberOfMissions).isEqualTo(savedBanner.getNumberOfMissions());
         assertThat(bannerDto.lengthMeters).isEqualTo(savedBanner.getLengthMeters());
         assertThat(bannerDto.startLatitude).isEqualTo(savedBanner.getStartLatitude());

@@ -12,8 +12,10 @@ import com.bannergress.backend.services.BannerPictureService;
 import com.bannergress.backend.services.BannerService;
 import com.bannergress.backend.services.MissionService;
 import com.bannergress.backend.services.PlaceService;
+import com.bannergress.backend.utils.SlugGenerator;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Maps;
+import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Sort.Direction;
@@ -29,7 +31,6 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Default implementation of {@link BannerService}.
@@ -53,16 +54,16 @@ public class BannerServiceImpl implements BannerService {
     private BannerPictureService pictureService;
 
     @Override
-    public List<Banner> find(Optional<String> placeId, Optional<Double> minLatitude, Optional<Double> maxLatitude,
+    public List<Banner> find(Optional<String> placeSlug, Optional<Double> minLatitude, Optional<Double> maxLatitude,
                              Optional<Double> minLongitude, Optional<Double> maxLongitude, Optional<String> search,
                              Optional<BannerSortOrder> orderBy, Direction orderDirection, int offset, int limit) {
         String queryString = "SELECT b FROM Banner b";
-        if (placeId.isPresent()) {
-            queryString += " JOIN b.startPlaces p";
+        if (placeSlug.isPresent()) {
+            queryString += " JOIN b.startPlaces p ";
         }
         queryString += " WHERE true = true";
-        if (placeId.isPresent()) {
-            queryString += " AND p.id = :placeId";
+        if (placeSlug.isPresent()) {
+            queryString += " AND p.slug = :placeSlug";
         }
         if (minLatitude.isPresent()) {
             queryString += " AND b.startLatitude BETWEEN :minLatitude AND :maxLatitude "
@@ -88,8 +89,8 @@ public class BannerServiceImpl implements BannerService {
             }
         }
         TypedQuery<Banner> query = entityManager.createQuery(queryString, Banner.class);
-        if (placeId.isPresent()) {
-            query.setParameter("placeId", placeId.get());
+        if (placeSlug.isPresent()) {
+            query.setParameter("placeSlug", placeSlug.get());
         }
         if (minLatitude.isPresent()) {
             query.setParameter("minLatitude", minLatitude.get());
@@ -118,11 +119,11 @@ public class BannerServiceImpl implements BannerService {
     }
 
     @Override
-    public Optional<Banner> findByUuidWithDetails(UUID uuid) {
+    public Optional<Banner> findBySlugWithDetails(String slug) {
         TypedQuery<Banner> query = entityManager
             .createQuery("SELECT b FROM Banner b LEFT JOIN FETCH b.missions m LEFT JOIN FETCH m.author"
-                + " LEFT JOIN FETCH m.steps s LEFT JOIN FETCH s.poi WHERE b.uuid = :uuid", Banner.class);
-        query.setParameter("uuid", uuid);
+                + " LEFT JOIN FETCH m.steps s LEFT JOIN FETCH s.poi WHERE b.slug = :slug", Banner.class);
+        query.setParameter("slug", slug);
         try {
             return Optional.of(query.getSingleResult());
         } catch (NoResultException e) {
@@ -131,11 +132,18 @@ public class BannerServiceImpl implements BannerService {
     }
 
     @Override
-    public UUID create(BannerDto bannerDto) throws MissionAlreadyUsedException {
+    public String create(BannerDto bannerDto) throws MissionAlreadyUsedException {
         Banner banner = createTransient(bannerDto);
+        banner.setSlug(deriveSlug(banner));
         entityManager.persist(banner);
         banner.getStartPlaces().forEach(place -> place.setNumberOfBanners(place.getNumberOfBanners() + 1));
-        return banner.getUuid();
+        return banner.getSlug();
+    }
+
+    private String deriveSlug(Banner banner) {
+        String title = banner.getTitle();
+        return SlugGenerator.generateSlug(title,
+            slug -> entityManager.unwrap(Session.class).bySimpleNaturalId(Banner.class).loadOptional(slug).isEmpty());
     }
 
     private Banner createTransient(BannerDto bannerDto) throws MissionAlreadyUsedException {
@@ -164,8 +172,8 @@ public class BannerServiceImpl implements BannerService {
     }
 
     @Override
-    public void update(UUID uuid, BannerDto bannerDto) {
-        Banner banner = entityManager.find(Banner.class, uuid);
+    public void update(String slug, BannerDto bannerDto) {
+        Banner banner = entityManager.unwrap(Session.class).bySimpleNaturalId(Banner.class).load(slug);
         banner.setTitle(bannerDto.title);
         banner.setDescription(bannerDto.description);
         banner.setWidth(bannerDto.width);
@@ -177,8 +185,8 @@ public class BannerServiceImpl implements BannerService {
     }
 
     @Override
-    public void deleteByUuid(UUID uuid) {
-        Banner banner = entityManager.find(Banner.class, uuid);
+    public void deleteBySlug(String slug) {
+        Banner banner = entityManager.unwrap(Session.class).bySimpleNaturalId(Banner.class).load(slug);
         for (Place place : banner.getStartPlaces()) {
             place.setNumberOfBanners(place.getNumberOfBanners() - 1);
         }

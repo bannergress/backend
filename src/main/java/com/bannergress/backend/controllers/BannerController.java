@@ -20,7 +20,6 @@ import javax.validation.constraints.Max;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -79,17 +78,17 @@ public class BannerController {
      * @param id
      * @return
      */
-    @GetMapping("/bnrs/{uuid}")
-    public ResponseEntity<BannerDto> get(@PathVariable final UUID uuid) {
-        final Optional<Banner> banner = bannerService.findByUuidWithDetails(uuid);
+    @GetMapping("/bnrs/{id}")
+    public ResponseEntity<BannerDto> get(@PathVariable final String id) {
+        final Optional<Banner> banner = bannerService.findBySlugWithDetails(id);
         return ResponseEntity.of(banner.map(this::toDetails));
     }
 
     @RolesAllowed(Roles.CREATE_BANNER)
     @PostMapping("/bnrs")
     public ResponseEntity<BannerDto> post(@Valid @RequestBody BannerDto banner) throws MissionAlreadyUsedException {
-        UUID uuid = bannerService.create(banner);
-        return get(uuid);
+        String id = bannerService.create(banner);
+        return get(id);
     }
 
     @RolesAllowed(Roles.CREATE_BANNER)
@@ -106,10 +105,10 @@ public class BannerController {
      * @return Updated banner data.
      */
     @RolesAllowed(Roles.MANAGE_BANNERS)
-    @PutMapping("/bnrs/{uuid}")
-    public ResponseEntity<BannerDto> put(@PathVariable final UUID uuid, @Valid @RequestBody BannerDto banner) {
-        bannerService.update(uuid, banner);
-        return get(uuid);
+    @PutMapping("/bnrs/{id}")
+    public ResponseEntity<BannerDto> put(@PathVariable final String id, @Valid @RequestBody BannerDto banner) {
+        bannerService.update(id, banner);
+        return get(id);
     }
 
     /**
@@ -118,9 +117,9 @@ public class BannerController {
      * @param uuid UUID.
      */
     @RolesAllowed(Roles.MANAGE_BANNERS)
-    @DeleteMapping("/bnrs/{uuid}")
-    public void delete(@PathVariable final UUID uuid) {
-        bannerService.deleteByUuid(uuid);
+    @DeleteMapping("/bnrs/{id}")
+    public void delete(@PathVariable final String id) {
+        bannerService.deleteBySlug(id);
     }
 
     @RolesAllowed(Roles.MANAGE_BANNERS)
@@ -131,7 +130,7 @@ public class BannerController {
 
     private BannerDto toSummary(Banner banner) {
         BannerDto dto = new BannerDto();
-        dto.uuid = banner.getUuid();
+        dto.id = banner.getSlug();
         dto.title = banner.getTitle();
         dto.numberOfMissions = banner.getNumberOfMissions();
         dto.lengthMeters = banner.getLengthMeters();
