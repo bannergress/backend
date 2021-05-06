@@ -35,6 +35,9 @@ public class PlaceServiceImpl implements PlaceService {
     @Autowired
     private GeocodingService geocodingService;
 
+    @Autowired
+    private SlugGenerator slugGenerator;
+
     @Override
     public Collection<Place> findUsedPlaces(final Optional<String> parentPlaceSlug, final Optional<String> queryString,
                                             final Optional<PlaceType> type) {
@@ -118,7 +121,7 @@ public class PlaceServiceImpl implements PlaceService {
 
     private String deriveSlug(Place place) {
         String longName = place.getInformation().get(0).getLongName();
-        return SlugGenerator.generateSlug(longName,
+        return slugGenerator.generateSlug(longName,
             slug -> entityManager.unwrap(Session.class).bySimpleNaturalId(Place.class).loadOptional(slug).isEmpty());
     }
 

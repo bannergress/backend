@@ -53,6 +53,9 @@ public class BannerServiceImpl implements BannerService {
     @Autowired
     private BannerPictureService pictureService;
 
+    @Autowired
+    private SlugGenerator slugGenerator;
+
     @Override
     public List<Banner> find(Optional<String> placeSlug, Optional<Double> minLatitude, Optional<Double> maxLatitude,
                              Optional<Double> minLongitude, Optional<Double> maxLongitude, Optional<String> search,
@@ -142,7 +145,7 @@ public class BannerServiceImpl implements BannerService {
 
     private String deriveSlug(Banner banner) {
         String title = banner.getTitle();
-        return SlugGenerator.generateSlug(title,
+        return slugGenerator.generateSlug(title,
             slug -> entityManager.unwrap(Session.class).bySimpleNaturalId(Banner.class).loadOptional(slug).isEmpty());
     }
 

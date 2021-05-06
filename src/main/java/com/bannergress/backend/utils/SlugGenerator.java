@@ -7,8 +7,11 @@ import java.util.Locale;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
+/**
+ * Generator for slugs (readable lowercase URL component).
+ */
 public final class SlugGenerator {
-    private static final int SUFFIX_BYTES = 2;
+    private final int suffixBytes;
 
     private static final Pattern replacedCharacters = Pattern.compile("[^\\p{Alnum}]+",
         Pattern.UNICODE_CHARACTER_CLASS);
@@ -22,12 +25,12 @@ public final class SlugGenerator {
      * @param isAvailable Predicate that checks for collisions of the slug.
      * @return Slug.
      */
-    public static String generateSlug(String base, Predicate<String> isAvailable) {
+    public String generateSlug(String base, Predicate<String> isAvailable) {
         String lowerCase = base.toLowerCase(Locale.ROOT);
         String onlyAlphanum = replacedCharacters.matcher(lowerCase).replaceAll("-");
         String prefix = onlyAlphanum.replaceAll("^-+|-+$", "");
         while (true) {
-            byte[] random = new byte[SUFFIX_BYTES];
+            byte[] random = new byte[suffixBytes];
             numberGenerator.nextBytes(random);
             String proposal = prefix + "-" + new String(Hex.encode(random));
             if (isAvailable.test(proposal)) {
@@ -36,6 +39,7 @@ public final class SlugGenerator {
         }
     }
 
-    private SlugGenerator() {
+    public SlugGenerator(int suffixBytes) {
+        this.suffixBytes = suffixBytes;
     }
 }
