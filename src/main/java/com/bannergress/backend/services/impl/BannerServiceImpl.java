@@ -179,6 +179,9 @@ public class BannerServiceImpl implements BannerService {
     @Override
     public void deleteByUuid(UUID uuid) {
         Banner banner = entityManager.find(Banner.class, uuid);
+        for (Place place : banner.getStartPlaces()) {
+            place.setNumberOfBanners(place.getNumberOfBanners() - 1);
+        }
         entityManager.remove(banner);
     }
 
