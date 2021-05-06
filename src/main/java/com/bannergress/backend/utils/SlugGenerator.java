@@ -16,6 +16,15 @@ public final class SlugGenerator {
     private static final Pattern replacedCharacters = Pattern.compile("[^\\p{Alnum}]+",
         Pattern.UNICODE_CHARACTER_CLASS);
 
+    /**
+     * Creates a new slug generator.
+     *
+     * @param suffixBytes Number of bytes to use for the suffix. Suffix is represented in hexadecimal notation.
+     */
+    public SlugGenerator(int suffixBytes) {
+        this.suffixBytes = suffixBytes;
+    }
+
     private static final SecureRandom numberGenerator = new SecureRandom();
 
     /**
@@ -37,9 +46,5 @@ public final class SlugGenerator {
                 return proposal;
             }
         }
-    }
-
-    public SlugGenerator(int suffixBytes) {
-        this.suffixBytes = suffixBytes;
     }
 }
