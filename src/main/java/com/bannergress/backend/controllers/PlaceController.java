@@ -53,7 +53,7 @@ public class PlaceController {
      */
     @GetMapping("/places/{id}")
     public ResponseEntity<PlaceDto> get(@PathVariable final String id) {
-        return ResponseEntity.of(placeService.findPlaceById(id).map(this::toDetails));
+        return ResponseEntity.of(placeService.findPlaceBySlug(id).map(this::toDetails));
     }
 
     private PlaceDto toDetails(Place place) {
@@ -67,7 +67,7 @@ public class PlaceController {
     private PlaceDto toSummary(Place place) {
         PlaceInformation information = placeService.getPlaceInformation(place, "en");
         PlaceDto placeDto = new PlaceDto();
-        placeDto.id = place.getId();
+        placeDto.id = place.getSlug();
         placeDto.numberOfBanners = place.getNumberOfBanners();
         placeDto.formattedAddress = information.getFormattedAddress();
         placeDto.longName = information.getLongName();

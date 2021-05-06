@@ -14,21 +14,21 @@ public interface PlaceService {
     /**
      * Finds all places of a type that are used by at least one banner.
      *
-     * @param parentPlaceId Optional ID of a parent place.
-     * @param queryString   Optional query string to filter results.
-     * @param type          Optional type of place to find.
+     * @param parentPlaceSlug Optional slug of a parent place.
+     * @param queryString     Optional query string to filter results.
+     * @param type            Optional type of place to find.
      * @return Found places.
      */
-    Collection<Place> findUsedPlaces(Optional<String> parentPlaceId, Optional<String> queryString,
+    Collection<Place> findUsedPlaces(Optional<String> parentPlaceSlug, Optional<String> queryString,
                                      Optional<PlaceType> type);
 
     /**
      * Retrieves a place.
      *
-     * @param id ID of the place.
+     * @param slug (ID which is suitable for use in URLs) of the place.
      * @return Place.
      */
-    Optional<Place> findPlaceById(String id);
+    Optional<Place> findPlaceBySlug(String slug);
 
     /**
      * Gets localized information about a place.

@@ -3,6 +3,7 @@ package com.bannergress.backend.entities;
 import com.bannergress.backend.enums.PlaceType;
 import com.bannergress.backend.utils.PojoBuilder;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
+import org.hibernate.annotations.NaturalId;
 
 import javax.persistence.*;
 
@@ -22,6 +23,13 @@ public class Place {
     @Id
     @Column(name = "id")
     private String id;
+
+    /**
+     * Slug (ID which is suitable for use in URLs).
+     */
+    @NaturalId
+    @Column(name = "slug", nullable = false)
+    private String slug;
 
     /**
      * Type of place (country etc).
@@ -79,6 +87,14 @@ public class Place {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getSlug() {
+        return slug;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
     }
 
     public PlaceType getType() {

@@ -33,6 +33,7 @@ CREATE TABLE "banner_picture" (
 
 CREATE TABLE "banner" (
   "uuid" uuid NOT NULL,
+  "slug" text NOT NULL,
   "complete" boolean NOT NULL,
   "created" timestamp with time zone NOT NULL,
   "description" text,
@@ -46,6 +47,7 @@ CREATE TABLE "banner" (
   "picture" text,
   "type" banner_type NOT NULL,
   PRIMARY KEY ("uuid"),
+  UNIQUE ("slug"),
   FOREIGN KEY ("picture") REFERENCES "banner_picture"("hash")
 );
 CREATE INDEX ON "banner" ("created" DESC);
@@ -55,6 +57,7 @@ CREATE INDEX ON "banner" USING gin ((lower("title")) gin_trgm_ops);
 
 CREATE TABLE "place" (
   "id" text NOT NULL,
+  "slug" text NOT NULL,
   "type" place_type NOT NULL,
   "number_of_banners" integer NOT NULL,
   "boundary_min_latitude" numeric(8,6) NOT NULL,
@@ -63,6 +66,7 @@ CREATE TABLE "place" (
   "boundary_max_longitude" numeric(9,6) NOT NULL,
   "parent_place" text,
   PRIMARY KEY ("id"),
+  UNIQUE ("slug"),
   FOREIGN KEY ("parent_place") REFERENCES "place"("id")
 );
 CREATE INDEX ON "place" ("type");
