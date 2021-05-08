@@ -3,6 +3,7 @@ package com.bannergress.backend.services.impl;
 import com.bannergress.backend.entities.Place;
 import com.bannergress.backend.entities.PlaceCoordinate;
 import com.bannergress.backend.entities.PlaceInformation;
+import com.bannergress.backend.enums.PlaceSortOrder;
 import com.bannergress.backend.enums.PlaceType;
 import com.bannergress.backend.services.GeocodingService;
 import com.bannergress.backend.services.PlaceService;
@@ -10,6 +11,7 @@ import com.bannergress.backend.utils.SlugGenerator;
 import com.google.common.collect.ImmutableSet;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
@@ -40,14 +42,25 @@ public class PlaceServiceImpl implements PlaceService {
 
     @Override
     public Collection<Place> findUsedPlaces(final Optional<String> parentPlaceSlug, final Optional<String> queryString,
-                                            final Optional<PlaceType> type) {
+                                            final Optional<PlaceType> type, PlaceSortOrder orderBy,
+                                            Direction orderDirection, int offset, Optional<Integer> limit) {
         String baseFragment = "SELECT DISTINCT p FROM Banner b JOIN b.startPlaces p "
             + "LEFT JOIN FETCH p.information i WHERE true = true";
         String parentPlaceFragment = parentPlaceSlug.isPresent() ? " AND p.parentPlace.slug = :parentPlaceSlug" : "";
         String typeFragment = type.isPresent() ? " AND p.type = :type" : "";
         String queryStringFragment = queryString.isPresent() ? " AND LOWER(i.longName) LIKE :queryString" : "";
-        TypedQuery<Place> query = entityManager
-            .createQuery(baseFragment + parentPlaceFragment + typeFragment + queryStringFragment, Place.class);
+        String orderByFragment;
+        switch (orderBy) {
+            case numberOfBanners:
+                orderByFragment = " ORDER BY p.numberOfBanners " + orderDirection.toString() + ", p.id "
+                    + orderDirection.toString();
+                break;
+            default:
+                throw new AssertionError();
+        }
+
+        TypedQuery<Place> query = entityManager.createQuery(
+            baseFragment + parentPlaceFragment + typeFragment + queryStringFragment + orderByFragment, Place.class);
         if (type.isPresent()) {
             query.setParameter("type", type.get());
         }
@@ -58,6 +71,10 @@ public class PlaceServiceImpl implements PlaceService {
             // Right now, the query string filters only on the long name of the place.
             // In the future, it might also filter on other aspects, like short name.
             query.setParameter("queryString", "%" + queryString.get().toLowerCase() + "%");
+        }
+        query.setFirstResult(offset);
+        if (limit.isPresent()) {
+            query.setMaxResults(limit.get());
         }
         return ImmutableSet.copyOf(query.getResultList());
     }
