@@ -45,9 +45,10 @@ public class PlaceController {
                                @RequestParam(defaultValue = "numberOfBanners") final PlaceSortOrder orderBy,
                                @RequestParam(defaultValue = "DESC") final Direction orderDirection,
                                @RequestParam(defaultValue = "0") final int offset,
-                               @RequestParam final Optional<Integer> limit) {
+                               @RequestParam final Optional<Integer> limit,
+                               @RequestParam(defaultValue = "false") final boolean collapsePlaces) {
         Collection<Place> usedPlaces = placeService.findUsedPlaces(parentPlaceId, query, type, orderBy, orderDirection,
-            offset, limit);
+            offset, limit, collapsePlaces);
         return usedPlaces.stream().map(this::toSummary).collect(Collectors.toList());
     }
 

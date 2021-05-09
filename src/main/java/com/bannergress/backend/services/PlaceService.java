@@ -23,11 +23,12 @@ public interface PlaceService {
      * @param orderDirection  Sort direction.
      * @param offset          Offset of the first result.
      * @param limit           Maximum number of results.
+     * @param collapsePlaces  Collapse places that are nested within each other that have the same number of banners.
      * @return Found places.
      */
     Collection<Place> findUsedPlaces(Optional<String> parentPlaceSlug, Optional<String> queryString,
                                      Optional<PlaceType> type, PlaceSortOrder orderBy, Direction orderDirection,
-                                     int offset, Optional<Integer> limit);
+                                     int offset, Optional<Integer> limit, boolean collapsePlaces);
 
     /**
      * Retrieves a place.
