@@ -11,10 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Geocoding using Google Maps API.
@@ -44,6 +41,9 @@ public class GoogleMapsGeocodingServiceImpl implements GeocodingService {
                 .await();
             List<Place> result = new ArrayList<>();
             for (GeocodingResult geocodingResult : geocodingResults) {
+                if (isColloquialResult(geocodingResult)) {
+                    continue;
+                }
                 for (AddressType addressType : geocodingResult.types) {
                     PlaceType placeType = mapAddressType(addressType);
                     if (placeType != null) {
@@ -60,6 +60,10 @@ public class GoogleMapsGeocodingServiceImpl implements GeocodingService {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private boolean isColloquialResult(GeocodingResult geocodingResult) {
+        return Arrays.stream(geocodingResult.types).anyMatch(AddressType.COLLOQUIAL_AREA::equals);
     }
 
     private Place importPlace(GeocodingResult geocodingResult, PlaceType type, String languageCode) {
