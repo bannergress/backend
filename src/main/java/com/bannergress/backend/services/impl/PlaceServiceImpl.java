@@ -3,23 +3,23 @@ package com.bannergress.backend.services.impl;
 import com.bannergress.backend.entities.Place;
 import com.bannergress.backend.entities.PlaceCoordinate;
 import com.bannergress.backend.entities.PlaceInformation;
+import com.bannergress.backend.enums.PlaceSortOrder;
 import com.bannergress.backend.enums.PlaceType;
 import com.bannergress.backend.services.GeocodingService;
 import com.bannergress.backend.services.PlaceService;
 import com.bannergress.backend.utils.SlugGenerator;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -39,15 +39,26 @@ public class PlaceServiceImpl implements PlaceService {
     private SlugGenerator slugGenerator;
 
     @Override
-    public Collection<Place> findUsedPlaces(final Optional<String> parentPlaceSlug, final Optional<String> queryString,
-                                            final Optional<PlaceType> type) {
+    public List<Place> findUsedPlaces(final Optional<String> parentPlaceSlug, final Optional<String> queryString,
+                                      final Optional<PlaceType> type, PlaceSortOrder orderBy, Direction orderDirection,
+                                      int offset, Optional<Integer> limit, boolean collapsePlaces) {
         String baseFragment = "SELECT DISTINCT p FROM Banner b JOIN b.startPlaces p "
             + "LEFT JOIN FETCH p.information i WHERE true = true";
         String parentPlaceFragment = parentPlaceSlug.isPresent() ? " AND p.parentPlace.slug = :parentPlaceSlug" : "";
         String typeFragment = type.isPresent() ? " AND p.type = :type" : "";
         String queryStringFragment = queryString.isPresent() ? " AND LOWER(i.longName) LIKE :queryString" : "";
-        TypedQuery<Place> query = entityManager
-            .createQuery(baseFragment + parentPlaceFragment + typeFragment + queryStringFragment, Place.class);
+        String orderByFragment;
+        switch (orderBy) {
+            case numberOfBanners:
+                orderByFragment = " ORDER BY p.numberOfBanners " + orderDirection.toString() + ", p.id "
+                    + orderDirection.toString();
+                break;
+            default:
+                throw new AssertionError();
+        }
+
+        TypedQuery<Place> query = entityManager.createQuery(
+            baseFragment + parentPlaceFragment + typeFragment + queryStringFragment + orderByFragment, Place.class);
         if (type.isPresent()) {
             query.setParameter("type", type.get());
         }
@@ -59,7 +70,28 @@ public class PlaceServiceImpl implements PlaceService {
             // In the future, it might also filter on other aspects, like short name.
             query.setParameter("queryString", "%" + queryString.get().toLowerCase() + "%");
         }
-        return ImmutableSet.copyOf(query.getResultList());
+        if (collapsePlaces) {
+            List<Place> resultUncollapsed = query.getResultList();
+            Multiset<String> numberOfBannersInChildren = HashMultiset.create();
+            for (Place place : resultUncollapsed) {
+                if (place.getParentPlace() != null) {
+                    // Only use ID of parent place since we don't want to accidentally load it
+                    numberOfBannersInChildren.add(place.getParentPlace().getId(), place.getNumberOfBanners());
+                }
+            }
+            return resultUncollapsed.stream()
+                // Remove parents from which we already return all children
+                // (i.e. the combined number of banners of the children equals the number of banners of the parent)
+                .filter(place -> place.getNumberOfBanners() != numberOfBannersInChildren.count(place.getId()))
+                // Do paging ourselves
+                .skip(offset).limit(limit.isPresent() ? limit.get() : Integer.MAX_VALUE).collect(Collectors.toList());
+        } else {
+            query.setFirstResult(offset);
+            if (limit.isPresent()) {
+                query.setMaxResults(limit.get());
+            }
+            return query.getResultList();
+        }
     }
 
     @Override

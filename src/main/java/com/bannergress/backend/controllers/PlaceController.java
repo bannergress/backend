@@ -3,8 +3,10 @@ package com.bannergress.backend.controllers;
 import com.bannergress.backend.dto.PlaceDto;
 import com.bannergress.backend.entities.Place;
 import com.bannergress.backend.entities.PlaceInformation;
+import com.bannergress.backend.enums.PlaceSortOrder;
 import com.bannergress.backend.enums.PlaceType;
 import com.bannergress.backend.services.PlaceService;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,11 +39,16 @@ public class PlaceController {
      * @return Banners.
      */
     @GetMapping(value = "/places", params = {"used=true"})
-    public List<PlaceDto> list(@RequestParam(required = false) final PlaceType type,
-                               @RequestParam(required = false) final String parentPlaceId,
-                               @RequestParam(required = false) final String query) {
-        Collection<Place> usedPlaces = placeService.findUsedPlaces(Optional.ofNullable(parentPlaceId),
-            Optional.ofNullable(query), Optional.ofNullable(type));
+    public List<PlaceDto> list(@RequestParam final Optional<PlaceType> type,
+                               @RequestParam final Optional<String> parentPlaceId,
+                               @RequestParam final Optional<String> query,
+                               @RequestParam(defaultValue = "numberOfBanners") final PlaceSortOrder orderBy,
+                               @RequestParam(defaultValue = "DESC") final Direction orderDirection,
+                               @RequestParam(defaultValue = "0") final int offset,
+                               @RequestParam final Optional<Integer> limit,
+                               @RequestParam(defaultValue = "false") final boolean collapsePlaces) {
+        Collection<Place> usedPlaces = placeService.findUsedPlaces(parentPlaceId, query, type, orderBy, orderDirection,
+            offset, limit, collapsePlaces);
         return usedPlaces.stream().map(this::toSummary).collect(Collectors.toList());
     }
 
