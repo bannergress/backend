@@ -112,6 +112,13 @@ public class Mission {
     @NotAudited
     private Instant latestUpdateDetails;
 
+    /**
+     * List of banners in which the mission is included.
+     */
+    @ManyToMany(mappedBy = "missions")
+    @NotAudited
+    private List<Banner> banners;
+
     public String getId() {
         return id;
     }

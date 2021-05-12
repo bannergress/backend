@@ -203,7 +203,7 @@ public class MissionServiceImpl implements MissionService {
                                                   Direction orderDirection, int offset, int limit) {
         String queryString = "SELECT m FROM Mission m WHERE (LOWER(m.title) LIKE :search "
             + "OR LOWER(m.author.name) = :searchExact)"
-            + "AND NOT EXISTS (SELECT b FROM Banner b WHERE m MEMBER OF b.missions)";
+            + "AND m.banners IS EMPTY";
         if (orderBy.isPresent()) {
             switch (orderBy.get()) {
                 case title:
