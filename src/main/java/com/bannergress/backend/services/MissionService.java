@@ -92,7 +92,9 @@ public interface MissionService {
     /**
      * Verifies that a collection of missions is available for use in a banner. Throws if at least one of the missions is not available.
      *
-     * @param ids Mission IDs.
+     * @param ids                   Mission IDs.
+     * @param acceptableBannerSlugs If a mission ID is only used in these banners, the check passes.
      */
-    void assertNotAlreadyUsedInBanners(Collection<String> ids) throws MissionAlreadyUsedException;
+    void assertNotAlreadyUsedInBanners(Collection<String> ids, List<String> acceptableBannerSlugs)
+        throws MissionAlreadyUsedException;
 }

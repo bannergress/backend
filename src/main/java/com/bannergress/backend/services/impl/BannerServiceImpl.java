@@ -136,7 +136,7 @@ public class BannerServiceImpl implements BannerService {
 
     @Override
     public String create(BannerDto bannerDto) throws MissionAlreadyUsedException {
-        Banner banner = createTransient(bannerDto);
+        Banner banner = createTransient(bannerDto, List.of());
         banner.setSlug(deriveSlug(banner));
         entityManager.persist(banner);
         banner.getStartPlaces().forEach(place -> place.setNumberOfBanners(place.getNumberOfBanners() + 1));
@@ -149,10 +149,11 @@ public class BannerServiceImpl implements BannerService {
             slug -> entityManager.unwrap(Session.class).bySimpleNaturalId(Banner.class).loadOptional(slug).isEmpty());
     }
 
-    private Banner createTransient(BannerDto bannerDto) throws MissionAlreadyUsedException {
+    private Banner createTransient(BannerDto bannerDto, List<String> acceptableBannerSlugs)
+        throws MissionAlreadyUsedException {
         Collection<String> missionIds = Collections2.transform(bannerDto.missions.values(),
             missionDto -> missionDto.id);
-        missionService.assertNotAlreadyUsedInBanners(missionIds);
+        missionService.assertNotAlreadyUsedInBanners(missionIds, acceptableBannerSlugs);
         Banner banner = new Banner();
         banner.setTitle(bannerDto.title);
         banner.setDescription(bannerDto.description);
@@ -169,13 +170,16 @@ public class BannerServiceImpl implements BannerService {
 
     @Override
     public Banner generatePreview(BannerDto bannerDto) throws MissionAlreadyUsedException {
-        Banner banner = createTransient(bannerDto);
+        Banner banner = createTransient(bannerDto, bannerDto.id != null ? List.of(bannerDto.id) : List.of());
         banner.getPicture().setExpiration(Instant.now().plusSeconds(3_600));
         return banner;
     }
 
     @Override
-    public void update(String slug, BannerDto bannerDto) {
+    public void update(String slug, BannerDto bannerDto) throws MissionAlreadyUsedException {
+        Collection<String> missionIds = Collections2.transform(bannerDto.missions.values(),
+            missionDto -> missionDto.id);
+        missionService.assertNotAlreadyUsedInBanners(missionIds, List.of(bannerDto.id));
         Banner banner = entityManager.unwrap(Session.class).bySimpleNaturalId(Banner.class).load(slug);
         banner.setTitle(bannerDto.title);
         banner.setDescription(bannerDto.description);

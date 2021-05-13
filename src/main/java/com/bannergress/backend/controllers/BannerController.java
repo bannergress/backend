@@ -103,10 +103,12 @@ public class BannerController {
      * @param uuid   UUID.
      * @param banner Banner data.
      * @return Updated banner data.
+     * @throws MissionAlreadyUsedException If a mission is already used by another banner.
      */
     @RolesAllowed(Roles.MANAGE_BANNERS)
     @PutMapping("/bnrs/{id}")
-    public ResponseEntity<BannerDto> put(@PathVariable final String id, @Valid @RequestBody BannerDto banner) {
+    public ResponseEntity<BannerDto> put(@PathVariable final String id, @Valid @RequestBody BannerDto banner)
+        throws MissionAlreadyUsedException {
         bannerService.update(id, banner);
         return get(id);
     }
