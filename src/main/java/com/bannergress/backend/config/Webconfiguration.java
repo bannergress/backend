@@ -10,6 +10,6 @@ public class Webconfiguration implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         // Allows CORS from all endpoints to any origin
-        registry.addMapping("/**");
+        registry.addMapping("/**").allowedMethods("*");
     }
 }
