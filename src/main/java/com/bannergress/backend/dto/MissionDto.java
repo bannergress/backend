@@ -30,6 +30,6 @@ public class MissionDto {
     public Boolean online;
 
     public NamedAgentDto author;
-    
+
     public Long averageDurationMilliseconds;
 }
