@@ -149,6 +149,8 @@ public class BannerController {
         BannerDto dto = toSummary(banner);
         dto.missions = Maps.transformValues(banner.getMissions(), MissionController::toDetails);
         dto.type = banner.getType();
+        dto.description = banner.getDescription();
+        dto.width = banner.getWidth();
         return dto;
     }
 }

@@ -105,6 +105,8 @@ public class MissionController {
         dto.description = mission.getDescription();
         dto.type = mission.getType();
         dto.online = mission.isOnline();
+        dto.author = mission.getAuthor() == null ? null : toAgentSummary(mission.getAuthor());
+        dto.averageDurationMilliseconds = mission.getAverageDurationMilliseconds();
         return dto;
     }
 
