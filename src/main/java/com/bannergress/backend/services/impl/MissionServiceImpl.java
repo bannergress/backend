@@ -202,8 +202,7 @@ public class MissionServiceImpl implements MissionService {
     public Collection<Mission> findUnusedMissions(String search, Optional<MissionSortOrder> orderBy,
                                                   Direction orderDirection, int offset, int limit) {
         String queryString = "SELECT m FROM Mission m WHERE (LOWER(m.title) LIKE :search "
-            + "OR LOWER(m.author.name) = :searchExact)"
-            + "AND m.banners IS EMPTY";
+            + "OR LOWER(m.author.name) = :searchExact)" + "AND m.banners IS EMPTY";
         if (orderBy.isPresent()) {
             switch (orderBy.get()) {
                 case title:
@@ -233,10 +232,17 @@ public class MissionServiceImpl implements MissionService {
     }
 
     @Override
-    public void assertNotAlreadyUsedInBanners(Collection<String> ids) throws MissionAlreadyUsedException {
+    public void assertNotAlreadyUsedInBanners(Collection<String> ids, List<String> acceptableBannerSlugs)
+        throws MissionAlreadyUsedException {
+        String acceptableBannerSlugsPart = acceptableBannerSlugs.isEmpty() ? ""
+            : " AND b.slug NOT IN :acceptableBannerSlugs";
         TypedQuery<Long> query = entityManager.createQuery("SELECT COUNT(m) FROM Mission m WHERE m.id IN :ids "
-            + "AND NOT EXISTS (SELECT b FROM Banner b WHERE m MEMBER OF b.missions)", Long.class);
+            + "AND NOT EXISTS (SELECT 1 FROM Banner b WHERE b MEMBER OF m.banners" + acceptableBannerSlugsPart + ")",
+            Long.class);
         query.setParameter("ids", ids);
+        if (!acceptableBannerSlugs.isEmpty()) {
+            query.setParameter("acceptableBannerSlugs", acceptableBannerSlugs);
+        }
         long availableMissions = query.getSingleResult();
         if (availableMissions < ids.size()) {
             throw new MissionAlreadyUsedException();

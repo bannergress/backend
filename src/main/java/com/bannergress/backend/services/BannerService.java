@@ -62,8 +62,9 @@ public interface BannerService {
      * Updates an existing banner.
      *
      * @param bannerDto Banner DTO.
+     * @throws MissionAlreadyUsedException If a mission is already used by another banner.
      */
-    void update(String slug, BannerDto bannerDto);
+    void update(String slug, BannerDto bannerDto) throws MissionAlreadyUsedException;
 
     /**
      * Deletes a banner by slug.
