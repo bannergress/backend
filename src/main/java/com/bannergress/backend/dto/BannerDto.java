@@ -51,7 +51,7 @@ public class BannerDto {
      * position must be less than {@link #numberOfMissions}. The map may be sparse,
      * i.e. not every position is necessarily mapped to a mission.
      */
-    public Map<@NotNull @Min(0) Integer, @NotNull MissionDto> missions;
+    public Map<@NotNull @Min(0) @Max(2999) Integer, @NotNull MissionDto> missions;
 
     /**
      * Latitude of the start portal of the first mission.
