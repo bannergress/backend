@@ -11,6 +11,7 @@ import com.bannergress.backend.services.PlaceService;
 import com.google.common.collect.Maps;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.RolesAllowed;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
  * REST endpoint for banners.
  */
 @RestController
+@Validated
 public class BannerController {
 
     private final BannerService bannerService;
@@ -61,7 +63,7 @@ public class BannerController {
                                                 @RequestParam final Optional<BannerSortOrder> orderBy,
                                                 @RequestParam(defaultValue = "ASC") final Direction orderDirection,
                                                 @RequestParam(defaultValue = "0") final int offset,
-                                                @RequestParam(defaultValue = "20") @Max(50) final int limit) {
+                                                @RequestParam(defaultValue = "20") @Max(100) final int limit) {
         int numberOfBounds = (minLatitude.isPresent() ? 1 : 0) + (maxLatitude.isPresent() ? 1 : 0)
             + (minLongitude.isPresent() ? 1 : 0) + (maxLongitude.isPresent() ? 1 : 0);
         if (numberOfBounds != 0 && numberOfBounds != 4) {
