@@ -13,8 +13,6 @@ import okhttp3.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -23,6 +21,7 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
+import javax.transaction.Transactional;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
@@ -43,7 +42,7 @@ import java.util.concurrent.ForkJoinPool;
  * Default implementation of {@link BannerPictureService}.
  */
 @Service
-@Transactional(isolation = Isolation.SERIALIZABLE)
+@Transactional
 public class BannerPictureServiceImpl implements BannerPictureService {
 
     /**

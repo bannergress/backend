@@ -20,12 +20,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
+import javax.transaction.Transactional;
 
 import java.time.Instant;
 import java.util.Collection;
@@ -36,7 +35,7 @@ import java.util.Optional;
  * Default implementation of {@link BannerService}.
  */
 @Service
-@Transactional(isolation = Isolation.SERIALIZABLE)
+@Transactional
 public class BannerServiceImpl implements BannerService {
     @Autowired
     private EntityManager entityManager;

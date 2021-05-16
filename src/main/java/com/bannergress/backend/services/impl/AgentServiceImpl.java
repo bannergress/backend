@@ -5,16 +5,15 @@ import com.bannergress.backend.enums.Faction;
 import com.bannergress.backend.services.AgentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
 
 /**
  * Default implementation of {@link AgentService}.
  */
 @Service
-@Transactional(isolation = Isolation.SERIALIZABLE)
+@Transactional
 public class AgentServiceImpl implements AgentService {
     @Autowired
     private EntityManager entityManager;
