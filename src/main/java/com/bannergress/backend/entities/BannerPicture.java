@@ -6,6 +6,7 @@ import net.karneim.pojobuilder.GeneratePojoBuilder;
 import javax.persistence.*;
 
 import java.time.Instant;
+import java.util.List;
 
 /**
  * Represents a banner picture.
@@ -29,6 +30,9 @@ public class BannerPicture {
     @Column(name = "expiration", nullable = true)
     private Instant expiration;
 
+    @OneToMany(mappedBy = "picture", fetch = FetchType.LAZY)
+    private List<Banner> banners;
+
     public Instant getExpiration() {
         return expiration;
     }
@@ -51,5 +55,13 @@ public class BannerPicture {
 
     public void setPicture(byte[] picture) {
         this.picture = picture;
+    }
+    
+    public List<Banner> getBanners() {
+        return banners;
+    }
+    
+    public void setBanners(List<Banner> banners) {
+        this.banners = banners;
     }
 }

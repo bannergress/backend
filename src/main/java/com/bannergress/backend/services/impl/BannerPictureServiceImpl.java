@@ -22,6 +22,7 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
@@ -32,6 +33,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -183,7 +185,16 @@ public class BannerPictureServiceImpl implements BannerPictureService {
 
     @Override
     public void removeExpired() {
-        entityManager.createQuery("DELETE FROM BannerPicture WHERE expiration < :now")
-            .setParameter("now", Instant.now()).executeUpdate();
+        TypedQuery<BannerPicture> query = entityManager
+            .createQuery("SELECT p FROM BannerPicture p WHERE p.expiration < :now", BannerPicture.class);
+        query.setParameter("now", Instant.now());
+        List<BannerPicture> pictures = query.getResultList();
+        for (BannerPicture picture : pictures) {
+            if (picture.getBanners().isEmpty()) {
+                entityManager.remove(picture);
+            } else {
+                picture.setExpiration(null);
+            }
+        }
     }
 }

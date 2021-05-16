@@ -114,7 +114,7 @@ public class Banner {
     /**
      * Generated Picture.
      */
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "picture")
     @NotAudited
     private BannerPicture picture;
