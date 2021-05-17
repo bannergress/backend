@@ -56,11 +56,11 @@ public class BannerPicture {
     public void setPicture(byte[] picture) {
         this.picture = picture;
     }
-    
+
     public List<Banner> getBanners() {
         return banners;
     }
-    
+
     public void setBanners(List<Banner> banners) {
         this.banners = banners;
     }

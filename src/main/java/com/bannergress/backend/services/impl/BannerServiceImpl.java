@@ -68,8 +68,12 @@ public class BannerServiceImpl implements BannerService {
             queryString += " AND p.slug = :placeSlug";
         }
         if (minLatitude.isPresent()) {
-            queryString += " AND b.startLatitude BETWEEN :minLatitude AND :maxLatitude "
-                + "AND b.startLongitude BETWEEN :minLongitude AND :maxLongitude";
+            queryString += " AND b.startLatitude BETWEEN :minLatitude AND :maxLatitude ";
+            if (minLongitude.get() <= maxLongitude.get()) {
+                queryString += "AND b.startLongitude BETWEEN :minLongitude AND :maxLongitude";
+            } else {
+                queryString += "AND (b.startLongitude >= :minLongitude OR b.startLongitude <= :maxLongitude)";
+            }
         }
         if (search.isPresent()) {
             queryString += " AND LOWER(b.title) LIKE :search";
