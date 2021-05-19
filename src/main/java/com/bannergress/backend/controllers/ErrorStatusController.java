@@ -22,6 +22,7 @@ public class ErrorStatusController implements ErrorController {
     }
 
     @Override
+    @Deprecated
     public String getErrorPath() {
         return null;
     }
