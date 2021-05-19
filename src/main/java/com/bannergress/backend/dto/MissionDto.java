@@ -32,4 +32,6 @@ public class MissionDto {
     public NamedAgentDto author;
 
     public Long averageDurationMilliseconds;
+
+    public Integer lengthMeters;
 }
