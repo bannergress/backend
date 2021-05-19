@@ -12,6 +12,7 @@ import com.bannergress.backend.services.BannerPictureService;
 import com.bannergress.backend.services.BannerService;
 import com.bannergress.backend.services.MissionService;
 import com.bannergress.backend.services.PlaceService;
+import com.bannergress.backend.utils.DistanceCalculation;
 import com.bannergress.backend.utils.SlugGenerator;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Maps;
@@ -207,9 +208,6 @@ public class BannerServiceImpl implements BannerService {
     public void calculateData(Banner banner) {
         Double startLatitude = null;
         Double startLongitude = null;
-        Double prevLatitude = null;
-        Double prevLongitude = null;
-        double distance = 0;
         boolean complete = true;
         boolean online = complete;
 
@@ -222,16 +220,9 @@ public class BannerServiceImpl implements BannerService {
                 if (step.getPoi() != null) {
                     Double latitude = step.getPoi().getLatitude();
                     Double longitude = step.getPoi().getLongitude();
-                    if (latitude != null) {
-                        if (prevLatitude != null) {
-                            distance += getDistance(latitude, longitude, prevLatitude, prevLongitude);
-                        }
-                        if (startLatitude == null) {
-                            startLatitude = latitude;
-                            startLongitude = longitude;
-                        }
-                        prevLatitude = latitude;
-                        prevLongitude = longitude;
+                    if (latitude != null && startLatitude == null) {
+                        startLatitude = latitude;
+                        startLongitude = longitude;
                     }
                 }
             }
@@ -246,7 +237,7 @@ public class BannerServiceImpl implements BannerService {
             banner.getStartPlaces().clear();
             banner.getStartPlaces().addAll(startPlaces);
         }
-        banner.setLengthMeters((int) Math.round(distance));
+        banner.setLengthMeters(DistanceCalculation.calculateLengthMeters(banner.getMissions().values()));
     }
 
     @Override
@@ -255,19 +246,5 @@ public class BannerServiceImpl implements BannerService {
         for (Banner banner : query.getResultList()) {
             publisher.publishEvent(new BannerChangedEvent(banner));
         }
-    }
-
-    private static Double getDistance(Double lat1, Double lon1, Double lat2, Double lon2) {
-        final int radius_meters = 6_371_000;
-        Double latDistance = toRad(lat2 - lat1);
-        Double lonDistance = toRad(lon2 - lon1);
-        Double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
-            + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
-        Double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return radius_meters * c;
-    }
-
-    private static Double toRad(Double value) {
-        return value * Math.PI / 180;
     }
 }

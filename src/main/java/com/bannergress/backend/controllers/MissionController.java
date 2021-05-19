@@ -8,6 +8,7 @@ import com.bannergress.backend.entities.POI;
 import com.bannergress.backend.enums.MissionSortOrder;
 import com.bannergress.backend.security.Roles;
 import com.bannergress.backend.services.MissionService;
+import com.bannergress.backend.utils.DistanceCalculation;
 import com.bannergress.backend.validation.NianticId;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
@@ -28,10 +29,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * REST endpoint for missions.
@@ -116,6 +114,7 @@ public class MissionController {
         dto.online = mission.isOnline();
         dto.author = mission.getAuthor() == null ? null : toAgentSummary(mission.getAuthor());
         dto.averageDurationMilliseconds = mission.getAverageDurationMilliseconds();
+        dto.lengthMeters = DistanceCalculation.calculateLengthMeters(List.of(mission));
         return dto;
     }
 
