@@ -140,7 +140,8 @@ public class BannerController {
         dto.lengthMeters = banner.getLengthMeters();
         dto.startLatitude = banner.getStartLatitude();
         dto.startLongitude = banner.getStartLongitude();
-        dto.picture = "/bnrs/pictures/" + banner.getPicture().getHash();
+        dto.picture = "/bnrs/pictures/" + banner.getPicture() == null ? null : banner.getPicture().getHash();
+        dto.width = banner.getWidth();
         Optional<PlaceInformation> placeInformation = placeService
             .getMostAccuratePlaceInformation(banner.getStartPlaces(), "en");
         if (placeInformation.isPresent()) {
@@ -154,7 +155,6 @@ public class BannerController {
         dto.missions = Maps.transformValues(banner.getMissions(), MissionController::toDetails);
         dto.type = banner.getType();
         dto.description = banner.getDescription();
-        dto.width = banner.getWidth();
         return dto;
     }
 }
