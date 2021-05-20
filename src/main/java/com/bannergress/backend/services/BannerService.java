@@ -8,6 +8,7 @@ import org.springframework.data.domain.Sort.Direction;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Service for banner-related tasks.
@@ -81,7 +82,14 @@ public interface BannerService {
     void calculateData(Banner banner);
 
     /**
-     * Calculates derived data of all banners.
+     * @return UUIDs of all banners.
      */
-    void calculateAllBanners();
+    public List<UUID> findAllUUIDs();
+
+    /**
+     * Calculates derived data the banner identified by UUID.
+     *
+     * @param UUID uuid.
+     */
+    void calculateBanner(UUID uuid);
 }

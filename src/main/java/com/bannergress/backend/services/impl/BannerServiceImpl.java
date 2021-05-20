@@ -21,16 +21,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
-import javax.transaction.Transactional;
 
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Default implementation of {@link BannerService}.
@@ -241,10 +243,15 @@ public class BannerServiceImpl implements BannerService {
     }
 
     @Override
-    public void calculateAllBanners() {
-        TypedQuery<Banner> query = entityManager.createQuery("SELECT b FROM Banner b", Banner.class);
-        for (Banner banner : query.getResultList()) {
-            publisher.publishEvent(new BannerChangedEvent(banner));
-        }
+    public List<UUID> findAllUUIDs() {
+        TypedQuery<UUID> query = entityManager.createQuery("SELECT uuid FROM Banner b", UUID.class);
+        return query.getResultList();
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void calculateBanner(UUID uuid) {
+        Banner banner = entityManager.find(Banner.class, uuid);
+        publisher.publishEvent(new BannerChangedEvent(banner));
     }
 }
