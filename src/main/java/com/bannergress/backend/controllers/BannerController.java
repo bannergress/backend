@@ -9,6 +9,8 @@ import com.bannergress.backend.security.Roles;
 import com.bannergress.backend.services.BannerService;
 import com.bannergress.backend.services.PlaceService;
 import com.google.common.collect.Maps;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -21,6 +23,9 @@ import javax.validation.constraints.Max;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
 
 /**
@@ -29,6 +34,7 @@ import java.util.stream.Collectors;
 @RestController
 @Validated
 public class BannerController {
+    private static final Logger logger = LoggerFactory.getLogger(BannerController.class);
 
     private final BannerService bannerService;
 
@@ -128,8 +134,18 @@ public class BannerController {
 
     @RolesAllowed(Roles.MANAGE_BANNERS)
     @PostMapping("/bnrs/recalculate")
-    public void calculateAllBanners() {
-        bannerService.calculateAllBanners();
+    public void calculateAllBanners() throws InterruptedException, ExecutionException {
+        List<UUID> uuids = bannerService.findAllUUIDs();
+        ForkJoinPool pool = new ForkJoinPool(5);
+        pool.submit(() -> uuids.parallelStream().forEach(uuid -> {
+            try {
+                bannerService.calculateBanner(uuid);
+                logger.info("{}: Success", uuid);
+            } catch (Exception e) {
+                logger.error("{}: Failed to calculate", uuid, e);
+            }
+        })).get();
+        pool.shutdown();
     }
 
     private BannerDto toSummary(Banner banner) {
