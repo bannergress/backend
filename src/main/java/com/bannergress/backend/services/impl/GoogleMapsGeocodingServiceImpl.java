@@ -93,7 +93,9 @@ public class GoogleMapsGeocodingServiceImpl implements GeocodingService {
                 }
             }
         }
-        throw new AssertionError();
+        result.setLongName(geocodingResult.formattedAddress);
+        result.setShortName(geocodingResult.formattedAddress);
+        return result;
     }
 
     private PlaceType mapAddressType(AddressType addressType) {
