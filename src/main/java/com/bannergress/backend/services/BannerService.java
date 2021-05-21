@@ -34,6 +34,11 @@ public interface BannerService {
                       Optional<BannerSortOrder> orderBy, Direction orderDirection, int offset, int limit);
 
     /**
+     * @return List of all banner slugs.
+     */
+    List<String> findAllSlugs();
+
+    /**
      * Finds a banner by its slug, including details down to mission level.
      *
      * @param id Slug.

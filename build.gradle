@@ -30,6 +30,7 @@ dependencies {
 	implementation "com.google.guava:guava:${guava_version}"
 	implementation "com.google.maps:google-maps-services:${google_maps_services_version}"
   implementation "com.squareup.okhttp3:okhttp:${okhttp_version}"
+  implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml'
 
   annotationProcessor "net.karneim:pojobuilder:$pojobuilder_version"
 
