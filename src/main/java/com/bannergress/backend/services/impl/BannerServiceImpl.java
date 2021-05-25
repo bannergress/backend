@@ -117,6 +117,11 @@ public class BannerServiceImpl implements BannerService {
         return banners;
     }
 
+    @Override
+    public List<String> findAllSlugs() {
+        return entityManager.createQuery("SELECT b.slug FROM Banner b", String.class).getResultList();
+    }
+
     private void preloadPlaceInformation(List<Banner> banners) {
         if (!banners.isEmpty()) {
             TypedQuery<Banner> query = entityManager
