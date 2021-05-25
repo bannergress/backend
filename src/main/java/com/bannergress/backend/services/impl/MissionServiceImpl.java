@@ -16,11 +16,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
+import javax.transaction.Transactional;
 
 import java.time.Instant;
 import java.util.*;
@@ -29,7 +28,7 @@ import java.util.*;
  * Default implementation of {@link MissionService}.
  */
 @Service
-@Transactional(isolation = Isolation.SERIALIZABLE)
+@Transactional
 public class MissionServiceImpl implements MissionService {
     private static final int INTEL_TOP_MISSIONS_IN_BOUNDS_LIMIT = 25;
 
