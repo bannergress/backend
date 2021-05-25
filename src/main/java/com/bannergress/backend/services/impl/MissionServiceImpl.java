@@ -202,7 +202,8 @@ public class MissionServiceImpl implements MissionService {
     public Collection<Mission> findUnusedMissions(String search, Optional<MissionSortOrder> orderBy,
                                                   Direction orderDirection, int offset, int limit) {
         String queryString = "SELECT m FROM Mission m WHERE (LOWER(m.title) LIKE :search "
-            + "OR LOWER(m.author.name) = :searchExact)" + "AND m.banners IS EMPTY";
+            + "OR LOWER(m.author.name) = :searchExact)"
+            + "AND m.banners IS EMPTY AND m.latestUpdateDetails IS NOT NULL";
         if (orderBy.isPresent()) {
             switch (orderBy.get()) {
                 case title:
