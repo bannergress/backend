@@ -45,7 +45,8 @@ public class PlaceServiceImpl implements PlaceService {
     public List<Place> findUsedPlaces(final Optional<String> parentPlaceSlug, final Optional<String> queryString,
                                       final Optional<PlaceType> type, PlaceSortOrder orderBy, Direction orderDirection,
                                       int offset, Optional<Integer> limit, boolean collapsePlaces) {
-        String baseFragment = "SELECT DISTINCT p FROM Banner b JOIN b.startPlaces p WHERE true = true";
+        String baseFragment = "SELECT DISTINCT p FROM Banner b JOIN b.startPlaces p"
+            + (queryString.isPresent() ? " JOIN p.information i" : "") + " WHERE true = true";
         String parentPlaceFragment = parentPlaceSlug.isPresent() ? " AND p.parentPlace.slug = :parentPlaceSlug" : "";
         String typeFragment = type.isPresent() ? " AND p.type = :type" : "";
         String queryStringFragment = queryString.isPresent() ? " AND LOWER(i.longName) LIKE :queryString" : "";
@@ -98,8 +99,8 @@ public class PlaceServiceImpl implements PlaceService {
 
     private List<Place> preloadPlaceInformation(List<Place> places) {
         if (!places.isEmpty()) {
-            TypedQuery<Place> query = entityManager.createQuery(
-                "SELECT p FROM Place p LEFT JOIN FETCH p.information WHERE p IN :places", Place.class);
+            TypedQuery<Place> query = entityManager
+                .createQuery("SELECT p FROM Place p LEFT JOIN FETCH p.information WHERE p IN :places", Place.class);
             query.setParameter("places", places);
             query.getResultList();
         }
