@@ -19,7 +19,10 @@ import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -42,8 +45,7 @@ public class PlaceServiceImpl implements PlaceService {
     public List<Place> findUsedPlaces(final Optional<String> parentPlaceSlug, final Optional<String> queryString,
                                       final Optional<PlaceType> type, PlaceSortOrder orderBy, Direction orderDirection,
                                       int offset, Optional<Integer> limit, boolean collapsePlaces) {
-        String baseFragment = "SELECT DISTINCT p FROM Banner b JOIN b.startPlaces p "
-            + "LEFT JOIN FETCH p.information i WHERE true = true";
+        String baseFragment = "SELECT DISTINCT p FROM Banner b JOIN b.startPlaces p WHERE true = true";
         String parentPlaceFragment = parentPlaceSlug.isPresent() ? " AND p.parentPlace.slug = :parentPlaceSlug" : "";
         String typeFragment = type.isPresent() ? " AND p.type = :type" : "";
         String queryStringFragment = queryString.isPresent() ? " AND LOWER(i.longName) LIKE :queryString" : "";
@@ -79,19 +81,29 @@ public class PlaceServiceImpl implements PlaceService {
                     numberOfBannersInChildren.add(place.getParentPlace().getId(), place.getNumberOfBanners());
                 }
             }
-            return resultUncollapsed.stream()
+            return preloadPlaceInformation(resultUncollapsed.stream()
                 // Remove parents from which we already return all children
                 // (i.e. the combined number of banners of the children equals the number of banners of the parent)
                 .filter(place -> place.getNumberOfBanners() != numberOfBannersInChildren.count(place.getId()))
                 // Do paging ourselves
-                .skip(offset).limit(limit.isPresent() ? limit.get() : Integer.MAX_VALUE).collect(Collectors.toList());
+                .skip(offset).limit(limit.isPresent() ? limit.get() : Integer.MAX_VALUE).collect(Collectors.toList()));
         } else {
             query.setFirstResult(offset);
             if (limit.isPresent()) {
                 query.setMaxResults(limit.get());
             }
-            return query.getResultList();
+            return preloadPlaceInformation(query.getResultList());
         }
+    }
+
+    private List<Place> preloadPlaceInformation(List<Place> places) {
+        if (!places.isEmpty()) {
+            TypedQuery<Place> query = entityManager.createQuery(
+                "SELECT p FROM Place p LEFT JOIN FETCH p.information WHERE p IN :places", Place.class);
+            query.setParameter("places", places);
+            query.getResultList();
+        }
+        return places;
     }
 
     @Override
