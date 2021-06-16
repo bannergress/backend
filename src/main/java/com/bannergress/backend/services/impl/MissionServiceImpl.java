@@ -57,7 +57,7 @@ public class MissionServiceImpl implements MissionService {
         mission.setLatestUpdateSummary(now);
         mission.setLatestUpdateDetails(now);
         mission.setAuthor(author);
-        mission.setDescription(data.description);
+        mission.setDescription(stripNullChars(data.description));
         mission.setNumberCompleted(data.numberCompleted);
         mission.setType(data.type);
         List<IntelMissionStep> steps = data.steps;
@@ -104,7 +104,7 @@ public class MissionServiceImpl implements MissionService {
             if (intelMissionStep.type != POIType.unavailable) {
                 poi.setLatitude(newLatitude);
                 poi.setLongitude(newLongitude);
-                poi.setTitle(intelMissionStep.title);
+                poi.setTitle(stripNullChars(intelMissionStep.title));
                 poi.setPicture(intelMissionStep.picture);
             }
             missionStep.setPoi(poi);
@@ -179,7 +179,7 @@ public class MissionServiceImpl implements MissionService {
             publisher.publishEvent(new MissionChangedEvent(mission));
         }
         mission.setLatestUpdateSummary(Instant.now());
-        mission.setTitle(data.title);
+        mission.setTitle(stripNullChars(data.title));
         mission.setPicture(data.picture);
         mission.setAverageDurationMilliseconds(data.averageDurationMilliseconds);
         mission.setRating(newRating);
@@ -272,5 +272,9 @@ public class MissionServiceImpl implements MissionService {
 
     private static Double fromE6(Integer e6) {
         return e6 == null ? null : e6 / 1_000_000d;
+    }
+
+    private static String stripNullChars(String text) {
+        return text == null ? null : text.replace("\0", "");
     }
 }
