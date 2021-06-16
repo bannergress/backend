@@ -23,6 +23,7 @@ public interface BannerService {
      * @param minLongitude   Optional minimum longitude.
      * @param maxLongitude   Optional maximum longitude.
      * @param query          Optional query string.
+     * @param query          Optional ID of mission which has to be contained in banner.
      * @param orderBy        Optional sort order.
      * @param orderDirection Sort direction.
      * @param offset         Offset of the first result.
@@ -31,7 +32,8 @@ public interface BannerService {
      */
     List<Banner> find(Optional<String> placeSlug, Optional<Double> minLatitude, Optional<Double> maxLatitude,
                       Optional<Double> minLongitude, Optional<Double> maxLongitude, Optional<String> query,
-                      Optional<BannerSortOrder> orderBy, Direction orderDirection, int offset, int limit);
+                      Optional<String> missionId, Optional<BannerSortOrder> orderBy, Direction orderDirection,
+                      int offset, int limit);
 
     /**
      * @return List of all banner slugs.

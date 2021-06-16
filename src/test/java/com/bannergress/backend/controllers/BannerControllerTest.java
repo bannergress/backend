@@ -38,12 +38,13 @@ class BannerControllerTest {
         final Banner banner = a($Banner());
 
         when(bannerService.find(eq(place), eq(Optional.empty()), eq(Optional.empty()), eq(Optional.empty()),
-            eq(Optional.empty()), eq(Optional.empty()), eq(Optional.empty()), any(), eq(0), anyInt()))
-                .thenReturn(List.of(banner));
+            eq(Optional.empty()), eq(Optional.empty()), eq(Optional.empty()), eq(Optional.empty()), any(), eq(0),
+            anyInt())).thenReturn(List.of(banner));
 
         // THEN
         final ResponseEntity<List<BannerDto>> result = testController.list(place, Optional.empty(), Optional.empty(),
-            Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Direction.ASC, 0, 100);
+            Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Direction.ASC, 0,
+            100);
 
         // VERIFY
         assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -64,11 +65,11 @@ class BannerControllerTest {
         final Banner banner = a($Banner());
 
         when(bannerService.find(eq(Optional.empty()), eq(minLat), eq(maxLat), eq(minLong), eq(maxLong), any(), any(),
-            any(), eq(0), anyInt())).thenReturn(List.of(banner));
+            any(), any(), eq(0), anyInt())).thenReturn(List.of(banner));
 
         // THEN
         final ResponseEntity<List<BannerDto>> result = testController.list(Optional.empty(), minLat, maxLat, minLong,
-            maxLong, Optional.empty(), Optional.empty(), Direction.ASC, 0, 100);
+            maxLong, Optional.empty(), Optional.empty(), Optional.empty(), Direction.ASC, 0, 100);
 
         // VERIFY
         assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
