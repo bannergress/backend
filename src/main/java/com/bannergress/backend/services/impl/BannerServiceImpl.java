@@ -61,10 +61,14 @@ public class BannerServiceImpl implements BannerService {
     @Override
     public List<Banner> find(Optional<String> placeSlug, Optional<Double> minLatitude, Optional<Double> maxLatitude,
                              Optional<Double> minLongitude, Optional<Double> maxLongitude, Optional<String> search,
-                             Optional<BannerSortOrder> orderBy, Direction orderDirection, int offset, int limit) {
+                             Optional<String> missionId, Optional<BannerSortOrder> orderBy, Direction orderDirection,
+                             int offset, int limit) {
         String queryString = "SELECT b FROM Banner b";
         if (placeSlug.isPresent()) {
             queryString += " JOIN b.startPlaces p ";
+        }
+        if (missionId.isPresent()) {
+            queryString += " JOIN b.missions m ";
         }
         queryString += " WHERE true = true";
         if (placeSlug.isPresent()) {
@@ -80,6 +84,9 @@ public class BannerServiceImpl implements BannerService {
         }
         if (search.isPresent()) {
             queryString += " AND LOWER(b.title) LIKE :search";
+        }
+        if (missionId.isPresent()) {
+            queryString += " AND m.id = :missionId";
         }
         if (orderBy.isPresent()) {
             switch (orderBy.get()) {
@@ -109,6 +116,9 @@ public class BannerServiceImpl implements BannerService {
         }
         if (search.isPresent()) {
             query.setParameter("search", "%" + search.get().toLowerCase() + "%");
+        }
+        if (missionId.isPresent()) {
+            query.setParameter("missionId", missionId.get());
         }
         query.setFirstResult(offset);
         query.setMaxResults(limit);
