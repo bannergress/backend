@@ -47,7 +47,7 @@ public class MissionServiceImpl implements MissionService {
 
     @Override
     public Mission importMission(IntelMissionDetails data) {
-        Mission mission = importMissionSummary(data);
+        Mission mission = importMissionSummary(data, false);
         NamedAgent author = data.authorName == null ? null
             : agentService.importAgent(data.authorName, data.authorFaction);
         if (mission.getLatestUpdateDetails() == null) {
@@ -162,12 +162,12 @@ public class MissionServiceImpl implements MissionService {
     public Collection<Mission> importMissionSummaries(List<IntelMissionSummary> summaries) {
         List<Mission> imported = new ArrayList<>();
         for (IntelMissionSummary summary : summaries) {
-            imported.add(importMissionSummary(summary));
+            imported.add(importMissionSummary(summary, true));
         }
         return imported;
     }
 
-    private Mission importMissionSummary(IntelMissionSummary data) {
+    private Mission importMissionSummary(IntelMissionSummary data, boolean setOnline) {
         double newRating = fromE6(data.ratingE6);
         Mission mission = entityManager.find(Mission.class, data.id);
         if (mission == null) {
@@ -183,7 +183,7 @@ public class MissionServiceImpl implements MissionService {
         mission.setPicture(data.picture);
         mission.setAverageDurationMilliseconds(data.averageDurationMilliseconds);
         mission.setRating(newRating);
-        if (!mission.isOnline() && !isOfflineBecauseNoStepAvailable(mission)) {
+        if (setOnline && !mission.isOnline() && !isOfflineBecauseNoStepAvailable(mission)) {
             mission.setOnline(true);
         }
         entityManager.persist(mission);
