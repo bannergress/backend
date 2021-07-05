@@ -6,7 +6,6 @@ import com.bannergress.backend.entities.Mission;
 import com.bannergress.backend.entities.MissionStep;
 import com.bannergress.backend.entities.Place;
 import com.bannergress.backend.enums.BannerSortOrder;
-import com.bannergress.backend.event.BannerChangedEvent;
 import com.bannergress.backend.exceptions.MissionAlreadyUsedException;
 import com.bannergress.backend.repositories.BannerRepository;
 import com.bannergress.backend.repositories.BannerSpecifications;
@@ -20,7 +19,6 @@ import com.bannergress.backend.utils.SlugGenerator;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Maps;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.jpa.domain.Specification;
@@ -50,7 +48,7 @@ public class BannerServiceImpl implements BannerService {
     private PlaceService placesService;
 
     @Autowired
-    private ApplicationEventPublisher publisher;
+    private BannerService bannerService;
 
     @Autowired
     private BannerPictureService pictureService;
@@ -161,7 +159,8 @@ public class BannerServiceImpl implements BannerService {
         banner.getMissions().clear();
         banner.getMissions()
             .putAll(Maps.transformValues(bannerDto.missions, missionDto -> missionRepository.getOne(missionDto.id)));
-        publisher.publishEvent(new BannerChangedEvent(banner));
+        bannerService.calculateData(banner);
+        pictureService.refresh(banner);
     }
 
     @Override
@@ -218,6 +217,7 @@ public class BannerServiceImpl implements BannerService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void calculateBanner(UUID uuid) {
         Banner banner = bannerRepository.findById(uuid).get();
-        publisher.publishEvent(new BannerChangedEvent(banner));
+        bannerService.calculateData(banner);
+        pictureService.refresh(banner);
     }
 }

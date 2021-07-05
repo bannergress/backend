@@ -1,15 +1,9 @@
 package com.bannergress.backend.services;
 
-import com.bannergress.backend.dto.IntelMissionDetails;
-import com.bannergress.backend.dto.IntelMissionSummary;
-import com.bannergress.backend.dto.IntelTopMissionsForPortal;
-import com.bannergress.backend.dto.IntelTopMissionsInBounds;
 import com.bannergress.backend.entities.Mission;
 import com.bannergress.backend.enums.MissionSortOrder;
 import com.bannergress.backend.exceptions.MissionAlreadyUsedException;
 import org.springframework.data.domain.Sort.Direction;
-
-import javax.validation.Valid;
 
 import java.util.Collection;
 import java.util.List;
@@ -19,38 +13,6 @@ import java.util.Optional;
  * Service for mission-related task.
  */
 public interface MissionService {
-    /**
-     * Imports a mission from intel-based data.
-     *
-     * @param data Intel response data.
-     * @return Imported mission.
-     */
-    Mission importMission(IntelMissionDetails data);
-
-    /**
-     * Imports missions from intel-based data.
-     *
-     * @param data Intel request and response data.
-     * @return Imported missions.
-     */
-    Collection<Mission> importTopMissionsInBounds(IntelTopMissionsInBounds data);
-
-    /**
-     * Imports missions from intel-based data.
-     *
-     * @param data Intel request and response data.
-     * @return Imported missions.
-     */
-    Collection<Mission> importTopMissionsForPortal(IntelTopMissionsForPortal data);
-
-    /**
-     * Imports missions from intel-based data.
-     *
-     * @param summaries Intel summary data.
-     * @return Imported missions.
-     */
-    Collection<Mission> importMissionSummaries(List<@Valid IntelMissionSummary> summaries);
-
     /**
      * Finds missions where the query matches with the title (partial search) or the author (exact search), and that are not part of any banner.
      *
