@@ -35,7 +35,7 @@ class BannerControllerTest {
     void list() {
         // WHEN
         final Optional<String> place = Optional.of(a($String()));
-        final Banner banner = a($Banner());
+        final Banner banner = fixPlaceInformation(a($Banner()));
 
         when(bannerService.find(eq(place), eq(Optional.empty()), eq(Optional.empty()), eq(Optional.empty()),
             eq(Optional.empty()), eq(Optional.empty()), eq(Optional.empty()), eq(Optional.empty()), any(), eq(0),
@@ -55,6 +55,13 @@ class BannerControllerTest {
         assertThat(bannerDto.lengthMeters).isEqualTo(banner.getLengthMeters());
     }
 
+    private static Banner fixPlaceInformation(final Banner banner) {
+        // Fix back reference from place information to place
+        banner.getStartPlaces()
+            .forEach(place -> place.getInformation().forEach(information -> information.setPlace(place)));
+        return banner;
+    }
+
     @Test
     void list_withBoundingBox() {
         // WHEN
@@ -62,7 +69,7 @@ class BannerControllerTest {
         final Optional<Double> maxLat = Optional.of(a($Double()));
         final Optional<Double> minLong = Optional.of(a($Double()));
         final Optional<Double> maxLong = Optional.of(a($Double()));
-        final Banner banner = a($Banner());
+        final Banner banner = fixPlaceInformation(a($Banner()));
 
         when(bannerService.find(eq(Optional.empty()), eq(minLat), eq(maxLat), eq(minLong), eq(maxLong), any(), any(),
             any(), any(), eq(0), anyInt())).thenReturn(List.of(banner));
@@ -86,7 +93,7 @@ class BannerControllerTest {
     void get() {
         // WHEN
         final String slug = a($String());
-        final Banner banner = a($Banner());
+        final Banner banner = fixPlaceInformation(a($Banner()));
 
         when(bannerService.findBySlugWithDetails(slug)).thenReturn(Optional.of(banner));
 
@@ -124,7 +131,7 @@ class BannerControllerTest {
     void post() throws MissionAlreadyUsedException {
         // WHEN
         final BannerDto banner = a($BannerDto());
-        final Banner savedBanner = a($Banner());
+        final Banner savedBanner = fixPlaceInformation(a($Banner()));
 
         when(bannerService.create(banner)).thenReturn(savedBanner.getSlug());
         when(bannerService.findBySlugWithDetails(savedBanner.getSlug())).thenReturn(Optional.of(savedBanner));

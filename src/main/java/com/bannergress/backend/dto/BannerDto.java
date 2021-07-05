@@ -64,6 +64,11 @@ public class BannerDto {
     public Double startLongitude;
 
     /**
+     * Slug of the start place of the banner.
+     */
+    public String startPlaceId;
+
+    /**
      * Length in meters.
      */
     public Integer lengthMeters;
