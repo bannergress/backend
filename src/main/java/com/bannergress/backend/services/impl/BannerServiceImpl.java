@@ -8,6 +8,9 @@ import com.bannergress.backend.entities.Place;
 import com.bannergress.backend.enums.BannerSortOrder;
 import com.bannergress.backend.event.BannerChangedEvent;
 import com.bannergress.backend.exceptions.MissionAlreadyUsedException;
+import com.bannergress.backend.repositories.BannerRepository;
+import com.bannergress.backend.repositories.BannerSpecifications;
+import com.bannergress.backend.repositories.MissionRepository;
 import com.bannergress.backend.services.BannerPictureService;
 import com.bannergress.backend.services.BannerService;
 import com.bannergress.backend.services.MissionService;
@@ -16,23 +19,17 @@ import com.bannergress.backend.utils.DistanceCalculation;
 import com.bannergress.backend.utils.SlugGenerator;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Maps;
-import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.TypedQuery;
-
 import java.time.Instant;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Default implementation of {@link BannerService}.
@@ -41,7 +38,10 @@ import java.util.UUID;
 @Transactional
 public class BannerServiceImpl implements BannerService {
     @Autowired
-    private EntityManager entityManager;
+    private BannerRepository bannerRepository;
+
+    @Autowired
+    private MissionRepository missionRepository;
 
     @Autowired
     private MissionService missionService;
@@ -63,103 +63,55 @@ public class BannerServiceImpl implements BannerService {
                              Optional<Double> minLongitude, Optional<Double> maxLongitude, Optional<String> search,
                              Optional<String> missionId, Optional<BannerSortOrder> orderBy, Direction orderDirection,
                              int offset, int limit) {
-        String queryString = "SELECT b FROM Banner b";
+        List<Specification<Banner>> specifications = new ArrayList<>();
         if (placeSlug.isPresent()) {
-            queryString += " JOIN b.startPlaces p ";
-        }
-        if (missionId.isPresent()) {
-            queryString += " JOIN b.missions m ";
-        }
-        queryString += " WHERE true = true";
-        if (placeSlug.isPresent()) {
-            queryString += " AND p.slug = :placeSlug";
+            specifications.add(BannerSpecifications.hasStartPlaceSlug(placeSlug.get()));
         }
         if (minLatitude.isPresent()) {
-            queryString += " AND b.startLatitude BETWEEN :minLatitude AND :maxLatitude ";
+            specifications.add(BannerSpecifications.isInLatitudeRange(minLatitude.get(), maxLatitude.get()));
             if (minLongitude.get() <= maxLongitude.get()) {
-                queryString += "AND b.startLongitude BETWEEN :minLongitude AND :maxLongitude";
+                specifications.add(BannerSpecifications.isInLongitudeRange(minLongitude.get(), maxLongitude.get()));
             } else {
-                queryString += "AND (b.startLongitude >= :minLongitude OR b.startLongitude <= :maxLongitude)";
+                specifications.add(BannerSpecifications.isInLongitudeRange(minLongitude.get(), 180)
+                    .or(BannerSpecifications.isInLongitudeRange(-180, maxLongitude.get())));
             }
         }
         if (search.isPresent()) {
-            queryString += " AND LOWER(b.title) LIKE :search";
+            specifications.add(BannerSpecifications.hasTitlePart(search.get()));
         }
         if (missionId.isPresent()) {
-            queryString += " AND m.id = :missionId";
+            specifications.add(BannerSpecifications.hasMissionId(missionId.get()));
         }
-        if (orderBy.isPresent()) {
-            switch (orderBy.get()) {
-                case created:
-                    queryString += " ORDER BY b.created " + orderDirection.toString();
-                    break;
-                case lengthMeters:
-                    queryString += " ORDER BY b.lengthMeters " + orderDirection.toString();
-                    break;
-                case numberOfMissions:
-                    queryString += " ORDER BY b.numberOfMissions " + orderDirection.toString();
-                    break;
-                case title:
-                    queryString += " ORDER BY b.title " + orderDirection.toString();
-                    break;
-            }
-        }
-        TypedQuery<Banner> query = entityManager.createQuery(queryString, Banner.class);
-        if (placeSlug.isPresent()) {
-            query.setParameter("placeSlug", placeSlug.get());
-        }
-        if (minLatitude.isPresent()) {
-            query.setParameter("minLatitude", minLatitude.get());
-            query.setParameter("maxLatitude", maxLatitude.get());
-            query.setParameter("minLongitude", minLongitude.get());
-            query.setParameter("maxLongitude", maxLongitude.get());
-        }
-        if (search.isPresent()) {
-            query.setParameter("search", "%" + search.get().toLowerCase() + "%");
-        }
-        if (missionId.isPresent()) {
-            query.setParameter("missionId", missionId.get());
-        }
-        query.setFirstResult(offset);
-        query.setMaxResults(limit);
-        List<Banner> banners = query.getResultList();
+
+        Specification<Banner> fullSpecification = specifications.stream().reduce((a, b) -> a.and(b)).orElse(null);
+        Sort sort = orderBy.isPresent() ? Sort.by(orderDirection, orderBy.get().toString()) : Sort.unsorted();
+        List<Banner> banners = bannerRepository.findAll(fullSpecification, sort);
         preloadPlaceInformation(banners);
         return banners;
     }
 
     @Override
     public List<String> findAllSlugs() {
-        return entityManager.createQuery("SELECT b.slug FROM Banner b", String.class).getResultList();
+        return bannerRepository.getAllSlugs();
     }
 
     private void preloadPlaceInformation(List<Banner> banners) {
         if (!banners.isEmpty()) {
-            TypedQuery<Banner> query = entityManager
-                .createQuery("SELECT b FROM Banner b LEFT JOIN FETCH b.startPlaces p LEFT JOIN FETCH p.information"
-                    + " WHERE b IN :banners", Banner.class);
-            query.setParameter("banners", banners);
-            query.getResultList();
+            bannerRepository
+                .findAll(BannerSpecifications.isInBanners(banners).and(BannerSpecifications.fetchPlaceInformation()));
         }
     }
 
     @Override
     public Optional<Banner> findBySlugWithDetails(String slug) {
-        TypedQuery<Banner> query = entityManager
-            .createQuery("SELECT b FROM Banner b LEFT JOIN FETCH b.missions m LEFT JOIN FETCH m.author"
-                + " LEFT JOIN FETCH m.steps s LEFT JOIN FETCH s.poi WHERE b.slug = :slug", Banner.class);
-        query.setParameter("slug", slug);
-        try {
-            return Optional.of(query.getSingleResult());
-        } catch (NoResultException e) {
-            return Optional.empty();
-        }
+        return bannerRepository.findOne(BannerSpecifications.hasSlug(slug).and(BannerSpecifications.fetchDetails()));
     }
 
     @Override
     public String create(BannerDto bannerDto) throws MissionAlreadyUsedException {
         Banner banner = createTransient(bannerDto, List.of());
         banner.setSlug(deriveSlug(banner));
-        entityManager.persist(banner);
+        bannerRepository.save(banner);
         banner.getStartPlaces().forEach(place -> place.setNumberOfBanners(place.getNumberOfBanners() + 1));
         return banner.getSlug();
     }
@@ -167,7 +119,7 @@ public class BannerServiceImpl implements BannerService {
     private String deriveSlug(Banner banner) {
         String title = banner.getTitle();
         return slugGenerator.generateSlug(title,
-            slug -> entityManager.unwrap(Session.class).bySimpleNaturalId(Banner.class).loadOptional(slug).isEmpty());
+            slug -> bannerRepository.count(BannerSpecifications.hasSlug(slug)) == 0);
     }
 
     private Banner createTransient(BannerDto bannerDto, List<String> acceptableBannerSlugs)
@@ -182,8 +134,8 @@ public class BannerServiceImpl implements BannerService {
         banner.setWidth(bannerDto.width);
         banner.setType(bannerDto.type);
         banner.getMissions().clear();
-        banner.getMissions().putAll(Maps.transformValues(bannerDto.missions,
-            missionDto -> entityManager.getReference(Mission.class, missionDto.id)));
+        banner.getMissions()
+            .putAll(Maps.transformValues(bannerDto.missions, missionDto -> missionRepository.getOne(missionDto.id)));
         calculateData(banner);
         pictureService.refresh(banner);
         return banner;
@@ -201,24 +153,24 @@ public class BannerServiceImpl implements BannerService {
         Collection<String> missionIds = Collections2.transform(bannerDto.missions.values(),
             missionDto -> missionDto.id);
         missionService.assertNotAlreadyUsedInBanners(missionIds, List.of(bannerDto.id));
-        Banner banner = entityManager.unwrap(Session.class).bySimpleNaturalId(Banner.class).load(slug);
+        Banner banner = bannerRepository.findOne(BannerSpecifications.hasSlug(slug)).get();
         banner.setTitle(bannerDto.title);
         banner.setDescription(bannerDto.description);
         banner.setWidth(bannerDto.width);
         banner.setType(bannerDto.type);
         banner.getMissions().clear();
-        banner.getMissions().putAll(Maps.transformValues(bannerDto.missions,
-            missionDto -> entityManager.getReference(Mission.class, missionDto.id)));
+        banner.getMissions()
+            .putAll(Maps.transformValues(bannerDto.missions, missionDto -> missionRepository.getOne(missionDto.id)));
         publisher.publishEvent(new BannerChangedEvent(banner));
     }
 
     @Override
     public void deleteBySlug(String slug) {
-        Banner banner = entityManager.unwrap(Session.class).bySimpleNaturalId(Banner.class).load(slug);
+        Banner banner = bannerRepository.findOne(BannerSpecifications.hasSlug(slug)).get();
         for (Place place : banner.getStartPlaces()) {
             place.setNumberOfBanners(place.getNumberOfBanners() - 1);
         }
-        entityManager.remove(banner);
+        bannerRepository.delete(banner);
     }
 
     @Override
@@ -259,14 +211,13 @@ public class BannerServiceImpl implements BannerService {
 
     @Override
     public List<UUID> findAllUUIDs() {
-        TypedQuery<UUID> query = entityManager.createQuery("SELECT uuid FROM Banner b", UUID.class);
-        return query.getResultList();
+        return bannerRepository.getAllUUIDs();
     }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void calculateBanner(UUID uuid) {
-        Banner banner = entityManager.find(Banner.class, uuid);
+        Banner banner = bannerRepository.findById(uuid).get();
         publisher.publishEvent(new BannerChangedEvent(banner));
     }
 }
