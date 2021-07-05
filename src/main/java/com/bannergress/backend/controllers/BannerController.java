@@ -67,6 +67,7 @@ public class BannerController {
                                                 @RequestParam final Optional<Double> maxLongitude,
                                                 @RequestParam final Optional<String> query,
                                                 @RequestParam final Optional<String> missionId,
+                                                @RequestParam(defaultValue = "false") final boolean onlyOfficialMissions,
                                                 @RequestParam final Optional<BannerSortOrder> orderBy,
                                                 @RequestParam(defaultValue = "ASC") final Direction orderDirection,
                                                 @RequestParam(defaultValue = "0") final int offset,
@@ -77,7 +78,7 @@ public class BannerController {
             return ResponseEntity.badRequest().build();
         }
         final Collection<Banner> banners = bannerService.find(placeId, minLatitude, maxLatitude, minLongitude,
-            maxLongitude, query, missionId, orderBy, orderDirection, offset, limit);
+            maxLongitude, query, missionId, onlyOfficialMissions, orderBy, orderDirection, offset, limit);
         return ResponseEntity.ok(banners.stream().map(this::toSummary).collect(Collectors.toUnmodifiableList()));
     }
 

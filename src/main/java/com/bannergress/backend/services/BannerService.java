@@ -17,23 +17,24 @@ public interface BannerService {
     /**
      * Finds banners.
      *
-     * @param placeSlug      Optional place Slug.
-     * @param minLatitude    Optional minimum latitude.
-     * @param maxLatitude    Optional maximum latitude.
-     * @param minLongitude   Optional minimum longitude.
-     * @param maxLongitude   Optional maximum longitude.
-     * @param query          Optional query string.
-     * @param query          Optional ID of mission which has to be contained in banner.
-     * @param orderBy        Optional sort order.
-     * @param orderDirection Sort direction.
-     * @param offset         Offset of the first result.
-     * @param limit          Maximum number of results.
+     * @param placeSlug            Optional place Slug.
+     * @param minLatitude          Optional minimum latitude.
+     * @param maxLatitude          Optional maximum latitude.
+     * @param minLongitude         Optional minimum longitude.
+     * @param maxLongitude         Optional maximum longitude.
+     * @param query                Optional query string.
+     * @param missionId            Optional ID of mission which has to be contained in banner.
+     * @param onlyOfficialMissions Whether to only include official mission accounts.
+     * @param orderBy              Optional sort order.
+     * @param orderDirection       Sort direction.
+     * @param offset               Offset of the first result.
+     * @param limit                Maximum number of results.
      * @return Banners that were found.
      */
     List<Banner> find(Optional<String> placeSlug, Optional<Double> minLatitude, Optional<Double> maxLatitude,
                       Optional<Double> minLongitude, Optional<Double> maxLongitude, Optional<String> query,
-                      Optional<String> missionId, Optional<BannerSortOrder> orderBy, Direction orderDirection,
-                      int offset, int limit);
+                      Optional<String> missionId, boolean onlyOfficialMissions, Optional<BannerSortOrder> orderBy,
+                      Direction orderDirection, int offset, int limit);
 
     /**
      * @return List of all banner slugs.

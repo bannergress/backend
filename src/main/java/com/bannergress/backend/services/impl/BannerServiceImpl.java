@@ -18,6 +18,7 @@ import com.bannergress.backend.services.PlaceService;
 import com.bannergress.backend.utils.DistanceCalculation;
 import com.bannergress.backend.utils.SlugGenerator;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -37,6 +38,16 @@ import java.util.*;
 @Service
 @Transactional
 public class BannerServiceImpl implements BannerService {
+    private static final List<String> OFFICIAL_MISSION_AUTHORS = ImmutableList.of( //
+        "MissionByNia", //
+        "MissionsByNIA", //
+        "MissionDaysNia", //
+        "MissionsNIA", //
+        "MDNia2", //
+        "MDNIA", //
+        "MDNIA2020" //
+    );
+
     @Autowired
     private BannerRepository bannerRepository;
 
@@ -61,8 +72,8 @@ public class BannerServiceImpl implements BannerService {
     @Override
     public List<Banner> find(Optional<String> placeSlug, Optional<Double> minLatitude, Optional<Double> maxLatitude,
                              Optional<Double> minLongitude, Optional<Double> maxLongitude, Optional<String> search,
-                             Optional<String> missionId, Optional<BannerSortOrder> orderBy, Direction orderDirection,
-                             int offset, int limit) {
+                             Optional<String> missionId, boolean onlyOfficialMissions,
+                             Optional<BannerSortOrder> orderBy, Direction orderDirection, int offset, int limit) {
         List<Specification<Banner>> specifications = new ArrayList<>();
         if (placeSlug.isPresent()) {
             specifications.add(BannerSpecifications.hasStartPlaceSlug(placeSlug.get()));
@@ -77,10 +88,14 @@ public class BannerServiceImpl implements BannerService {
             }
         }
         if (search.isPresent()) {
-            specifications.add(BannerSpecifications.hasTitlePart(search.get()));
+            specifications.add(BannerSpecifications.hasTitlePart(search.get())
+                .or(BannerSpecifications.hasMissionAuthors(List.of(search.get()))));
         }
         if (missionId.isPresent()) {
             specifications.add(BannerSpecifications.hasMissionId(missionId.get()));
+        }
+        if (onlyOfficialMissions) {
+            specifications.add(BannerSpecifications.hasMissionAuthors(OFFICIAL_MISSION_AUTHORS));
         }
 
         Specification<Banner> fullSpecification = specifications.stream().reduce((a, b) -> a.and(b)).orElse(null);

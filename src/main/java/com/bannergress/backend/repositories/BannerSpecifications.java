@@ -10,6 +10,8 @@ import javax.persistence.criteria.Join;
 import javax.persistence.criteria.JoinType;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Specifications for banner searches.
@@ -28,6 +30,14 @@ public class BannerSpecifications {
         return (banner, cq, cb) -> {
             banner.fetch("startPlaces", JoinType.LEFT).fetch("information", JoinType.LEFT);
             return null;
+        };
+    }
+
+    public static Specification<Banner> hasMissionAuthors(Collection<String> authors) {
+        return (banner, cq, cb) -> {
+            Join<Banner, Mission> mission = banner.join("missions");
+            List<String> lowercaseAuthors = authors.stream().map(String::toLowerCase).collect(Collectors.toList());
+            return cb.lower(mission.get("author").get("name")).in(lowercaseAuthors);
         };
     }
 
