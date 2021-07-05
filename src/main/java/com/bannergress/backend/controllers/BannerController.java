@@ -162,6 +162,7 @@ public class BannerController {
         Optional<PlaceInformation> placeInformation = placeService
             .getMostAccuratePlaceInformation(banner.getStartPlaces(), "en");
         if (placeInformation.isPresent()) {
+            dto.startPlaceId = placeInformation.get().getPlace().getSlug();
             dto.formattedAddress = placeInformation.get().getFormattedAddress();
         }
         return dto;
