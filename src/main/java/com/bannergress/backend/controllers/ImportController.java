@@ -3,6 +3,7 @@ package com.bannergress.backend.controllers;
 import com.bannergress.backend.dto.*;
 import com.bannergress.backend.entities.Mission;
 import com.bannergress.backend.security.Roles;
+import com.bannergress.backend.services.CreatorImportService;
 import com.bannergress.backend.services.IntelImportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,6 +23,9 @@ import java.util.stream.Collectors;
  */
 @RestController
 public class ImportController {
+    @Autowired
+    private CreatorImportService creatorImportService;
+
     @Autowired
     private IntelImportService intelImportService;
 
@@ -51,6 +55,18 @@ public class ImportController {
     public Map<String, MissionStatus> importMissionSummaries(@RequestBody List<@Valid IntelMissionSummary> summaries) {
         Collection<Mission> missions = intelImportService.importMissionSummaries(summaries);
         return toStatusMap(missions);
+    }
+
+    @RolesAllowed(Roles.IMPORT_DATA)
+    @PostMapping("/import/getMissionForProfile")
+    public void importGetMissionForProfile(@RequestBody @Valid CreatorGetMissionForProfile data) {
+        creatorImportService.importGetMissionForProfile(data);
+    }
+
+    @RolesAllowed(Roles.IMPORT_DATA)
+    @PostMapping("/import/getMissionsList")
+    public void importGetMissionsList(@RequestBody @Valid CreatorGetMissionsList data) {
+        creatorImportService.importGetMissionsList(data);
     }
 
     private Map<String, MissionStatus> toStatusMap(Collection<Mission> imported) {
