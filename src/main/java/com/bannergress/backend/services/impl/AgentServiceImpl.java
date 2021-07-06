@@ -24,7 +24,9 @@ public class AgentServiceImpl implements AgentService {
             namedAgent = new NamedAgent();
             namedAgent.setName(name);
         }
-        namedAgent.setFaction(faction);
+        if (faction != null) {
+            namedAgent.setFaction(faction);
+        }
         entityManager.persist(namedAgent);
         return namedAgent;
     }

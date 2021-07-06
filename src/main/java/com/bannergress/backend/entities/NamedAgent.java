@@ -26,7 +26,7 @@ public class NamedAgent {
     /**
      * Agent faction.
      */
-    @Column(nullable = false)
+    @Column(nullable = true)
     @Enumerated(EnumType.STRING)
     private Faction faction;
 
