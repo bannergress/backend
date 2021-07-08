@@ -37,7 +37,7 @@ public class KeycloakUserMappingServiceImpl implements UserMappingService {
 
     @Override
     public void setAgentName(String user, String agent) {
-        UserRepresentation userRepresentation = new UserRepresentation();
+        UserRepresentation userRepresentation = usersResource.get(user).toRepresentation();
         userRepresentation.singleAttribute(AGENT_ATTRIBUTE, agent);
         usersResource.get(user).update(userRepresentation);
     }
