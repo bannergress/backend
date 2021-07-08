@@ -15,6 +15,7 @@ import com.bannergress.backend.services.BannerService;
 import com.bannergress.backend.services.MissionService;
 import com.bannergress.backend.services.PlaceService;
 import com.bannergress.backend.utils.DistanceCalculation;
+import com.bannergress.backend.utils.OffsetBasedPageRequest;
 import com.bannergress.backend.utils.SlugGenerator;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
@@ -98,7 +99,8 @@ public class BannerServiceImpl implements BannerService {
 
         Specification<Banner> fullSpecification = specifications.stream().reduce((a, b) -> a.and(b)).orElse(null);
         Sort sort = orderBy.isPresent() ? Sort.by(orderDirection, orderBy.get().toString()) : Sort.unsorted();
-        List<Banner> banners = bannerRepository.findAll(fullSpecification, sort);
+        OffsetBasedPageRequest request = new OffsetBasedPageRequest(offset, limit, sort);
+        List<Banner> banners = bannerRepository.findAll(fullSpecification, request).getContent();
         preloadPlaceInformation(banners);
         return banners;
     }
