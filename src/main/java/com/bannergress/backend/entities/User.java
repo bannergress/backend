@@ -4,11 +4,9 @@ import com.bannergress.backend.utils.PojoBuilder;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
 import org.hibernate.annotations.DynamicUpdate;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -37,6 +35,12 @@ public class User {
      */
     @Column(name = "verification_token", columnDefinition = "uuid", nullable = true)
     private UUID verificationToken;
+
+    /**
+     * List of banner-specific settings for the user.
+     */
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<BannerSettings> settings;
 
     public String getId() {
         return id;

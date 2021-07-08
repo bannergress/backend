@@ -1,18 +1,23 @@
 package com.bannergress.backend.controllers;
 
 import com.bannergress.backend.dto.BannerDto;
+import com.bannergress.backend.dto.BannerSettingsDto;
 import com.bannergress.backend.entities.Banner;
+import com.bannergress.backend.entities.BannerSettings;
 import com.bannergress.backend.entities.PlaceInformation;
+import com.bannergress.backend.enums.BannerListType;
 import com.bannergress.backend.enums.BannerSortOrder;
 import com.bannergress.backend.exceptions.MissionAlreadyUsedException;
 import com.bannergress.backend.security.Roles;
 import com.bannergress.backend.services.BannerService;
+import com.bannergress.backend.services.BannerSettingsService;
 import com.bannergress.backend.services.PlaceService;
 import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,10 +25,8 @@ import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.security.Principal;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
@@ -40,9 +43,13 @@ public class BannerController {
 
     private final PlaceService placeService;
 
-    public BannerController(final BannerService bannerService, final PlaceService placeService) {
+    private final BannerSettingsService bannerSettingsService;
+
+    public BannerController(final BannerService bannerService, final PlaceService placeService,
+        final BannerSettingsService bannerSettingsService) {
         this.bannerService = bannerService;
         this.placeService = placeService;
+        this.bannerSettingsService = bannerSettingsService;
     }
 
     /**
@@ -76,7 +83,8 @@ public class BannerController {
                                                 @RequestParam final Optional<BannerSortOrder> orderBy,
                                                 @RequestParam(defaultValue = "ASC") final Direction orderDirection,
                                                 @RequestParam(defaultValue = "0") final int offset,
-                                                @RequestParam(defaultValue = "20") @Max(100) final int limit) {
+                                                @RequestParam(defaultValue = "20") @Max(100) final int limit,
+                                                Principal principal) {
         int numberOfBounds = (minLatitude.isPresent() ? 1 : 0) + (maxLatitude.isPresent() ? 1 : 0)
             + (minLongitude.isPresent() ? 1 : 0) + (maxLongitude.isPresent() ? 1 : 0);
         if (numberOfBounds != 0 && numberOfBounds != 4) {
@@ -84,7 +92,9 @@ public class BannerController {
         }
         final Collection<Banner> banners = bannerService.find(placeId, minLatitude, maxLatitude, minLongitude,
             maxLongitude, query, missionId, onlyOfficialMissions, author, orderBy, orderDirection, offset, limit);
-        return ResponseEntity.ok(banners.stream().map(this::toSummary).collect(Collectors.toUnmodifiableList()));
+        List<BannerDto> bannerDtos = banners.stream().map(this::toSummary).collect(Collectors.toUnmodifiableList());
+        amendUserSettings(principal, bannerDtos);
+        return ResponseEntity.ok(bannerDtos);
     }
 
     /**
@@ -94,16 +104,19 @@ public class BannerController {
      * @return
      */
     @GetMapping("/bnrs/{id}")
-    public ResponseEntity<BannerDto> get(@PathVariable final String id) {
+    public ResponseEntity<BannerDto> get(@PathVariable final String id, Principal principal) {
         final Optional<Banner> banner = bannerService.findBySlugWithDetails(id);
-        return ResponseEntity.of(banner.map(this::toDetails));
+        Optional<BannerDto> optionalBannerDto = banner.map(this::toDetails);
+        optionalBannerDto.ifPresent(bannerDto -> amendUserSettings(principal, List.of(bannerDto)));
+        return ResponseEntity.of(optionalBannerDto);
     }
 
     @RolesAllowed(Roles.CREATE_BANNER)
     @PostMapping("/bnrs")
-    public ResponseEntity<BannerDto> post(@Valid @RequestBody BannerDto banner) throws MissionAlreadyUsedException {
+    public ResponseEntity<BannerDto> post(@Valid @RequestBody BannerDto banner, Principal principal)
+        throws MissionAlreadyUsedException {
         String id = bannerService.create(banner);
-        return get(id);
+        return get(id, principal);
     }
 
     @RolesAllowed(Roles.CREATE_BANNER)
@@ -122,10 +135,11 @@ public class BannerController {
      */
     @RolesAllowed(Roles.MANAGE_BANNERS)
     @PutMapping("/bnrs/{id}")
-    public ResponseEntity<BannerDto> put(@PathVariable final String id, @Valid @RequestBody BannerDto banner)
+    public ResponseEntity<BannerDto> put(@PathVariable final String id, @Valid @RequestBody BannerDto banner,
+                                         Principal principal)
         throws MissionAlreadyUsedException {
         bannerService.update(id, banner);
-        return get(id);
+        return get(id, principal);
     }
 
     /**
@@ -155,6 +169,13 @@ public class BannerController {
         pool.shutdown();
     }
 
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/bnrs/{id}/settings")
+    public void postSettings(@PathVariable final String id, @Valid @RequestBody BannerSettingsDto settings,
+                             Principal principal) {
+        bannerSettingsService.addBannerToList(principal.getName(), id, settings.listType);
+    }
+
     private BannerDto toSummary(Banner banner) {
         BannerDto dto = new BannerDto();
         dto.id = banner.getSlug();
@@ -180,5 +201,18 @@ public class BannerController {
         dto.type = banner.getType();
         dto.description = banner.getDescription();
         return dto;
+    }
+
+    private void amendUserSettings(Principal principal, Collection<BannerDto> bannerDtos) {
+        if (principal != null) {
+            List<BannerSettings> bannerSettings = bannerSettingsService.getBannerSettings(principal.getName(),
+                bannerDtos.stream().map(b -> b.id).collect(Collectors.toList()));
+            Map<String, BannerListType> bannerListTypes = bannerSettings.stream()
+                .collect(Collectors.toMap(s -> s.getBanner().getSlug(), s -> s.getListType()));
+            for (BannerDto bannerDto : bannerDtos) {
+                BannerListType listType = bannerListTypes.get(bannerDto.id);
+                bannerDto.listType = listType == BannerListType.none ? null : listType;
+            }
+        }
     }
 }
