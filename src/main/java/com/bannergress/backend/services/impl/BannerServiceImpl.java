@@ -71,7 +71,7 @@ public class BannerServiceImpl implements BannerService {
     @Override
     public List<Banner> find(Optional<String> placeSlug, Optional<Double> minLatitude, Optional<Double> maxLatitude,
                              Optional<Double> minLongitude, Optional<Double> maxLongitude, Optional<String> search,
-                             Optional<String> missionId, boolean onlyOfficialMissions,
+                             Optional<String> missionId, boolean onlyOfficialMissions, Optional<String> author,
                              Optional<BannerSortOrder> orderBy, Direction orderDirection, int offset, int limit) {
         List<Specification<Banner>> specifications = new ArrayList<>();
         if (placeSlug.isPresent()) {
@@ -87,14 +87,16 @@ public class BannerServiceImpl implements BannerService {
             }
         }
         if (search.isPresent()) {
-            specifications.add(BannerSpecifications.hasTitlePart(search.get())
-                .or(BannerSpecifications.hasMissionAuthors(List.of(search.get()))));
+            specifications.add(BannerSpecifications.hasTitlePart(search.get()));
         }
         if (missionId.isPresent()) {
             specifications.add(BannerSpecifications.hasMissionId(missionId.get()));
         }
         if (onlyOfficialMissions) {
             specifications.add(BannerSpecifications.hasMissionAuthors(OFFICIAL_MISSION_AUTHORS));
+        }
+        if (author.isPresent()) {
+            specifications.add(BannerSpecifications.hasMissionAuthors(List.of(author.get())));
         }
 
         Specification<Banner> fullSpecification = specifications.stream().reduce((a, b) -> a.and(b)).orElse(null);
