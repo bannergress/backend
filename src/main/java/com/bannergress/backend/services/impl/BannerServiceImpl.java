@@ -87,8 +87,7 @@ public class BannerServiceImpl implements BannerService {
             }
         }
         if (search.isPresent()) {
-            specifications.add(BannerSpecifications.hasTitlePart(search.get())
-                .or(BannerSpecifications.hasMissionAuthors(List.of(search.get()))));
+            specifications.add(BannerSpecifications.hasTitlePart(search.get()));
         }
         if (missionId.isPresent()) {
             specifications.add(BannerSpecifications.hasMissionId(missionId.get()));
