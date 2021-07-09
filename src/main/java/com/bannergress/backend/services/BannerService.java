@@ -25,6 +25,7 @@ public interface BannerService {
      * @param query                Optional query string.
      * @param missionId            Optional ID of mission which has to be contained in banner.
      * @param onlyOfficialMissions Whether to only include official mission accounts.
+     * @param author               Optional author of one of the banner missions.
      * @param orderBy              Optional sort order.
      * @param orderDirection       Sort direction.
      * @param offset               Offset of the first result.
@@ -33,8 +34,8 @@ public interface BannerService {
      */
     List<Banner> find(Optional<String> placeSlug, Optional<Double> minLatitude, Optional<Double> maxLatitude,
                       Optional<Double> minLongitude, Optional<Double> maxLongitude, Optional<String> query,
-                      Optional<String> missionId, boolean onlyOfficialMissions, Optional<BannerSortOrder> orderBy,
-                      Direction orderDirection, int offset, int limit);
+                      Optional<String> missionId, boolean onlyOfficialMissions, Optional<String> author,
+                      Optional<BannerSortOrder> orderBy, Direction orderDirection, int offset, int limit);
 
     /**
      * @return List of all banner slugs.

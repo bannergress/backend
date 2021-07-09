@@ -48,15 +48,19 @@ public class BannerController {
     /**
      * Lists banners.
      *
-     * @param placeId        Place ID the banner belongs to.
-     * @param minLatitude    Minimum latitude of the bounding box.
-     * @param maxLatitude    Maximum latitude of the bounding box.
-     * @param minLongitude   Minimum longitude of the bounding box.
-     * @param maxLongitude   Maximum longitude of the bounding box.
-     * @param orderBy        Sort order.
-     * @param orderDirection Sort direction.
-     * @param offset         Offset of the first result.
-     * @param limit          Maximum number of results.
+     * @param placeId              Place ID the banner belongs to.
+     * @param minLatitude          Minimum latitude of the bounding box.
+     * @param maxLatitude          Maximum latitude of the bounding box.
+     * @param minLongitude         Minimum longitude of the bounding box.
+     * @param maxLongitude         Maximum longitude of the bounding box.
+     * @param query                Optional query string.
+     * @param missionId            Optional ID of mission which has to be contained in banner.
+     * @param onlyOfficialMissions Whether to only include official mission accounts.
+     * @param author               Optional author of one of the banner missions.
+     * @param orderBy              Sort order.
+     * @param orderDirection       Sort direction.
+     * @param offset               Offset of the first result.
+     * @param limit                Maximum number of results.
      * @return Banners.
      */
     @GetMapping(value = "/bnrs")
@@ -68,6 +72,7 @@ public class BannerController {
                                                 @RequestParam final Optional<String> query,
                                                 @RequestParam final Optional<String> missionId,
                                                 @RequestParam(defaultValue = "false") final boolean onlyOfficialMissions,
+                                                @RequestParam final Optional<String> author,
                                                 @RequestParam final Optional<BannerSortOrder> orderBy,
                                                 @RequestParam(defaultValue = "ASC") final Direction orderDirection,
                                                 @RequestParam(defaultValue = "0") final int offset,
@@ -78,7 +83,7 @@ public class BannerController {
             return ResponseEntity.badRequest().build();
         }
         final Collection<Banner> banners = bannerService.find(placeId, minLatitude, maxLatitude, minLongitude,
-            maxLongitude, query, missionId, onlyOfficialMissions, orderBy, orderDirection, offset, limit);
+            maxLongitude, query, missionId, onlyOfficialMissions, author, orderBy, orderDirection, offset, limit);
         return ResponseEntity.ok(banners.stream().map(this::toSummary).collect(Collectors.toUnmodifiableList()));
     }
 
