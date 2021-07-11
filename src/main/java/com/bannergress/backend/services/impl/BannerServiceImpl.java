@@ -10,6 +10,7 @@ import com.bannergress.backend.exceptions.MissionAlreadyUsedException;
 import com.bannergress.backend.repositories.BannerRepository;
 import com.bannergress.backend.repositories.BannerSpecifications;
 import com.bannergress.backend.repositories.MissionRepository;
+import com.bannergress.backend.repositories.MissionSpecifications;
 import com.bannergress.backend.services.BannerPictureService;
 import com.bannergress.backend.services.BannerService;
 import com.bannergress.backend.services.MissionService;
@@ -93,10 +94,12 @@ public class BannerServiceImpl implements BannerService {
             specifications.add(BannerSpecifications.hasMissionId(missionId.get()));
         }
         if (onlyOfficialMissions) {
-            specifications.add(BannerSpecifications.hasMissionAuthors(OFFICIAL_MISSION_AUTHORS));
+            specifications
+                .add(BannerSpecifications.hasMissionWith(MissionSpecifications.hasAuthors(OFFICIAL_MISSION_AUTHORS)));
         }
         if (author.isPresent()) {
-            specifications.add(BannerSpecifications.hasMissionAuthors(List.of(author.get())));
+            specifications
+                .add(BannerSpecifications.hasMissionWith(MissionSpecifications.hasAuthors(List.of(author.get()))));
         }
 
         Specification<Banner> fullSpecification = specifications.stream().reduce((a, b) -> a.and(b)).orElse(null);
