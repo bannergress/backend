@@ -1,6 +1,8 @@
 package com.bannergress.backend.testutils.builder;
 
+import com.bannergress.backend.utils.Geography;
 import com.bannergress.backend.utils.PojoBuilder;
+import org.locationtech.jts.geom.Point;
 import jakarta.validation.constraints.NotNull;
 
 import java.net.MalformedURLException;
@@ -19,7 +21,7 @@ public class JavatypeBuilder {
     private static final String ALPHANUMERIC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     private static final AtomicInteger unique = new AtomicInteger(START_VALUE_TO_AVOID_INTEGER_CACHING_WHICH_WORKS_WITH_DOUBLE_EQUALS);
-
+    
     @NotNull
     public static PojoBuilder<Integer> $Int() {
         return JavatypeBuilder::getUnique;
@@ -98,5 +100,10 @@ public class JavatypeBuilder {
     @NotNull
     public static PojoBuilder<Instant> $Instant() {
         return () -> Instant.ofEpochMilli(random.nextLong());
+    }
+
+    @NotNull
+    public static PojoBuilder<Point> $Point() {
+        return () -> Geography.createPointLatLon(a($Double()), a($Double()));
     }
 }

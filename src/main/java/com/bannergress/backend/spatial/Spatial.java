@@ -39,6 +39,10 @@ public class Spatial {
         Envelope envelope = new Envelope(minLongitude, maxLongitude, minLatitude, maxLatitude);
         return factory.toGeometry(envelope);
     }
+    
+    public GeometryFactory getFactory() {
+        return factory;
+    }
 
     /**
      * Returns the latitude of a point.
