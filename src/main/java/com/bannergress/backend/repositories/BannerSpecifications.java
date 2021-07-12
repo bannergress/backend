@@ -5,13 +5,9 @@ import com.bannergress.backend.entities.Mission;
 import com.bannergress.backend.entities.Place;
 import org.springframework.data.jpa.domain.Specification;
 
-import javax.persistence.criteria.Fetch;
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.*;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Specifications for banner searches.
@@ -33,11 +29,16 @@ public class BannerSpecifications {
         };
     }
 
-    public static Specification<Banner> hasMissionAuthors(Collection<String> authors) {
+    public static Specification<Banner> hasMissionWith(Specification<Mission> missionSpecification) {
         return (banner, cq, cb) -> {
-            Join<Banner, Mission> mission = banner.join("missions");
-            List<String> lowercaseAuthors = authors.stream().map(String::toLowerCase).collect(Collectors.toList());
-            return cb.lower(mission.get("author").get("name")).in(lowercaseAuthors);
+            Subquery<Mission> subquery = cq.subquery(Mission.class);
+            Root<Mission> mission = subquery.from(Mission.class);
+            Join<Mission, Banner> join = mission.join("banners");
+            subquery.select(mission);
+            Predicate bannerPredicate = cb.equal(join.get("uuid"), banner.get("uuid"));
+            Predicate missionPredicate = missionSpecification.toPredicate(mission, cq, cb);
+            subquery.select(mission).where(bannerPredicate, missionPredicate);
+            return cb.exists(subquery);
         };
     }
 
