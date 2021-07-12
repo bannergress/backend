@@ -7,8 +7,10 @@ import net.karneim.pojobuilder.GeneratePojoBuilder;
 import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
 import org.locationtech.jts.geom.Point;
+import org.hibernate.envers.NotAudited;
 
 import java.net.URL;
+import java.util.Set;
 
 /**
  * Represents a point of interest, i.e. a portal or a field trip waypoint.
@@ -44,6 +46,13 @@ public class POI {
      */
     @Column(name = "picture_url", nullable = true)
     private URL picture;
+
+    /**
+     * List of restricted areas in which the POI is included.
+     */
+    @ManyToMany(mappedBy = "pois")
+    @NotAudited
+    private Set<RestrictedArea> restrictedAreas;
 
     /**
      * Type of the POI (portal or field trip waypoint.
