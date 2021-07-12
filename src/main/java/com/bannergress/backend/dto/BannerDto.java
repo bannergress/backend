@@ -1,5 +1,6 @@
 package com.bannergress.backend.dto;
 
+import com.bannergress.backend.enums.BannerListType;
 import com.bannergress.backend.enums.BannerType;
 import com.bannergress.backend.utils.PojoBuilder;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -88,6 +89,11 @@ public class BannerDto {
      */
     @NotNull
     public BannerType type;
+
+    /**
+     * Type of list the banner is on.
+     */
+    public BannerListType listType;
 
     @Override
     public boolean equals(final Object o) {

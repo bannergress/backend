@@ -143,6 +143,13 @@ public class Banner {
     @Enumerated(EnumType.STRING)
     private BannerType type;
 
+    /**
+     * List of user-specific settings for the banner.
+     */
+    @OneToMany(mappedBy = "banner", cascade = CascadeType.ALL)
+    @NotAudited
+    private List<BannerSettings> settings;
+
     public UUID getUuid() {
         return uuid;
     }
