@@ -19,7 +19,7 @@ public class JavatypeBuilder {
     private static final String ALPHANUMERIC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     private static final AtomicInteger unique = new AtomicInteger(START_VALUE_TO_AVOID_INTEGER_CACHING_WHICH_WORKS_WITH_DOUBLE_EQUALS);
-
+    
     @NotNull
     public static PojoBuilder<Integer> $Int() {
         return JavatypeBuilder::getUnique;

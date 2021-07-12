@@ -33,4 +33,9 @@ public interface Roles {
      * Role which allows to verify a user.
      */
     String VERIFY_USERS = "verify-users";
+
+    /**
+     * Role which alles to manage areas.
+     */
+    String MANAGE_AREAS = "manage-areas";
 }
