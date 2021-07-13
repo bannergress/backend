@@ -16,6 +16,7 @@ import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -85,6 +86,9 @@ public class BannerController {
                                                 @RequestParam(defaultValue = "0") final int offset,
                                                 @RequestParam(defaultValue = "20") @Max(100) final int limit,
                                                 Principal principal) {
+        if (author.isPresent() && principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         int numberOfBounds = (minLatitude.isPresent() ? 1 : 0) + (maxLatitude.isPresent() ? 1 : 0)
             + (minLongitude.isPresent() ? 1 : 0) + (maxLongitude.isPresent() ? 1 : 0);
         if (numberOfBounds != 0 && numberOfBounds != 4) {
