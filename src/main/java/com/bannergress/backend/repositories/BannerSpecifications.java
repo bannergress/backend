@@ -1,13 +1,16 @@
 package com.bannergress.backend.repositories;
 
 import com.bannergress.backend.entities.Banner;
+import com.bannergress.backend.entities.BannerSettings;
 import com.bannergress.backend.entities.Mission;
 import com.bannergress.backend.entities.Place;
+import com.bannergress.backend.enums.BannerListType;
 import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.criteria.*;
 
 import java.util.Collection;
+import java.util.EnumSet;
 
 /**
  * Specifications for banner searches.
@@ -74,5 +77,25 @@ public class BannerSpecifications {
 
     public static Specification<Banner> isInLongitudeRange(double minLongitude, double maxLongitude) {
         return (banner, cq, cb) -> cb.between(banner.get("startLongitude"), minLongitude, maxLongitude);
+    }
+
+    public static Specification<Banner> isInUserList(Collection<BannerListType> listTypes, String userId) {
+        EnumSet<BannerListType> otherListTypes = EnumSet.complementOf(EnumSet.copyOf(listTypes));
+        if (otherListTypes.isEmpty()) {
+            // All possible list types, so no filtering needed
+            return null;
+        }
+        if (listTypes.contains(BannerListType.none)) {
+            // Banners without settings default to BannerListType.none.
+            // Therefore, we need to check that no user settings with the remaining types exist.
+            return Specification.not(isInUserList(otherListTypes, userId));
+        }
+        return (banner, cq, cb) -> {
+            Subquery<BannerSettings> subquery = cq.subquery(BannerSettings.class);
+            Root<BannerSettings> settings = subquery.from(BannerSettings.class);
+            subquery.select(settings).where(cb.equal(settings.get("banner"), banner),
+                cb.equal(settings.get("user").get("id"), userId), settings.get("listType").in(listTypes));
+            return cb.exists(subquery);
+        };
     }
 }

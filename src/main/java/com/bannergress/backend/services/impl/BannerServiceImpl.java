@@ -5,6 +5,7 @@ import com.bannergress.backend.entities.Banner;
 import com.bannergress.backend.entities.Mission;
 import com.bannergress.backend.entities.MissionStep;
 import com.bannergress.backend.entities.Place;
+import com.bannergress.backend.enums.BannerListType;
 import com.bannergress.backend.enums.BannerSortOrder;
 import com.bannergress.backend.exceptions.MissionAlreadyUsedException;
 import com.bannergress.backend.repositories.BannerRepository;
@@ -73,6 +74,7 @@ public class BannerServiceImpl implements BannerService {
     public List<Banner> find(Optional<String> placeSlug, Optional<Double> minLatitude, Optional<Double> maxLatitude,
                              Optional<Double> minLongitude, Optional<Double> maxLongitude, Optional<String> search,
                              Optional<String> missionId, boolean onlyOfficialMissions, Optional<String> author,
+                             Optional<Collection<BannerListType>> listTypes, Optional<String> userId,
                              Optional<BannerSortOrder> orderBy, Direction orderDirection, int offset, int limit) {
         List<Specification<Banner>> specifications = new ArrayList<>();
         if (placeSlug.isPresent()) {
@@ -100,6 +102,9 @@ public class BannerServiceImpl implements BannerService {
         if (author.isPresent()) {
             specifications
                 .add(BannerSpecifications.hasMissionWith(MissionSpecifications.hasAuthors(List.of(author.get()))));
+        }
+        if (listTypes.isPresent()) {
+            specifications.add(BannerSpecifications.isInUserList(listTypes.get(), userId.get()));
         }
 
         Specification<Banner> fullSpecification = specifications.stream().reduce((a, b) -> a.and(b)).orElse(null);

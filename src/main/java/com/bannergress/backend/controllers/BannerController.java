@@ -81,12 +81,13 @@ public class BannerController {
                                                 @RequestParam final Optional<String> missionId,
                                                 @RequestParam(defaultValue = "false") final boolean onlyOfficialMissions,
                                                 @RequestParam final Optional<String> author,
+                                                @RequestParam final Optional<Collection<BannerListType>> listTypes,
                                                 @RequestParam final Optional<BannerSortOrder> orderBy,
                                                 @RequestParam(defaultValue = "ASC") final Direction orderDirection,
                                                 @RequestParam(defaultValue = "0") final int offset,
                                                 @RequestParam(defaultValue = "20") @Max(100) final int limit,
                                                 Principal principal) {
-        if (author.isPresent() && principal == null) {
+        if ((author.isPresent() || listTypes.isPresent()) && principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         int numberOfBounds = (minLatitude.isPresent() ? 1 : 0) + (maxLatitude.isPresent() ? 1 : 0)
@@ -95,7 +96,8 @@ public class BannerController {
             return ResponseEntity.badRequest().build();
         }
         final Collection<Banner> banners = bannerService.find(placeId, minLatitude, maxLatitude, minLongitude,
-            maxLongitude, query, missionId, onlyOfficialMissions, author, orderBy, orderDirection, offset, limit);
+            maxLongitude, query, missionId, onlyOfficialMissions, author, listTypes,
+            Optional.ofNullable(principal).map(Principal::getName), orderBy, orderDirection, offset, limit);
         List<BannerDto> bannerDtos = banners.stream().map(this::toSummary).collect(Collectors.toUnmodifiableList());
         amendUserSettings(principal, bannerDtos);
         return ResponseEntity.ok(bannerDtos);

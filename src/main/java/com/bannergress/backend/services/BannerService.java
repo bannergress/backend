@@ -2,10 +2,12 @@ package com.bannergress.backend.services;
 
 import com.bannergress.backend.dto.BannerDto;
 import com.bannergress.backend.entities.Banner;
+import com.bannergress.backend.enums.BannerListType;
 import com.bannergress.backend.enums.BannerSortOrder;
 import com.bannergress.backend.exceptions.MissionAlreadyUsedException;
 import org.springframework.data.domain.Sort.Direction;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,6 +28,8 @@ public interface BannerService {
      * @param missionId            Optional ID of mission which has to be contained in banner.
      * @param onlyOfficialMissions Whether to only include official mission accounts.
      * @param author               Optional author of one of the banner missions.
+     * @param listTypes            Optional types of lists the banner is on.
+     * @param user                 Optional User ID (needed for listTypes).
      * @param orderBy              Optional sort order.
      * @param orderDirection       Sort direction.
      * @param offset               Offset of the first result.
@@ -35,6 +39,7 @@ public interface BannerService {
     List<Banner> find(Optional<String> placeSlug, Optional<Double> minLatitude, Optional<Double> maxLatitude,
                       Optional<Double> minLongitude, Optional<Double> maxLongitude, Optional<String> query,
                       Optional<String> missionId, boolean onlyOfficialMissions, Optional<String> author,
+                      Optional<Collection<BannerListType>> listTypes, Optional<String> userId,
                       Optional<BannerSortOrder> orderBy, Direction orderDirection, int offset, int limit);
 
     /**
