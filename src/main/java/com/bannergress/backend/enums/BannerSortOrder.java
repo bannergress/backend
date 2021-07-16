@@ -13,5 +13,7 @@ public enum BannerSortOrder {
     /** Order by {@link Banner#getNumberOfMissions}. */
     numberOfMissions,
     /** Order by {@link Banner#getLengthMeters}. */
-    lengthMeters
+    lengthMeters,
+    /** Order by {@link BannerSettings#listAdded}. */
+    listAdded
 }

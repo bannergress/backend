@@ -95,6 +95,11 @@ public class BannerController {
         if (numberOfBounds != 0 && numberOfBounds != 4) {
             return ResponseEntity.badRequest().build();
         }
+        if (orderBy.isPresent() && orderBy.get() == BannerSortOrder.listAdded
+            && (!listTypes.isPresent() || listTypes.get().contains(BannerListType.none))) {
+            // Sort by list added needs filter by list type(s) other than 'none'
+            return ResponseEntity.badRequest().build();
+        }
         final Collection<Banner> banners = bannerService.find(placeId, minLatitude, maxLatitude, minLongitude,
             maxLongitude, query, missionId, onlyOfficialMissions, author, listTypes,
             Optional.ofNullable(principal).map(Principal::getName), orderBy, orderDirection, offset, limit);

@@ -5,6 +5,8 @@ import com.bannergress.backend.entities.BannerSettings;
 import com.bannergress.backend.entities.Mission;
 import com.bannergress.backend.entities.Place;
 import com.bannergress.backend.enums.BannerListType;
+import com.google.common.base.Preconditions;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.criteria.*;
@@ -96,6 +98,23 @@ public class BannerSpecifications {
             subquery.select(settings).where(cb.equal(settings.get("banner"), banner),
                 cb.equal(settings.get("user").get("id"), userId), settings.get("listType").in(listTypes));
             return cb.exists(subquery);
+        };
+    }
+
+    public static Specification<Banner> isInUserListSorted(Collection<BannerListType> listTypes, String userId,
+                                                           Direction direction) {
+        Preconditions.checkArgument(!listTypes.contains(BannerListType.none));
+        return (banner, cq, cb) -> {
+            Join<Banner, BannerSettings> settings = banner.join("settings");
+            switch (direction) {
+                case ASC:
+                    cq.orderBy(cb.asc(settings.get("listAdded")));
+                    break;
+                case DESC:
+                    cq.orderBy(cb.desc(settings.get("listAdded")));
+                    break;
+            }
+            return cb.and(cb.equal(settings.get("user").get("id"), userId), settings.get("listType").in(listTypes));
         };
     }
 }
