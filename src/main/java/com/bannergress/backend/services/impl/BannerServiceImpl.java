@@ -104,11 +104,18 @@ public class BannerServiceImpl implements BannerService {
                 .add(BannerSpecifications.hasMissionWith(MissionSpecifications.hasAuthors(List.of(author.get()))));
         }
         if (listTypes.isPresent()) {
-            specifications.add(BannerSpecifications.isInUserList(listTypes.get(), userId.get()));
+            if (orderBy.isPresent() && orderBy.get() == BannerSortOrder.listAdded) {
+                specifications
+                    .add(BannerSpecifications.isInUserListSorted(listTypes.get(), userId.get(), orderDirection));
+            } else {
+                specifications.add(BannerSpecifications.isInUserList(listTypes.get(), userId.get()));
+            }
         }
 
         Specification<Banner> fullSpecification = specifications.stream().reduce((a, b) -> a.and(b)).orElse(null);
-        Sort sort = orderBy.isPresent() ? Sort.by(orderDirection, orderBy.get().toString()) : Sort.unsorted();
+        Sort sort = orderBy.isPresent() && orderBy.get() != BannerSortOrder.listAdded
+            ? Sort.by(orderDirection, orderBy.get().toString())
+            : Sort.unsorted();
         OffsetBasedPageRequest request = new OffsetBasedPageRequest(offset, limit, sort);
         List<Banner> banners = bannerRepository.findAll(fullSpecification, request).getContent();
         preloadPlaceInformation(banners);
