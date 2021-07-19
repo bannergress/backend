@@ -108,10 +108,10 @@ public class BannerSpecifications {
             Join<Banner, BannerSettings> settings = banner.join("settings");
             switch (direction) {
                 case ASC:
-                    cq.orderBy(cb.asc(settings.get("listAdded")));
+                    cq.orderBy(cb.asc(settings.get("listAdded")), cb.asc(banner.get("uuid")));
                     break;
                 case DESC:
-                    cq.orderBy(cb.desc(settings.get("listAdded")));
+                    cq.orderBy(cb.desc(settings.get("listAdded")), cb.desc(banner.get("uuid")));
                     break;
             }
             return cb.and(cb.equal(settings.get("user").get("id"), userId), settings.get("listType").in(listTypes));
