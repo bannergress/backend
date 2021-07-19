@@ -113,9 +113,16 @@ public class BannerServiceImpl implements BannerService {
         }
 
         Specification<Banner> fullSpecification = specifications.stream().reduce((a, b) -> a.and(b)).orElse(null);
-        Sort sort = orderBy.isPresent() && orderBy.get() != BannerSortOrder.listAdded
-            ? Sort.by(orderDirection, orderBy.get().toString())
-            : Sort.unsorted();
+        Sort sort;
+        if (orderBy.isPresent()) {
+            if (orderBy.get() == BannerSortOrder.listAdded) {
+                sort = Sort.unsorted(); // Sorting takes place in the specification
+            } else {
+                sort = Sort.by(orderDirection, orderBy.get().toString(), "uuid");
+            }
+        } else {
+            sort = Sort.by(Direction.ASC, "uuid");
+        }
         OffsetBasedPageRequest request = new OffsetBasedPageRequest(offset, limit, sort);
         List<Banner> banners = bannerRepository.findAll(fullSpecification, request).getContent();
         preloadPlaceInformation(banners);
