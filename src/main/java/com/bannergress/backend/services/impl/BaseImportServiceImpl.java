@@ -66,6 +66,7 @@ public abstract class BaseImportServiceImpl {
     protected final void setMissionDescription(Mission mission, String newDescription) {
         if (newDescription != null) {
             mission.setDescription(stripNullChars(newDescription));
+            mission.setLatestUpdateSummary(Instant.now());
         }
     }
 
@@ -84,7 +85,7 @@ public abstract class BaseImportServiceImpl {
             tracker.add(mission);
         }
         if (setLatestUpdate) {
-            mission.setLatestUpdateSummary(Instant.now());
+            mission.setLatestUpdateStatus(Instant.now());
         }
     }
 

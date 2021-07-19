@@ -113,6 +113,13 @@ public class Mission {
     private Instant latestUpdateDetails;
 
     /**
+     * Timestamp when the mission status was last updated.
+     */
+    @Column(name = "latest_update_status", nullable = true, columnDefinition = "timestamp with time zone")
+    @NotAudited
+    private Instant latestUpdateStatus;
+
+    /**
      * List of banners in which the mission is included.
      */
     @ManyToMany(mappedBy = "missions")
@@ -221,5 +228,13 @@ public class Mission {
 
     public void setLatestUpdateDetails(Instant latestUpdateDetails) {
         this.latestUpdateDetails = latestUpdateDetails;
+    }
+
+    public Instant getLatestUpdateStatus() {
+        return latestUpdateStatus;
+    }
+
+    public void setLatestUpdateStatus(Instant latestUpdateStatus) {
+        this.latestUpdateStatus = latestUpdateStatus;
     }
 }
