@@ -33,6 +33,7 @@ dependencies {
   implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml'
   implementation "org.keycloak:keycloak-admin-client:${keycloak_version}"
 
+  annotationProcessor 'org.hibernate:hibernate-jpamodelgen'
   annotationProcessor "net.karneim:pojobuilder:$pojobuilder_version"
 
   compileOnly "net.karneim:pojobuilder:$pojobuilder_version:annotations"
