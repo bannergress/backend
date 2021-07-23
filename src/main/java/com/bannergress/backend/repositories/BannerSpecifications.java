@@ -1,9 +1,6 @@
 package com.bannergress.backend.repositories;
 
-import com.bannergress.backend.entities.Banner;
-import com.bannergress.backend.entities.BannerSettings;
-import com.bannergress.backend.entities.Mission;
-import com.bannergress.backend.entities.Place;
+import com.bannergress.backend.entities.*;
 import com.bannergress.backend.enums.BannerListType;
 import com.google.common.base.Preconditions;
 import org.springframework.data.domain.Sort.Direction;
@@ -20,16 +17,16 @@ import java.util.EnumSet;
 public class BannerSpecifications {
     public static Specification<Banner> fetchDetails() {
         return (banner, cq, cb) -> {
-            Fetch<Banner, Mission> missions = banner.fetch("missions", JoinType.LEFT);
-            missions.fetch("author", JoinType.LEFT);
-            missions.fetch("steps", JoinType.LEFT).fetch("poi", JoinType.LEFT);
+            Fetch<Banner, Mission> missions = banner.fetch(Banner_.missions, JoinType.LEFT);
+            missions.fetch(Mission_.author, JoinType.LEFT);
+            missions.fetch(Mission_.steps, JoinType.LEFT).fetch(MissionStep_.poi, JoinType.LEFT);
             return null;
         };
     }
 
     public static Specification<Banner> fetchPlaceInformation() {
         return (banner, cq, cb) -> {
-            banner.fetch("startPlaces", JoinType.LEFT).fetch("information", JoinType.LEFT);
+            banner.fetch(Banner_.startPlaces, JoinType.LEFT).fetch(Place_.information, JoinType.LEFT);
             return null;
         };
     }
@@ -38,9 +35,9 @@ public class BannerSpecifications {
         return (banner, cq, cb) -> {
             Subquery<Mission> subquery = cq.subquery(Mission.class);
             Root<Mission> mission = subquery.from(Mission.class);
-            Join<Mission, Banner> join = mission.join("banners");
+            Join<Mission, Banner> join = mission.join(Mission_.banners);
             subquery.select(mission);
-            Predicate bannerPredicate = cb.equal(join.get("uuid"), banner.get("uuid"));
+            Predicate bannerPredicate = cb.equal(join.get(Banner_.uuid), banner.get(Banner_.uuid));
             Predicate missionPredicate = missionSpecification.toPredicate(mission, cq, cb);
             subquery.select(mission).where(bannerPredicate, missionPredicate);
             return cb.exists(subquery);
@@ -49,24 +46,24 @@ public class BannerSpecifications {
 
     public static Specification<Banner> hasMissionId(String missionId) {
         return (banner, cq, cb) -> {
-            Join<Banner, Mission> mission = banner.join("missions");
-            return cb.equal(mission.get("id"), missionId);
+            Join<Banner, Mission> mission = banner.join(Banner_.missions);
+            return cb.equal(mission.get(Mission_.id), missionId);
         };
     }
 
     public static Specification<Banner> hasSlug(String slug) {
-        return (banner, cq, cb) -> cb.equal(banner.get("slug"), slug);
+        return (banner, cq, cb) -> cb.equal(banner.get(Banner_.slug), slug);
     }
 
     public static Specification<Banner> hasStartPlaceSlug(String startPlaceSlug) {
         return (banner, cq, cb) -> {
-            Join<Banner, Place> place = banner.join("startPlaces");
-            return cb.equal(place.get("slug"), startPlaceSlug);
+            Join<Banner, Place> place = banner.join(Banner_.startPlaces);
+            return cb.equal(place.get(Place_.slug), startPlaceSlug);
         };
     }
 
     public static Specification<Banner> hasTitlePart(String titlePart) {
-        return (banner, cq, cb) -> cb.like(cb.lower(banner.get("title")), "%" + titlePart.toLowerCase() + "%");
+        return (banner, cq, cb) -> cb.like(cb.lower(banner.get(Banner_.title)), "%" + titlePart.toLowerCase() + "%");
     }
 
     public static Specification<Banner> isInBanners(Collection<Banner> banners) {
@@ -74,11 +71,11 @@ public class BannerSpecifications {
     }
 
     public static Specification<Banner> isInLatitudeRange(double minLatitude, double maxLatitude) {
-        return (banner, cq, cb) -> cb.between(banner.get("startLatitude"), minLatitude, maxLatitude);
+        return (banner, cq, cb) -> cb.between(banner.get(Banner_.startLatitude), minLatitude, maxLatitude);
     }
 
     public static Specification<Banner> isInLongitudeRange(double minLongitude, double maxLongitude) {
-        return (banner, cq, cb) -> cb.between(banner.get("startLongitude"), minLongitude, maxLongitude);
+        return (banner, cq, cb) -> cb.between(banner.get(Banner_.startLongitude), minLongitude, maxLongitude);
     }
 
     public static Specification<Banner> isInUserList(Collection<BannerListType> listTypes, String userId) {
@@ -95,8 +92,9 @@ public class BannerSpecifications {
         return (banner, cq, cb) -> {
             Subquery<BannerSettings> subquery = cq.subquery(BannerSettings.class);
             Root<BannerSettings> settings = subquery.from(BannerSettings.class);
-            subquery.select(settings).where(cb.equal(settings.get("banner"), banner),
-                cb.equal(settings.get("user").get("id"), userId), settings.get("listType").in(listTypes));
+            subquery.select(settings).where(cb.equal(settings.get(BannerSettings_.banner), banner),
+                cb.equal(settings.get(BannerSettings_.user).get(User_.id), userId),
+                settings.get(BannerSettings_.listType).in(listTypes));
             return cb.exists(subquery);
         };
     }
@@ -105,16 +103,17 @@ public class BannerSpecifications {
                                                            Direction direction) {
         Preconditions.checkArgument(!listTypes.contains(BannerListType.none));
         return (banner, cq, cb) -> {
-            Join<Banner, BannerSettings> settings = banner.join("settings");
+            Join<Banner, BannerSettings> settings = banner.join(Banner_.settings);
             switch (direction) {
                 case ASC:
-                    cq.orderBy(cb.asc(settings.get("listAdded")), cb.asc(banner.get("uuid")));
+                    cq.orderBy(cb.asc(settings.get(BannerSettings_.listAdded)), cb.asc(banner.get(Banner_.uuid)));
                     break;
                 case DESC:
-                    cq.orderBy(cb.desc(settings.get("listAdded")), cb.desc(banner.get("uuid")));
+                    cq.orderBy(cb.desc(settings.get(BannerSettings_.listAdded)), cb.desc(banner.get(Banner_.uuid)));
                     break;
             }
-            return cb.and(cb.equal(settings.get("user").get("id"), userId), settings.get("listType").in(listTypes));
+            return cb.and(cb.equal(settings.get(BannerSettings_.user).get(User_.id), userId),
+                settings.get(BannerSettings_.listType).in(listTypes));
         };
     }
 }
