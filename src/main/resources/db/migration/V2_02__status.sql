@@ -1,1 +1,1 @@
-ALTER TABLE "banner" ADD COLUMN "latest_update_status" timestamp with time zone;
+ALTER TABLE "mission" ADD COLUMN "latest_update_status" timestamp with time zone;
