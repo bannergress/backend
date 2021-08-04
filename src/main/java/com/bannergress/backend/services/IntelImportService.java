@@ -2,8 +2,6 @@ package com.bannergress.backend.services;
 
 import com.bannergress.backend.dto.IntelMissionDetails;
 import com.bannergress.backend.dto.IntelMissionSummary;
-import com.bannergress.backend.dto.IntelTopMissionsForPortal;
-import com.bannergress.backend.dto.IntelTopMissionsInBounds;
 import com.bannergress.backend.entities.Mission;
 
 import javax.validation.Valid;
@@ -22,22 +20,6 @@ public interface IntelImportService {
      * @return Imported mission.
      */
     Mission importMission(IntelMissionDetails data);
-
-    /**
-     * Imports missions from intel-based data.
-     *
-     * @param data Intel request and response data.
-     * @return Imported missions.
-     */
-    Collection<Mission> importTopMissionsInBounds(IntelTopMissionsInBounds data);
-
-    /**
-     * Imports missions from intel-based data.
-     *
-     * @param data Intel request and response data.
-     * @return Imported missions.
-     */
-    Collection<Mission> importTopMissionsForPortal(IntelTopMissionsForPortal data);
 
     /**
      * Imports missions from intel-based data.
