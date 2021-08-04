@@ -1,6 +1,8 @@
 package com.bannergress.backend.services.impl;
 
-import com.bannergress.backend.dto.*;
+import com.bannergress.backend.dto.IntelMissionDetails;
+import com.bannergress.backend.dto.IntelMissionStep;
+import com.bannergress.backend.dto.IntelMissionSummary;
 import com.bannergress.backend.entities.Mission;
 import com.bannergress.backend.entities.MissionStep;
 import com.bannergress.backend.entities.POI;
@@ -8,8 +10,6 @@ import com.bannergress.backend.enums.POIType;
 import com.bannergress.backend.services.IntelImportService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.persistence.TypedQuery;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,10 +21,6 @@ import java.util.List;
 @Service
 @Transactional
 public class IntelImportServiceImpl extends BaseImportServiceImpl implements IntelImportService {
-    private static final int INTEL_TOP_MISSIONS_IN_BOUNDS_LIMIT = 25;
-
-    private static final int INTEL_TOP_MISSIONS_FOR_PORTAL_LIMIT = 10;
-
     @Override
     public Mission importMission(IntelMissionDetails data, boolean setMissionOnline) {
         return withRecalculation(tracker -> {
@@ -65,74 +61,17 @@ public class IntelImportServiceImpl extends BaseImportServiceImpl implements Int
     }
 
     @Override
-    public Collection<Mission> importTopMissionsInBounds(IntelTopMissionsInBounds data) {
-        return withRecalculation(tracker -> {
-            Collection<Mission> missions = importMissionSummaries(data.summaries, tracker);
-            if (missions.size() < INTEL_TOP_MISSIONS_IN_BOUNDS_LIMIT) {
-                setMissionsOfflineInBounds(fromE6(data.request.southE6), fromE6(data.request.westE6),
-                    fromE6(data.request.northE6), fromE6(data.request.eastE6), missions, tracker);
-            }
-            return missions;
-        });
-    }
-
-    @Override
-    public Collection<Mission> importTopMissionsForPortal(IntelTopMissionsForPortal data) {
-        return withRecalculation(tracker -> {
-            Collection<Mission> missions = importMissionSummaries(data.summaries, tracker);
-            if (missions.size() < INTEL_TOP_MISSIONS_FOR_PORTAL_LIMIT) {
-                setMissionsOfflineForPortal(data.request.guid, missions, tracker);
-            }
-            return missions;
-        });
-    }
-
-    @Override
     public Collection<Mission> importMissionSummaries(List<IntelMissionSummary> summaries) {
         return withRecalculation(tracker -> {
-            return importMissionSummaries(summaries, tracker);
+            List<Mission> imported = new ArrayList<>();
+            for (IntelMissionSummary summary : summaries) {
+                Mission mission = importMissionSummary(summary, tracker);
+                setMissionOnline(mission, true, tracker);
+                entityManager.persist(mission);
+                imported.add(mission);
+            }
+            return imported;
         });
-    }
-
-    private void setMissionsOfflineInBounds(double minLatitude, double minLongitude, double maxLatitude,
-                                            double maxLongitude, Collection<Mission> exclude,
-                                            RecalculationTracker tracker) {
-        TypedQuery<Mission> query = entityManager.createQuery("SELECT m FROM Mission m WHERE m NOT IN :exclude"
-            + " AND m.steps[0].poi.latitude BETWEEN :minLatitude AND :maxLatitude"
-            + " AND m.steps[0].poi.longitude BETWEEN :minLongitude AND :maxLongitude", Mission.class);
-        query.setParameter("exclude", exclude);
-        query.setParameter("minLatitude", minLatitude);
-        query.setParameter("minLongitude", minLongitude);
-        query.setParameter("maxLatitude", maxLatitude);
-        query.setParameter("maxLongitude", maxLongitude);
-        setMissionsOffline(query.getResultList(), tracker);
-    }
-
-    private void setMissionsOfflineForPortal(String startPoiId, Collection<Mission> exclude,
-                                             RecalculationTracker tracker) {
-        TypedQuery<Mission> query = entityManager.createQuery(
-            "SELECT m FROM Mission m WHERE m NOT IN :exclude AND m.steps[0].poi.id = :startPoiId", Mission.class);
-        query.setParameter("exclude", exclude);
-        query.setParameter("startPoiId", startPoiId);
-        setMissionsOffline(query.getResultList(), tracker);
-    }
-
-    private void setMissionsOffline(List<Mission> missions, RecalculationTracker tracker) {
-        for (Mission mission : missions) {
-            setMissionOnline(mission, false, tracker);
-        }
-    }
-
-    private Collection<Mission> importMissionSummaries(List<IntelMissionSummary> summaries,
-                                                       RecalculationTracker tracker) {
-        List<Mission> imported = new ArrayList<>();
-        for (IntelMissionSummary summary : summaries) {
-            Mission mission = importMissionSummary(summary, tracker);
-            setMissionOnline(mission, true, tracker);
-            entityManager.persist(mission);
-            imported.add(mission);
-        }
-        return imported;
     }
 
     private Mission importMissionSummary(IntelMissionSummary data, RecalculationTracker tracker) {

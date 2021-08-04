@@ -31,20 +31,6 @@ public class ImportController {
     private IntelImportService intelImportService;
 
     @RolesAllowed(Roles.IMPORT_DATA)
-    @PostMapping("/import/topMissionsInBounds")
-    public Map<String, MissionStatus> importTopMissionsInBounds(@RequestBody @Valid IntelTopMissionsInBounds data) {
-        Collection<Mission> missions = intelImportService.importTopMissionsInBounds(data);
-        return toStatusMap(missions);
-    }
-
-    @RolesAllowed(Roles.IMPORT_DATA)
-    @PostMapping("/import/topMissionsForPortal")
-    public Map<String, MissionStatus> importTopMissionsForPortal(@RequestBody @Valid IntelTopMissionsForPortal data) {
-        Collection<Mission> missions = intelImportService.importTopMissionsForPortal(data);
-        return toStatusMap(missions);
-    }
-
-    @RolesAllowed(Roles.IMPORT_DATA)
     @PostMapping("/import/details")
     public Map<String, MissionStatus> importMissionDetails(@RequestBody @Valid IntelMissionDetails data,
                                                            @RequestParam(defaultValue = "true") boolean setStatusOnline) {
