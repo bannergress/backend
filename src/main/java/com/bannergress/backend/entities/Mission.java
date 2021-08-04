@@ -96,7 +96,7 @@ public class Mission {
      * Mission status.
      */
     @Column(name = "online", nullable = false)
-    private boolean online = true;
+    private boolean online;
 
     /**
      * Timestamp when the mission summary was last updated.

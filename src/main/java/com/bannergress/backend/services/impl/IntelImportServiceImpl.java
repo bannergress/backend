@@ -26,7 +26,7 @@ public class IntelImportServiceImpl extends BaseImportServiceImpl implements Int
     private static final int INTEL_TOP_MISSIONS_FOR_PORTAL_LIMIT = 10;
 
     @Override
-    public Mission importMission(IntelMissionDetails data) {
+    public Mission importMission(IntelMissionDetails data, boolean setMissionOnline) {
         return withRecalculation(tracker -> {
             Mission mission = importMissionSummary(data, tracker);
             setMissionAuthor(mission, data.authorName, data.authorFaction);
@@ -38,7 +38,7 @@ public class IntelImportServiceImpl extends BaseImportServiceImpl implements Int
             for (int i = 0; i < steps.size(); i++) {
                 importMissionStep(steps.get(i), mission.getSteps().get(i), tracker);
             }
-            setMissionOnline(mission, null, tracker);
+            setMissionOnline(mission, setMissionOnline ? true : null, tracker);
             entityManager.persist(mission);
             return mission;
         });
