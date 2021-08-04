@@ -18,10 +18,11 @@ public interface IntelImportService {
     /**
      * Imports a mission from intel-based data.
      *
-     * @param data Intel response data.
+     * @param data            Intel response data.
+     * @param setStatusOnline Set status of mission to online.
      * @return Imported mission.
      */
-    Mission importMission(IntelMissionDetails data);
+    Mission importMission(IntelMissionDetails data, boolean setStatusOnline);
 
     /**
      * Imports missions from intel-based data.

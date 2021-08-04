@@ -8,6 +8,7 @@ import com.bannergress.backend.services.IntelImportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.security.RolesAllowed;
@@ -45,8 +46,9 @@ public class ImportController {
 
     @RolesAllowed(Roles.IMPORT_DATA)
     @PostMapping("/import/details")
-    public Map<String, MissionStatus> importMissionDetails(@RequestBody @Valid IntelMissionDetails data) {
-        Mission mission = intelImportService.importMission(data);
+    public Map<String, MissionStatus> importMissionDetails(@RequestBody @Valid IntelMissionDetails data,
+                                                           @RequestParam(defaultValue = "true") boolean setStatusOnline) {
+        Mission mission = intelImportService.importMission(data, setStatusOnline);
         return toStatusMap(List.of(mission));
     }
 
