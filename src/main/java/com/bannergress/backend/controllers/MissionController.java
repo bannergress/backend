@@ -53,12 +53,12 @@ public class MissionController {
     }
 
     @PostMapping("/missions/status")
-    public Map<String, MissionStatus> getStatus(@RequestBody Collection<@NianticId @NotNull String> ids) {
+    public Map<String, MissionStatusDto> getStatus(@RequestBody Collection<@NianticId @NotNull String> ids) {
         Collection<Mission> missions = missionService.findByIds(ids);
-        Map<String, MissionStatus> result = new HashMap<>();
-        result.putAll(Maps.toMap(ids, id -> new MissionStatus()));
+        Map<String, MissionStatusDto> result = new HashMap<>();
+        result.putAll(Maps.toMap(ids, id -> new MissionStatusDto()));
         for (Mission mission : missions) {
-            MissionStatus status = result.get(mission.getId());
+            MissionStatusDto status = result.get(mission.getId());
             status.latestUpdateSummary = mission.getLatestUpdateSummary();
             status.latestUpdateDetails = mission.getLatestUpdateDetails();
         }

@@ -9,7 +9,7 @@ import java.time.Instant;
  * Transports status information for a single mission.
  */
 @JsonInclude(Include.NON_NULL)
-public class MissionStatus {
+public class MissionStatusDto {
     /**
      * Timestamp when the mission summary was last updated.
      */
