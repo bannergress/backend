@@ -1,5 +1,6 @@
 package com.bannergress.backend.dto;
 
+import com.bannergress.backend.enums.MissionStatus;
 import com.bannergress.backend.enums.MissionType;
 import com.bannergress.backend.utils.PojoBuilder;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -28,6 +29,10 @@ public class MissionDto {
     public MissionType type;
 
     public Boolean online;
+
+    public String online_info;
+
+    public MissionStatus status;
 
     public NamedAgentDto author;
 

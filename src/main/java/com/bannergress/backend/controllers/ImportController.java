@@ -32,7 +32,7 @@ public class ImportController {
 
     @RolesAllowed(Roles.IMPORT_DATA)
     @PostMapping("/import/details")
-    public Map<String, MissionStatus> importMissionDetails(@RequestBody @Valid IntelMissionDetails data,
+    public Map<String, MissionStatusDto> importMissionDetails(@RequestBody @Valid IntelMissionDetails data,
                                                            @RequestParam(defaultValue = "true") boolean setStatusOnline) {
         Mission mission = intelImportService.importMission(data, setStatusOnline);
         return toStatusMap(List.of(mission));
@@ -40,7 +40,7 @@ public class ImportController {
 
     @RolesAllowed(Roles.IMPORT_DATA)
     @PostMapping("/import/summaries")
-    public Map<String, MissionStatus> importMissionSummaries(@RequestBody List<@Valid IntelMissionSummary> summaries) {
+    public Map<String, MissionStatusDto> importMissionSummaries(@RequestBody List<@Valid IntelMissionSummary> summaries) {
         Collection<Mission> missions = intelImportService.importMissionSummaries(summaries);
         return toStatusMap(missions);
     }
@@ -57,12 +57,12 @@ public class ImportController {
         creatorImportService.importGetMissionsList(data);
     }
 
-    private Map<String, MissionStatus> toStatusMap(Collection<Mission> imported) {
+    private Map<String, MissionStatusDto> toStatusMap(Collection<Mission> imported) {
         return imported.stream().collect(Collectors.toMap(Mission::getId, ImportController::toMissionStatus));
     }
 
-    private static MissionStatus toMissionStatus(Mission mission) {
-        MissionStatus status = new MissionStatus();
+    private static MissionStatusDto toMissionStatus(Mission mission) {
+        MissionStatusDto status = new MissionStatusDto();
         status.latestUpdateDetails = mission.getLatestUpdateDetails();
         status.latestUpdateSummary = mission.getLatestUpdateSummary();
         return status;

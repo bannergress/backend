@@ -8,6 +8,7 @@ import com.bannergress.backend.entities.Mission;
 import com.bannergress.backend.entities.MissionStep;
 import com.bannergress.backend.entities.POI;
 import com.bannergress.backend.enums.CreatorMissionStatus;
+import com.bannergress.backend.enums.MissionStatus;
 import com.bannergress.backend.enums.POIType;
 import com.bannergress.backend.services.CreatorImportService;
 import com.google.common.base.Strings;
@@ -33,13 +34,13 @@ public class CreatorImportServiceImpl extends BaseImportServiceImpl implements C
             String id = data.request.mission_guid;
             if (data.response.mat_error == null) {
                 Mission mission = importMission(id, data.response.mission, data.response.pois, tracker);
-                setMissionOnline(mission, true, tracker);
+                setMissionStatus(mission, MissionStatus.published, tracker);
                 entityManager.persist(mission);
             } else {
                 if (ERROR_MISSION_NOT_FOUND.equals(data.response.mat_error.title)) {
                     Mission mission = entityManager.find(Mission.class, id);
                     if (mission != null) {
-                        setMissionOnline(mission, false, tracker);
+                        setMissionStatus(mission, MissionStatus.disabled, tracker);
                     }
                 }
             }
@@ -56,12 +57,25 @@ public class CreatorImportServiceImpl extends BaseImportServiceImpl implements C
                             || creatorMission.state == CreatorMissionStatus.DISABLED)) {
                         Mission mission = importMission(creatorMission.mission_guid, creatorMission, List.of(),
                             tracker);
-                        setMissionOnline(mission, creatorMission.state == CreatorMissionStatus.PUBLISHED, tracker);
+                        setMissionStatus(mission, toMissionStatus(creatorMission.state), tracker);
                         entityManager.persist(mission);
                     }
                 }
             }
         });
+    }
+
+    private static MissionStatus toMissionStatus(CreatorMissionStatus creatorStatus) {
+        switch (creatorStatus) {
+            case SUBMITTED:
+                return MissionStatus.submitted;
+            case PUBLISHED:
+                return MissionStatus.published;
+            case DISABLED:
+                return MissionStatus.disabled;
+            default:
+                throw new IllegalArgumentException(creatorStatus.toString());
+        }
     }
 
     private Mission importMission(String id, CreatorMission creatorMission, List<CreatorPoi> creatorPois,

@@ -2,6 +2,7 @@ package com.bannergress.backend.services.impl;
 
 import com.bannergress.backend.entities.Banner;
 import com.bannergress.backend.entities.Mission;
+import com.bannergress.backend.enums.MissionStatus;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -31,11 +32,11 @@ class TestBannerPictureServiceImpl {
             Mission m = new Mission();
             m.setTitle("" + missions.size());
             m.setPicture(new URL(urlSpec));
-            m.setOnline(true);
+            m.setStatus(MissionStatus.published);
             missions.put(Integer.valueOf(missions.size()), m);
         }
         banner.setMissions(missions);
-        banner.getMissions().get(3).setOnline(false);
+        banner.getMissions().get(3).setStatus(MissionStatus.disabled);
 
         byte[] pngData = bannerPictureService.createPicture(banner);
 

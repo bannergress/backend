@@ -45,7 +45,7 @@ public class EntityBuilder {
             .withAverageDurationMilliseconds(a($Long()))
             .withType(oneOf(MissionType.values()))
             .withSteps(List.of())
-            .withOnline(a($Boolean()))
+            .withStatus(MissionStatus.published)
             .withLatestUpdateSummary(a($Instant()))
             .withLatestUpdateDetails(a($Instant()));
     }
