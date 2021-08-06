@@ -6,6 +6,7 @@ import com.bannergress.backend.dto.IntelMissionSummary;
 import com.bannergress.backend.entities.Mission;
 import com.bannergress.backend.entities.MissionStep;
 import com.bannergress.backend.entities.POI;
+import com.bannergress.backend.enums.MissionStatus;
 import com.bannergress.backend.enums.POIType;
 import com.bannergress.backend.services.IntelImportService;
 import org.springframework.stereotype.Service;
@@ -34,7 +35,7 @@ public class IntelImportServiceImpl extends BaseImportServiceImpl implements Int
             for (int i = 0; i < steps.size(); i++) {
                 importMissionStep(steps.get(i), mission.getSteps().get(i), tracker);
             }
-            setMissionOnline(mission, setMissionOnline ? true : null, tracker);
+            setMissionStatus(mission, setMissionOnline ? MissionStatus.published : null, tracker);
             entityManager.persist(mission);
             return mission;
         });
@@ -66,7 +67,7 @@ public class IntelImportServiceImpl extends BaseImportServiceImpl implements Int
             List<Mission> imported = new ArrayList<>();
             for (IntelMissionSummary summary : summaries) {
                 Mission mission = importMissionSummary(summary, tracker);
-                setMissionOnline(mission, true, tracker);
+                setMissionStatus(mission, MissionStatus.published, tracker);
                 entityManager.persist(mission);
                 imported.add(mission);
             }

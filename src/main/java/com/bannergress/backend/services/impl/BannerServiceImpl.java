@@ -7,6 +7,7 @@ import com.bannergress.backend.entities.MissionStep;
 import com.bannergress.backend.entities.Place;
 import com.bannergress.backend.enums.BannerListType;
 import com.bannergress.backend.enums.BannerSortOrder;
+import com.bannergress.backend.enums.MissionStatus;
 import com.bannergress.backend.exceptions.MissionAlreadyUsedException;
 import com.bannergress.backend.repositories.BannerRepository;
 import com.bannergress.backend.repositories.BannerSpecifications;
@@ -221,7 +222,7 @@ public class BannerServiceImpl implements BannerService {
         boolean online = complete;
 
         for (Mission mission : banner.getMissions().values()) {
-            online &= mission.isOnline();
+            online &= mission.getStatus() == MissionStatus.published;
             if (mission.getType() == null) {
                 complete = false;
             }

@@ -3,6 +3,7 @@ package com.bannergress.backend.services.impl;
 import com.bannergress.backend.entities.Banner;
 import com.bannergress.backend.entities.BannerPicture;
 import com.bannergress.backend.entities.Mission;
+import com.bannergress.backend.enums.MissionStatus;
 import com.bannergress.backend.services.BannerPictureService;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
@@ -103,7 +104,7 @@ public class BannerPictureServiceImpl implements BannerPictureService {
         hasher.putInt(IMPLEMENTATION_VERSION).putFloat(compressionQuality).putInt(banner.getWidth());
         for (Entry<Integer, Mission> entry : banner.getMissions().entrySet()) {
             hasher.putInt(entry.getKey()).putUnencodedChars(entry.getValue().getPicture().toString())
-                .putBoolean(entry.getValue().isOnline());
+                .putBoolean(entry.getValue().getStatus() == MissionStatus.published);
         }
         return hasher.hash().toString();
     }
@@ -151,7 +152,8 @@ public class BannerPictureServiceImpl implements BannerPictureService {
                 synchronized (graphics) {
                     graphics.drawImage(missionImage, x1, y1, x2, y2, 0, 0, missionImage.getWidth(),
                         missionImage.getHeight(), null);
-                    BufferedImage maskImage = entry.getValue().isOnline() ? maskImageOnline : maskImageOffline;
+                    BufferedImage maskImage = entry.getValue().getStatus() == MissionStatus.published ? maskImageOnline
+                        : maskImageOffline;
                     graphics.drawImage(maskImage, x1, y1, x2, y2, 0, 0, maskImage.getWidth(), maskImage.getHeight(),
                         null);
                 }

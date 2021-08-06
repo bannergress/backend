@@ -1,5 +1,6 @@
 package com.bannergress.backend.entities;
 
+import com.bannergress.backend.enums.MissionStatus;
 import com.bannergress.backend.enums.MissionType;
 import com.bannergress.backend.utils.PojoBuilder;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
@@ -95,8 +96,8 @@ public class Mission {
     /**
      * Mission status.
      */
-    @Column(name = "online", nullable = false)
-    private boolean online;
+    @Column(name = "status", nullable = false)
+    private MissionStatus status = MissionStatus.disabled;
 
     /**
      * Timestamp when the mission summary was last updated.
@@ -206,12 +207,12 @@ public class Mission {
         this.steps = steps;
     }
 
-    public boolean isOnline() {
-        return online;
+    public MissionStatus getStatus() {
+        return status;
     }
 
-    public void setOnline(boolean online) {
-        this.online = online;
+    public void setStatus(MissionStatus status) {
+        this.status = status;
     }
 
     public Instant getLatestUpdateSummary() {

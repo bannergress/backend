@@ -4,10 +4,7 @@ import com.bannergress.backend.entities.Banner;
 import com.bannergress.backend.entities.Mission;
 import com.bannergress.backend.entities.MissionStep;
 import com.bannergress.backend.entities.POI;
-import com.bannergress.backend.enums.Faction;
-import com.bannergress.backend.enums.MissionType;
-import com.bannergress.backend.enums.Objective;
-import com.bannergress.backend.enums.POIType;
+import com.bannergress.backend.enums.*;
 import com.bannergress.backend.services.AgentService;
 import com.bannergress.backend.services.BannerPictureService;
 import com.bannergress.backend.services.BannerService;
@@ -76,12 +73,15 @@ public abstract class BaseImportServiceImpl {
         }
     }
 
-    protected final void setMissionOnline(Mission mission, Boolean newOnline, RecalculationTracker tracker) {
-        boolean setLatestUpdate = newOnline != null;
-        newOnline = (newOnline == null ? mission.isOnline() : newOnline) && !isOfflineBecauseNoStepAvailable(mission);
-        if (newOnline != mission.isOnline()) {
+    protected final void setMissionStatus(Mission mission, MissionStatus newStatus, RecalculationTracker tracker) {
+        boolean setLatestUpdate = newStatus != null;
+        newStatus = newStatus == null ? mission.getStatus() : newStatus;
+        if (newStatus == MissionStatus.published && isOfflineBecauseNoStepAvailable(mission)) {
+            newStatus = MissionStatus.disabled;
+        }
+        if (newStatus != mission.getStatus()) {
             setLatestUpdate = true;
-            mission.setOnline(newOnline);
+            mission.setStatus(newStatus);
             tracker.add(mission);
         }
         if (setLatestUpdate) {
