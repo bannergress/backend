@@ -5,6 +5,7 @@ import com.bannergress.backend.enums.BannerListType;
 import com.google.common.base.Preconditions;
 import org.hibernate.spatial.predicate.JTSSpatialPredicates;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Point;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -113,5 +114,25 @@ public class BannerSpecifications {
             return cb.and(cb.equal(settings.get(BannerSettings_.user).get(User_.id), userId),
                 settings.get(BannerSettings_.listType).in(listTypes));
         };
+    }
+
+    public static Specification<Banner> sortByProximity(Point point, Direction direction) {
+        return (banner, cq, cb) -> {
+            Expression<Double> sortExpression = distanceSphere(cb, banner.get(Banner_.startPoint), cb.literal(point));
+            switch (direction) {
+                case ASC:
+                    cq.orderBy(cb.asc(sortExpression), cb.asc(banner.get(Banner_.uuid)));
+                    break;
+                case DESC:
+                    cq.orderBy(cb.desc(sortExpression), cb.desc(banner.get(Banner_.uuid)));
+                    break;
+            }
+            return null;
+        };
+    }
+
+    private static Expression<Double> distanceSphere(CriteriaBuilder cb, Expression<? extends Geometry> geometry1,
+                                                     Expression<? extends Geometry> geometry2) {
+        return cb.function("ST_DistanceSphere", Double.class, geometry1, geometry2);
     }
 }

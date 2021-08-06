@@ -82,7 +82,9 @@ public class BannerServiceImpl implements BannerService {
                              Optional<Double> minLongitude, Optional<Double> maxLongitude, Optional<String> search,
                              Optional<String> missionId, boolean onlyOfficialMissions, Optional<String> author,
                              Optional<Collection<BannerListType>> listTypes, Optional<String> userId,
-                             Optional<BannerSortOrder> orderBy, Direction orderDirection, int offset, int limit) {
+                             Optional<BannerSortOrder> orderBy, Direction orderDirection,
+                             Optional<Double> proximityLatitude, Optional<Double> proximityLongitude, int offset,
+                             int limit) {
         List<Specification<Banner>> specifications = new ArrayList<>();
         if (placeSlug.isPresent()) {
             specifications.add(BannerSpecifications.hasStartPlaceSlug(placeSlug.get()));
@@ -124,17 +126,27 @@ public class BannerServiceImpl implements BannerService {
             }
         }
 
-        Specification<Banner> fullSpecification = specifications.stream().reduce((a, b) -> a.and(b)).orElse(null);
         Sort sort;
         if (orderBy.isPresent()) {
-            if (orderBy.get() == BannerSortOrder.listAdded) {
-                sort = Sort.unsorted(); // Sorting takes place in the specification
-            } else {
-                sort = Sort.by(orderDirection, orderBy.get().toString(), "uuid");
+            switch (orderBy.get()) {
+                case listAdded:
+                    sort = Sort.unsorted(); // Sorting takes place in the specification
+                    break;
+                case proximityStartPoint:
+                    specifications.add(BannerSpecifications.sortByProximity(
+                        spatial.createPoint(proximityLatitude.get(), proximityLongitude.get()), orderDirection));
+                    sort = Sort.unsorted(); // Sorting takes place in the specification
+                    break;
+                default:
+                    sort = Sort.by(orderDirection, orderBy.get().toString(), "uuid");
+                    break;
             }
         } else {
             sort = Sort.by(Direction.ASC, "uuid");
         }
+
+        Specification<Banner> fullSpecification = specifications.stream().reduce((a, b) -> a.and(b)).orElse(null);
+
         OffsetBasedPageRequest request = new OffsetBasedPageRequest(offset, limit, sort);
         List<Banner> banners = bannerRepository.findAll(fullSpecification, request).getContent();
         preloadPlaceInformation(banners);
