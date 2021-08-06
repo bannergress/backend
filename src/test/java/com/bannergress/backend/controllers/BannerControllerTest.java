@@ -41,13 +41,13 @@ class BannerControllerTest {
 
         when(bannerService.find(eq(place), eq(Optional.empty()), eq(Optional.empty()), eq(Optional.empty()),
             eq(Optional.empty()), eq(Optional.empty()), eq(Optional.empty()), eq(false), eq(Optional.empty()),
-            eq(Optional.empty()), eq(Optional.empty()), eq(Optional.empty()), any(), eq(0), anyInt()))
-                .thenReturn(List.of(banner));
+            eq(Optional.empty()), eq(Optional.empty()), eq(Optional.empty()), any(), eq(Optional.empty()),
+            eq(Optional.empty()), eq(0), anyInt())).thenReturn(List.of(banner));
 
         // THEN
         final ResponseEntity<List<BannerDto>> result = testController.list(place, Optional.empty(), Optional.empty(),
             Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), false, Optional.empty(),
-            Optional.empty(), Optional.empty(), Direction.ASC, 0, 100, null);
+            Optional.empty(), Optional.empty(), Direction.ASC, Optional.empty(), Optional.empty(), 0, 100, null);
 
         // VERIFY
         assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -75,12 +75,12 @@ class BannerControllerTest {
         final Banner banner = fixPlaceInformation(a($Banner()));
 
         when(bannerService.find(eq(Optional.empty()), eq(minLat), eq(maxLat), eq(minLong), eq(maxLong), any(), any(),
-            eq(false), any(), any(), any(), any(), any(), eq(0), anyInt())).thenReturn(List.of(banner));
+            eq(false), any(), any(), any(), any(), any(), any(), any(), eq(0), anyInt())).thenReturn(List.of(banner));
 
         // THEN
         final ResponseEntity<List<BannerDto>> result = testController.list(Optional.empty(), minLat, maxLat, minLong,
             maxLong, Optional.empty(), Optional.empty(), false, Optional.empty(), Optional.empty(), Optional.empty(),
-            Direction.ASC, 0, 100, null);
+            Direction.ASC, Optional.empty(), Optional.empty(), 0, 100, null);
 
         // VERIFY
         assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);

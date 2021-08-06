@@ -15,5 +15,7 @@ public enum BannerSortOrder {
     /** Order by {@link Banner#getLengthMeters}. */
     lengthMeters,
     /** Order by {@link BannerSettings#listAdded}. */
-    listAdded
+    listAdded,
+    /** Order by distance between {@link Banner#getStartPoint} and a given point. */
+    proximityStartPoint
 }

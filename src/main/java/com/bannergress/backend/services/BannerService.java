@@ -32,6 +32,8 @@ public interface BannerService {
      * @param user                 Optional User ID (needed for listTypes).
      * @param orderBy              Optional sort order.
      * @param orderDirection       Sort direction.
+     * @param proximityLatitude    Optional reference latitude for proximity sorting.
+     * @param proximityLongitude   Optional reference longitude for proximity sorting.
      * @param offset               Offset of the first result.
      * @param limit                Maximum number of results.
      * @return Banners that were found.
@@ -40,7 +42,8 @@ public interface BannerService {
                       Optional<Double> minLongitude, Optional<Double> maxLongitude, Optional<String> query,
                       Optional<String> missionId, boolean onlyOfficialMissions, Optional<String> author,
                       Optional<Collection<BannerListType>> listTypes, Optional<String> userId,
-                      Optional<BannerSortOrder> orderBy, Direction orderDirection, int offset, int limit);
+                      Optional<BannerSortOrder> orderBy, Direction orderDirection, Optional<Double> proximityLatitude,
+                      Optional<Double> proximityLongitude, int offset, int limit);
 
     /**
      * @return List of all banner slugs.

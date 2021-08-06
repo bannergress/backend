@@ -87,6 +87,8 @@ public class BannerController {
                                                 @RequestParam final Optional<Collection<BannerListType>> listTypes,
                                                 @RequestParam final Optional<BannerSortOrder> orderBy,
                                                 @RequestParam(defaultValue = "ASC") final Direction orderDirection,
+                                                @RequestParam final Optional<Double> proximityLatitude,
+                                                @RequestParam final Optional<Double> proximityLongitude,
                                                 @RequestParam(defaultValue = "0") final int offset,
                                                 @RequestParam(defaultValue = "20") @Max(100) final int limit,
                                                 Principal principal) {
@@ -103,9 +105,15 @@ public class BannerController {
             // Sort by list added needs filter by list type(s) other than 'none'
             return ResponseEntity.badRequest().build();
         }
+        if (orderBy.isPresent() && orderBy.get() == BannerSortOrder.proximityStartPoint
+            && (proximityLatitude.isEmpty() || proximityLongitude.isEmpty())) {
+            // Sort by proximity to start point needs reference coordinates
+            return ResponseEntity.badRequest().build();
+        }
         final Collection<Banner> banners = bannerService.find(placeId, minLatitude, maxLatitude, minLongitude,
             maxLongitude, query, missionId, onlyOfficialMissions, author, listTypes,
-            Optional.ofNullable(principal).map(Principal::getName), orderBy, orderDirection, offset, limit);
+            Optional.ofNullable(principal).map(Principal::getName), orderBy, orderDirection, proximityLatitude,
+            proximityLongitude, offset, limit);
         List<BannerDto> bannerDtos = banners.stream().map(this::toSummary).collect(Collectors.toUnmodifiableList());
         amendUserSettings(principal, bannerDtos);
         return ResponseEntity.ok(bannerDtos);
