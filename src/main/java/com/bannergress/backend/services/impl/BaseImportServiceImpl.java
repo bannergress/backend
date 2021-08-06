@@ -8,6 +8,8 @@ import com.bannergress.backend.enums.*;
 import com.bannergress.backend.services.AgentService;
 import com.bannergress.backend.services.BannerPictureService;
 import com.bannergress.backend.services.BannerService;
+import com.bannergress.backend.utils.Spatial;
+import org.locationtech.jts.geom.Point;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityManager;
@@ -33,6 +35,9 @@ public abstract class BaseImportServiceImpl {
 
     @Autowired
     protected EntityManager entityManager;
+
+    @Autowired
+    protected Spatial spatial;
 
     protected Mission importMissionById(String id) {
         Mission mission = entityManager.find(Mission.class, id);
@@ -150,16 +155,9 @@ public abstract class BaseImportServiceImpl {
         return poi;
     }
 
-    protected final void setPoiLatitude(POI poi, Double newLatitude, RecalculationTracker tracker) {
-        if (newLatitude != null && !Objects.equals(newLatitude, poi.getLatitude())) {
-            poi.setLatitude(newLatitude);
-            tracker.add(poi);
-        }
-    }
-
-    protected final void setPoiLongitude(POI poi, Double newLongitude, RecalculationTracker tracker) {
-        if (newLongitude != null && !Objects.equals(newLongitude, poi.getLongitude())) {
-            poi.setLongitude(newLongitude);
+    protected final void setPoiPoint(POI poi, Point newPoint, RecalculationTracker tracker) {
+        if (newPoint != null && !Objects.equals(newPoint, poi.getPoint())) {
+            poi.setPoint(newPoint);
             tracker.add(poi);
         }
     }

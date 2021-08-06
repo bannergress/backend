@@ -2,6 +2,7 @@ package com.bannergress.backend.entities;
 
 import com.bannergress.backend.utils.PojoBuilder;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
+import org.locationtech.jts.geom.Point;
 
 import javax.persistence.*;
 
@@ -30,16 +31,11 @@ public class PlaceCoordinate {
     private Place place;
 
     /**
-     * Latitude.
+     * Point.
      */
-    @Column(name = "latitude", nullable = false)
-    private double latitude;
-
-    /**
-     * Longitude.
-     */
-    @Column(name = "longitude", nullable = false)
-    private double longitude;
+    @Basic
+    @Column(name = "point", nullable = false)
+    private Point point;
 
     public UUID getUuid() {
         return uuid;
@@ -57,19 +53,11 @@ public class PlaceCoordinate {
         this.place = place;
     }
 
-    public double getLatitude() {
-        return latitude;
+    public Point getPoint() {
+        return point;
     }
 
-    public void setLatitude(double latitude) {
-        this.latitude = latitude;
-    }
-
-    public double getLongitude() {
-        return longitude;
-    }
-
-    public void setLongitude(double longitude) {
-        this.longitude = longitude;
+    public void setPoint(Point point) {
+        this.point = point;
     }
 }

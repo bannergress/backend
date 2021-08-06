@@ -5,6 +5,7 @@ import com.bannergress.backend.utils.PojoBuilder;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
 import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
+import org.locationtech.jts.geom.Point;
 
 import javax.persistence.*;
 
@@ -33,16 +34,11 @@ public class POI {
     private String title;
 
     /**
-     * Latitude.
+     * Point.
      */
-    @Column(name = "latitude", nullable = true)
-    private Double latitude;
-
-    /**
-     * Longitude.
-     */
-    @Column(name = "longitude", nullable = true)
-    private Double longitude;
+    @Basic
+    @Column(name = "point", nullable = true)
+    private Point point;
 
     /**
      * Picture URL.
@@ -73,20 +69,12 @@ public class POI {
         this.title = title;
     }
 
-    public Double getLatitude() {
-        return latitude;
+    public Point getPoint() {
+        return point;
     }
 
-    public void setLatitude(Double latitude) {
-        this.latitude = latitude;
-    }
-
-    public Double getLongitude() {
-        return longitude;
-    }
-
-    public void setLongitude(Double longitude) {
-        this.longitude = longitude;
+    public void setPoint(Point point) {
+        this.point = point;
     }
 
     public URL getPicture() {

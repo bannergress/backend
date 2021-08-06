@@ -2,8 +2,12 @@ package com.bannergress.backend.utils;
 
 import com.bannergress.backend.entities.Mission;
 import com.bannergress.backend.entities.MissionStep;
+import org.locationtech.jts.geom.Point;
 
 import java.util.Collection;
+
+import static com.bannergress.backend.utils.Spatial.getLatitude;
+import static com.bannergress.backend.utils.Spatial.getLongitude;
 
 public final class DistanceCalculation {
     /**
@@ -14,21 +18,19 @@ public final class DistanceCalculation {
      * @return Distance in meters.
      */
     public static int calculateLengthMeters(Collection<Mission> missions) {
-        Double prevLatitude = null;
-        Double prevLongitude = null;
+        Point prevPoint = null;
         double distance = 0;
 
         for (Mission mission : missions) {
             for (MissionStep step : mission.getSteps()) {
                 if (step.getPoi() != null) {
-                    Double latitude = step.getPoi().getLatitude();
-                    Double longitude = step.getPoi().getLongitude();
-                    if (latitude != null) {
-                        if (prevLatitude != null) {
-                            distance += getDistance(latitude, longitude, prevLatitude, prevLongitude);
+                    Point point = step.getPoi().getPoint();
+                    if (point != null) {
+                        if (prevPoint != null) {
+                            distance += getDistance(getLatitude(point), getLongitude(point), getLatitude(prevPoint),
+                                getLongitude(prevPoint));
                         }
-                        prevLatitude = latitude;
-                        prevLongitude = longitude;
+                        prevPoint = point;
                     }
                 }
             }

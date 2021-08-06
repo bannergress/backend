@@ -26,6 +26,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.keycloak:keycloak-spring-boot-starter'
 	implementation "org.hibernate:hibernate-envers"
+  implementation 'org.hibernate:hibernate-spatial'
   implementation 'org.flywaydb:flyway-core'
 	implementation "com.google.guava:guava:${guava_version}"
 	implementation "com.google.maps:google-maps-services:${google_maps_services_version}"
@@ -38,7 +39,6 @@ dependencies {
 
   compileOnly "net.karneim:pojobuilder:$pojobuilder_version:annotations"
 
-	runtimeOnly 'com.h2database:h2'
 	runtimeOnly 'org.postgresql:postgresql'
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'

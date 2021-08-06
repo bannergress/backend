@@ -111,8 +111,8 @@ public class CreatorImportServiceImpl extends BaseImportServiceImpl implements C
     private POI importPoi(String id, Optional<CreatorPoi> creatorPoi, RecalculationTracker tracker) {
         POI poi = importPoiById(id);
         if (creatorPoi.isPresent()) {
-            setPoiLatitude(poi, creatorPoi.get().location.latitude, tracker);
-            setPoiLongitude(poi, creatorPoi.get().location.longitude, tracker);
+            setPoiPoint(poi,
+                spatial.createPoint(creatorPoi.get().location.latitude, creatorPoi.get().location.longitude), tracker);
             setPoiPicture(poi, creatorPoi.get().imageUrl);
             setPoiTitle(poi, creatorPoi.get().title);
             setPoiType(poi, creatorPoi.get().type, tracker);

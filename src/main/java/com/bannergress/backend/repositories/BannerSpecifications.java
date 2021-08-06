@@ -3,6 +3,8 @@ package com.bannergress.backend.repositories;
 import com.bannergress.backend.entities.*;
 import com.bannergress.backend.enums.BannerListType;
 import com.google.common.base.Preconditions;
+import org.hibernate.spatial.predicate.JTSSpatialPredicates;
+import org.locationtech.jts.geom.Geometry;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -70,12 +72,8 @@ public class BannerSpecifications {
         return (banner, cq, cb) -> banner.in(banners);
     }
 
-    public static Specification<Banner> isInLatitudeRange(double minLatitude, double maxLatitude) {
-        return (banner, cq, cb) -> cb.between(banner.get(Banner_.startLatitude), minLatitude, maxLatitude);
-    }
-
-    public static Specification<Banner> isInLongitudeRange(double minLongitude, double maxLongitude) {
-        return (banner, cq, cb) -> cb.between(banner.get(Banner_.startLongitude), minLongitude, maxLongitude);
+    public static Specification<Banner> startPointIntersects(Geometry geometry) {
+        return (banner, cq, cb) -> JTSSpatialPredicates.intersects(cb, banner.get(Banner_.startPoint), geometry);
     }
 
     public static Specification<Banner> isInUserList(Collection<BannerListType> listTypes, String userId) {

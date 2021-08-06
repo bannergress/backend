@@ -4,6 +4,7 @@ import com.bannergress.backend.entities.Place;
 import com.bannergress.backend.entities.PlaceInformation;
 import com.bannergress.backend.enums.PlaceSortOrder;
 import com.bannergress.backend.enums.PlaceType;
+import org.locationtech.jts.geom.Point;
 import org.springframework.data.domain.Sort.Direction;
 
 import java.util.Collection;
@@ -50,11 +51,10 @@ public interface PlaceService {
     /**
      * Retrieves all places a coordinate belongs to.
      *
-     * @param latitude  Latitude.
-     * @param longitude Longitude.
+     * @param point Point.
      * @return Multiple places with differing accuracy (i.e. one place with country accuracy, one place with locality accuracy, ...).
      */
-    Collection<Place> getPlaces(double latitude, double longitude);
+    Collection<Place> getPlaces(Point point);
 
     /**
      * Gets localized information about the most specific place.
