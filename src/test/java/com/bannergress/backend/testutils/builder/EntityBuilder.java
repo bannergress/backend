@@ -21,8 +21,6 @@ public class EntityBuilder {
             .withWidth(6)
             .withNumberOfMissions(a($Int()))
             .withMissions(sortedMapWith(0, $Mission()))
-            .withStartLatitude(a($Double()))
-            .withStartLongitude(a($Double()))
             .withLengthMeters(a($Int()))
             .withComplete(a($Boolean()))
             .withOnline(a($Boolean()))
@@ -97,8 +95,6 @@ public class EntityBuilder {
         return new POIBuilder()
             .withId(a($String("id")))
             .withTitle(a($String("title")))
-            .withLatitude(a($Double()))
-            .withLongitude(a($Double()))
             .withPicture(a($URL()))
             .withType(oneOf(POIType.values()));
     }

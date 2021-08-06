@@ -9,6 +9,7 @@ import org.hibernate.envers.AuditJoinTable;
 import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
+import org.locationtech.jts.geom.Point;
 
 import javax.persistence.*;
 
@@ -77,18 +78,12 @@ public class Banner {
     private SortedMap<Integer, Mission> missions = new TreeMap<>();
 
     /**
-     * Latitude of the start portal of the first mission.
+     * Start portal of the first mission.
      */
-    @Column(name = "start_latitude", nullable = true)
+    @Basic
+    @Column(name = "start_point", nullable = true)
     @NotAudited
-    private Double startLatitude;
-
-    /**
-     * Longitude of the start portal of the first mission.
-     */
-    @Column(name = "start_longitude", nullable = true)
-    @NotAudited
-    private Double startLongitude;
+    private Point startPoint;
 
     /**
      * Length in meters.
@@ -206,20 +201,12 @@ public class Banner {
         this.missions = missions;
     }
 
-    public Double getStartLatitude() {
-        return startLatitude;
+    public Point getStartPoint() {
+        return startPoint;
     }
 
-    public void setStartLatitude(Double startLatitude) {
-        this.startLatitude = startLatitude;
-    }
-
-    public Double getStartLongitude() {
-        return startLongitude;
-    }
-
-    public void setStartLongitude(Double startLongitude) {
-        this.startLongitude = startLongitude;
+    public void setStartPoint(Point startPoint) {
+        this.startPoint = startPoint;
     }
 
     public Integer getLengthMeters() {
@@ -290,16 +277,14 @@ public class Banner {
         return Objects.equals(uuid, banner.uuid) && numberOfMissions == banner.numberOfMissions
             && complete == banner.complete && online == banner.online && Objects.equals(title, banner.title)
             && Objects.equals(description, banner.description) && Objects.equals(missions, banner.missions)
-            && Objects.equals(startLatitude, banner.startLatitude)
-            && Objects.equals(startLongitude, banner.startLongitude)
-            && Objects.equals(lengthMeters, banner.lengthMeters) && Objects.equals(picture, banner.picture)
-            && Objects.equals(startPlaces, banner.startPlaces) && Objects.equals(created, banner.created)
-            && type == banner.type && Objects.equals(slug, banner.slug);
+            && Objects.equals(startPoint, banner.startPoint) && Objects.equals(lengthMeters, banner.lengthMeters)
+            && Objects.equals(picture, banner.picture) && Objects.equals(startPlaces, banner.startPlaces)
+            && Objects.equals(created, banner.created) && type == banner.type && Objects.equals(slug, banner.slug);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(uuid, title, description, numberOfMissions, missions, startLatitude, startLongitude,
-            lengthMeters, complete, online, picture, startPlaces, created, type, slug);
+        return Objects.hash(uuid, title, description, numberOfMissions, missions, startPoint, lengthMeters, complete,
+            online, picture, startPlaces, created, type, slug);
     }
 }

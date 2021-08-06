@@ -20,9 +20,12 @@ import com.bannergress.backend.services.PlaceService;
 import com.bannergress.backend.utils.DistanceCalculation;
 import com.bannergress.backend.utils.OffsetBasedPageRequest;
 import com.bannergress.backend.utils.SlugGenerator;
+import com.bannergress.backend.utils.Spatial;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Point;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
@@ -71,6 +74,9 @@ public class BannerServiceImpl implements BannerService {
     @Autowired
     private SlugGenerator slugGenerator;
 
+    @Autowired
+    private Spatial spatial;
+
     @Override
     public List<Banner> find(Optional<String> placeSlug, Optional<Double> minLatitude, Optional<Double> maxLatitude,
                              Optional<Double> minLongitude, Optional<Double> maxLongitude, Optional<String> search,
@@ -82,12 +88,17 @@ public class BannerServiceImpl implements BannerService {
             specifications.add(BannerSpecifications.hasStartPlaceSlug(placeSlug.get()));
         }
         if (minLatitude.isPresent()) {
-            specifications.add(BannerSpecifications.isInLatitudeRange(minLatitude.get(), maxLatitude.get()));
             if (minLongitude.get() <= maxLongitude.get()) {
-                specifications.add(BannerSpecifications.isInLongitudeRange(minLongitude.get(), maxLongitude.get()));
+                Geometry box = spatial.createBoundingBox(minLatitude.get(), maxLatitude.get(), minLongitude.get(),
+                    maxLongitude.get());
+                specifications.add(BannerSpecifications.startPointIntersects(box));
             } else {
-                specifications.add(BannerSpecifications.isInLongitudeRange(minLongitude.get(), 180)
-                    .or(BannerSpecifications.isInLongitudeRange(-180, maxLongitude.get())));
+                Geometry box1 = spatial.createBoundingBox(minLatitude.get(), maxLatitude.get(), maxLongitude.get(),
+                    180);
+                Geometry box2 = spatial.createBoundingBox(minLatitude.get(), maxLatitude.get(), -180,
+                    minLongitude.get());
+                specifications.add(BannerSpecifications.startPointIntersects(box1)
+                    .or(BannerSpecifications.startPointIntersects(box2)));
             }
         }
         if (search.isPresent()) {
@@ -216,8 +227,7 @@ public class BannerServiceImpl implements BannerService {
 
     @Override
     public void calculateData(Banner banner) {
-        Double startLatitude = null;
-        Double startLongitude = null;
+        Point startPoint = null;
         boolean complete = true;
         boolean online = complete;
 
@@ -228,22 +238,19 @@ public class BannerServiceImpl implements BannerService {
             }
             for (MissionStep step : mission.getSteps()) {
                 if (step.getPoi() != null) {
-                    Double latitude = step.getPoi().getLatitude();
-                    Double longitude = step.getPoi().getLongitude();
-                    if (latitude != null && startLatitude == null) {
-                        startLatitude = latitude;
-                        startLongitude = longitude;
+                    Point point = step.getPoi().getPoint();
+                    if (startPoint == null) {
+                        startPoint = point;
                     }
                 }
             }
         }
-        banner.setStartLatitude(startLatitude);
-        banner.setStartLongitude(startLongitude);
+        banner.setStartPoint(startPoint);
         banner.setComplete(complete);
         banner.setOnline(online);
         banner.setNumberOfMissions(banner.getMissions().size());
-        if (startLatitude != null && banner.getStartPlaces().isEmpty()) {
-            Collection<Place> startPlaces = placesService.getPlaces(startLatitude, startLongitude);
+        if (startPoint != null && banner.getStartPlaces().isEmpty()) {
+            Collection<Place> startPlaces = placesService.getPlaces(startPoint);
             banner.getStartPlaces().clear();
             banner.getStartPlaces().addAll(startPlaces);
         }

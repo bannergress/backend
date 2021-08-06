@@ -11,6 +11,7 @@ import com.bannergress.backend.utils.SlugGenerator;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import org.hibernate.Session;
+import org.locationtech.jts.geom.Point;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static com.bannergress.backend.utils.Spatial.getLatitude;
+import static com.bannergress.backend.utils.Spatial.getLongitude;
 
 /**
  * Default implementation of {@link PlaceService}.
@@ -126,16 +130,15 @@ public class PlaceServiceImpl implements PlaceService {
     }
 
     @Override
-    public Collection<Place> getPlaces(double latitude, double longitude) {
-        TypedQuery<Place> query = entityManager.createQuery("SELECT DISTINCT p FROM Place p JOIN p.coordinates c"
-            + " WHERE c.latitude = :latitude AND c.longitude = :longitude", Place.class);
-        query.setParameter("latitude", latitude);
-        query.setParameter("longitude", longitude);
+    public Collection<Place> getPlaces(Point point) {
+        TypedQuery<Place> query = entityManager
+            .createQuery("SELECT DISTINCT p FROM Place p JOIN p.coordinates c WHERE c.point = :point", Place.class);
+        query.setParameter("point", point);
         List<Place> results = query.getResultList();
         if (results.isEmpty()) {
-            Optional<Place> place = geocodingService.getPlaceHierarchy(latitude, longitude);
+            Optional<Place> place = geocodingService.getPlaceHierarchy(getLatitude(point), getLongitude(point));
             if (place.isPresent()) {
-                mergePlace(place.get(), latitude, longitude);
+                mergePlace(place.get(), point);
             }
             return place.stream().flatMap(this::expandPlaces).collect(Collectors.toList());
         } else {
@@ -143,10 +146,10 @@ public class PlaceServiceImpl implements PlaceService {
         }
     }
 
-    private Place mergePlace(Place place, double latitude, double longitude) {
+    private Place mergePlace(Place place, Point point) {
         Place parentPlace = place.getParentPlace();
         if (parentPlace != null) {
-            parentPlace = mergePlace(parentPlace, latitude, longitude);
+            parentPlace = mergePlace(parentPlace, point);
         }
         place.setParentPlace(parentPlace);
         Place existing = entityManager.find(Place.class, place.getId());
@@ -157,8 +160,7 @@ public class PlaceServiceImpl implements PlaceService {
             place = existing;
         }
         PlaceCoordinate coordinate = new PlaceCoordinate();
-        coordinate.setLatitude(latitude);
-        coordinate.setLongitude(longitude);
+        coordinate.setPoint(point);
         coordinate.setPlace(place);
         entityManager.persist(coordinate);
         return place;

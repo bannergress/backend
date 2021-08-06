@@ -32,6 +32,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
 
+import static com.bannergress.backend.utils.Spatial.getLatitude;
+import static com.bannergress.backend.utils.Spatial.getLongitude;
+
 /**
  * REST endpoint for banners.
  */
@@ -193,8 +196,8 @@ public class BannerController {
         dto.title = banner.getTitle();
         dto.numberOfMissions = banner.getNumberOfMissions();
         dto.lengthMeters = banner.getLengthMeters();
-        dto.startLatitude = banner.getStartLatitude();
-        dto.startLongitude = banner.getStartLongitude();
+        dto.startLatitude = getLatitude(banner.getStartPoint());
+        dto.startLongitude = getLongitude(banner.getStartPoint());
         dto.picture = banner.getPicture() == null ? null : ("/bnrs/pictures/" + banner.getPicture().getHash());
         dto.width = banner.getWidth();
         Optional<PlaceInformation> placeInformation = placeService

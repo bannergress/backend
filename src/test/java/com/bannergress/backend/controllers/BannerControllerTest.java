@@ -89,8 +89,6 @@ class BannerControllerTest {
         assertThat(bannerDto.id).isEqualTo(banner.getSlug());
         assertThat(bannerDto.numberOfMissions).isEqualTo(banner.getNumberOfMissions());
         assertThat(bannerDto.lengthMeters).isEqualTo(banner.getLengthMeters());
-        assertThat(bannerDto.startLatitude).isEqualTo(banner.getStartLatitude());
-        assertThat(bannerDto.startLongitude).isEqualTo(banner.getStartLongitude());
     }
 
     @Test
@@ -111,8 +109,6 @@ class BannerControllerTest {
         assertThat(bannerDto.id).isEqualTo(banner.getSlug());
         assertThat(bannerDto.numberOfMissions).isEqualTo(banner.getNumberOfMissions());
         assertThat(bannerDto.lengthMeters).isEqualTo(banner.getLengthMeters());
-        assertThat(bannerDto.startLatitude).isEqualTo(banner.getStartLatitude());
-        assertThat(bannerDto.startLongitude).isEqualTo(banner.getStartLongitude());
         assertThat(bannerDto.type).isEqualTo(banner.getType());
         assertThat(bannerDto.missions.get(0).id).isEqualTo(banner.getMissions().get(0).getId());
     }
@@ -150,8 +146,6 @@ class BannerControllerTest {
         assertThat(bannerDto.id).isEqualTo(savedBanner.getSlug());
         assertThat(bannerDto.numberOfMissions).isEqualTo(savedBanner.getNumberOfMissions());
         assertThat(bannerDto.lengthMeters).isEqualTo(savedBanner.getLengthMeters());
-        assertThat(bannerDto.startLatitude).isEqualTo(savedBanner.getStartLatitude());
-        assertThat(bannerDto.startLongitude).isEqualTo(savedBanner.getStartLongitude());
         assertThat(bannerDto.type).isEqualTo(savedBanner.getType());
         assertThat(bannerDto.missions.get(0).id).isEqualTo(savedBanner.getMissions().get(0).getId());
     }

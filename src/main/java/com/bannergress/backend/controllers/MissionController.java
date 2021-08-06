@@ -32,6 +32,9 @@ import javax.validation.constraints.NotNull;
 
 import java.util.*;
 
+import static com.bannergress.backend.utils.Spatial.getLatitude;
+import static com.bannergress.backend.utils.Spatial.getLongitude;
+
 /**
  * REST endpoint for missions.
  */
@@ -136,8 +139,8 @@ public class MissionController {
     private static PoiDto toPoiDetails(POI poi) {
         PoiDto poiDto = new PoiDto();
         poiDto.id = poi.getId();
-        poiDto.latitude = poi.getLatitude();
-        poiDto.longitude = poi.getLongitude();
+        poiDto.latitude = getLatitude(poi.getPoint());
+        poiDto.longitude = getLongitude(poi.getPoint());
         poiDto.picture = poi.getPicture();
         poiDto.title = poi.getTitle();
         poiDto.type = poi.getType();

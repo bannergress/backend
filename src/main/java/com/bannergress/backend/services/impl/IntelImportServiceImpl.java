@@ -50,8 +50,9 @@ public class IntelImportServiceImpl extends BaseImportServiceImpl implements Int
             POI poi = importPoiById(intelMissionStep.id);
             setPoiType(poi, intelMissionStep.type, tracker);
             if (intelMissionStep.type != POIType.unavailable) {
-                setPoiLatitude(poi, fromE6(intelMissionStep.latitudeE6), tracker);
-                setPoiLongitude(poi, fromE6(intelMissionStep.longitudeE6), tracker);
+                setPoiPoint(poi,
+                    spatial.createPoint(fromE6(intelMissionStep.latitudeE6), fromE6(intelMissionStep.longitudeE6)),
+                    tracker);
                 setPoiPicture(poi, intelMissionStep.picture);
                 setPoiTitle(poi, intelMissionStep.title);
             }
