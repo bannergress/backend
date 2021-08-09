@@ -13,11 +13,15 @@ class TestSlugGenerator {
     void testReplacements() {
         SlugGenerator generator = new SlugGenerator(2);
 
-        String actual1 = generator.generateSlug("[Augsburg ist schön seit 15 v. Chr.]", Predicates.alwaysTrue());
+        String base1 = "[Augsburg ist schön seit 15 v. Chr.]";
+        String actual1 = generator.generateSlug(base1, Predicates.alwaysTrue());
         assertThat(actual1).matches("^augsburg-ist-schön-seit-15-v-chr-[0-9a-f]{4}$");
+        assertThat(generator.isDerivedFrom(actual1, base1));
 
-        String actual2 = generator.generateSlug("Волковское кладбище", Predicates.alwaysTrue());
+        String base2 = "Волковское кладбище";
+        String actual2 = generator.generateSlug(base2, Predicates.alwaysTrue());
         assertThat(actual2).matches("^волковское-кладбище-[0-9a-f]{4}$");
+        assertThat(generator.isDerivedFrom(actual2, base2));
     }
 
     @Test

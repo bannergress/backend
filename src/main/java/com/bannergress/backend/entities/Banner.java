@@ -34,12 +34,21 @@ public class Banner {
     private UUID uuid;
 
     /**
-     * Slug (ID which is suitable for use in URLs).
+     * Canonical slug (ID which is suitable for use in URLs).
      */
-    @NaturalId
+    @NaturalId(mutable = true)
+    @Column(name = "canonical_slug", nullable = false)
+    @NotAudited
+    private String canonicalSlug;
+
+    /**
+     * All slugs, including the {@link #canonicalSlug}.
+     */
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "banner_slug", joinColumns = @JoinColumn(name = "banner"))
     @Column(name = "slug", nullable = false)
     @NotAudited
-    private String slug;
+    private Set<String> slugs = new HashSet<>();
 
     /**
      * Title.
@@ -153,12 +162,20 @@ public class Banner {
         this.uuid = uuid;
     }
 
-    public String getSlug() {
-        return slug;
+    public String getCanonicalSlug() {
+        return canonicalSlug;
     }
 
-    public void setSlug(String slug) {
-        this.slug = slug;
+    public void setCanonicalSlug(String canonicalSlug) {
+        this.canonicalSlug = canonicalSlug;
+    }
+
+    public Set<String> getSlugs() {
+        return slugs;
+    }
+
+    public void setSlugs(Set<String> slugs) {
+        this.slugs = slugs;
     }
 
     public String getTitle() {
@@ -279,12 +296,13 @@ public class Banner {
             && Objects.equals(description, banner.description) && Objects.equals(missions, banner.missions)
             && Objects.equals(startPoint, banner.startPoint) && Objects.equals(lengthMeters, banner.lengthMeters)
             && Objects.equals(picture, banner.picture) && Objects.equals(startPlaces, banner.startPlaces)
-            && Objects.equals(created, banner.created) && type == banner.type && Objects.equals(slug, banner.slug);
+            && Objects.equals(created, banner.created) && type == banner.type
+            && Objects.equals(canonicalSlug, banner.canonicalSlug);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(uuid, title, description, numberOfMissions, missions, startPoint, lengthMeters, complete,
-            online, picture, startPlaces, created, type, slug);
+            online, picture, startPlaces, created, type, canonicalSlug);
     }
 }

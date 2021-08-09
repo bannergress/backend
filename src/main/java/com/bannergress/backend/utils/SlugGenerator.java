@@ -35,9 +35,7 @@ public final class SlugGenerator {
      * @return Slug.
      */
     public String generateSlug(String base, Predicate<String> isAvailable) {
-        String lowerCase = base.toLowerCase(Locale.ROOT);
-        String onlyAlphanum = replacedCharacters.matcher(lowerCase).replaceAll("-");
-        String prefix = onlyAlphanum.replaceAll("^-+|-+$", "");
+        String prefix = getPrefix(base);
         while (true) {
             byte[] random = new byte[suffixBytes];
             numberGenerator.nextBytes(random);
@@ -45,6 +43,30 @@ public final class SlugGenerator {
             if (isAvailable.test(proposal)) {
                 return proposal;
             }
+        }
+    }
+
+    private String getPrefix(String base) {
+        String lowerCase = base.toLowerCase(Locale.ROOT);
+        String onlyAlphanum = replacedCharacters.matcher(lowerCase).replaceAll("-");
+        String prefix = onlyAlphanum.replaceAll("^-+|-+$", "");
+        return prefix;
+    }
+
+    /**
+     * Checks whether a slug is derived from a base string.
+     *
+     * @param slug Slug.
+     * @param base Base string.
+     * @return <code>true</code> whether the slug is derived from the base string.
+     */
+    public boolean isDerivedFrom(String slug, String base) {
+        String prefix = getPrefix(base);
+        if (slug.startsWith(prefix)) {
+            String remainder = slug.substring(prefix.length());
+            return remainder.matches("^-[0-9a-f]+$");
+        } else {
+            return false;
         }
     }
 }

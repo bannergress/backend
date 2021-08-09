@@ -200,7 +200,7 @@ public class BannerController {
 
     private BannerDto toSummary(Banner banner) {
         BannerDto dto = new BannerDto();
-        dto.id = banner.getSlug();
+        dto.id = banner.getCanonicalSlug();
         dto.title = banner.getTitle();
         dto.numberOfMissions = banner.getNumberOfMissions();
         dto.lengthMeters = banner.getLengthMeters();
@@ -230,7 +230,7 @@ public class BannerController {
             List<BannerSettings> bannerSettings = bannerSettingsService.getBannerSettings(principal.getName(),
                 bannerDtos.stream().map(b -> b.id).collect(Collectors.toList()));
             Map<String, BannerListType> bannerListTypes = bannerSettings.stream()
-                .collect(Collectors.toMap(s -> s.getBanner().getSlug(), s -> s.getListType()));
+                .collect(Collectors.toMap(s -> s.getBanner().getCanonicalSlug(), s -> s.getListType()));
             for (BannerDto bannerDto : bannerDtos) {
                 BannerListType listType = bannerListTypes.get(bannerDto.id);
                 bannerDto.listType = listType == BannerListType.none ? null : listType;

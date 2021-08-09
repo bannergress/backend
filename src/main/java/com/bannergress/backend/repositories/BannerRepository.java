@@ -18,8 +18,8 @@ public interface BannerRepository extends JpaRepository<Banner, UUID>, JpaSpecif
     @Query("SELECT b.uuid FROM Banner b")
     List<UUID> getAllUUIDs();
 
-    @Query("SELECT b.slug FROM Banner b")
+    @Query("SELECT b.canonicalSlug FROM Banner b")
     List<String> getAllSlugs();
 
-    Optional<Banner> findBySlug(String slug);
+    Optional<Banner> findByCanonicalSlug(String slug);
 }

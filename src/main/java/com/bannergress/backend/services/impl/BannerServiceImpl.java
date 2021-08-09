@@ -36,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * Default implementation of {@link BannerService}.
@@ -173,10 +174,20 @@ public class BannerServiceImpl implements BannerService {
     @Override
     public String create(BannerDto bannerDto) throws MissionAlreadyUsedException {
         Banner banner = createTransient(bannerDto, List.of());
-        banner.setSlug(deriveSlug(banner));
+        calculateSlug(banner);
         bannerRepository.save(banner);
         banner.getStartPlaces().forEach(place -> place.setNumberOfBanners(place.getNumberOfBanners() + 1));
-        return banner.getSlug();
+        return banner.getCanonicalSlug();
+    }
+
+    private void calculateSlug(Banner banner) {
+        // Slug candidates: 1. current canonical slug 2. any previous slug 3. new slug
+        Stream<String> slugCandidates = Stream.concat(
+            Stream.concat(Optional.ofNullable(banner.getCanonicalSlug()).stream(), banner.getSlugs().stream()),
+            Stream.generate(() -> deriveSlug(banner)));
+        String slug = slugCandidates.filter(s -> slugGenerator.isDerivedFrom(s, banner.getTitle())).findFirst().get();
+        banner.setCanonicalSlug(slug);
+        banner.getSlugs().add(slug);
     }
 
     private String deriveSlug(Banner banner) {
@@ -224,6 +235,7 @@ public class BannerServiceImpl implements BannerService {
         banner.getMissions().clear();
         banner.getMissions()
             .putAll(Maps.transformValues(bannerDto.missions, missionDto -> missionRepository.getOne(missionDto.id)));
+        calculateSlug(banner);
         bannerService.calculateData(banner);
         pictureService.refresh(banner);
     }

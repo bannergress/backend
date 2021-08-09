@@ -53,7 +53,7 @@ class BannerControllerTest {
         assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(result.getBody()).hasSize(1);
         final var bannerDto = result.getBody().get(0);
-        assertThat(bannerDto.id).isEqualTo(banner.getSlug());
+        assertThat(bannerDto.id).isEqualTo(banner.getCanonicalSlug());
         assertThat(bannerDto.numberOfMissions).isEqualTo(banner.getNumberOfMissions());
         assertThat(bannerDto.lengthMeters).isEqualTo(banner.getLengthMeters());
     }
@@ -86,7 +86,7 @@ class BannerControllerTest {
         assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(result.getBody()).hasSize(1);
         final var bannerDto = result.getBody().get(0);
-        assertThat(bannerDto.id).isEqualTo(banner.getSlug());
+        assertThat(bannerDto.id).isEqualTo(banner.getCanonicalSlug());
         assertThat(bannerDto.numberOfMissions).isEqualTo(banner.getNumberOfMissions());
         assertThat(bannerDto.lengthMeters).isEqualTo(banner.getLengthMeters());
     }
@@ -106,7 +106,7 @@ class BannerControllerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         final BannerDto bannerDto = response.getBody();
         assertThat(bannerDto).isNotNull();
-        assertThat(bannerDto.id).isEqualTo(banner.getSlug());
+        assertThat(bannerDto.id).isEqualTo(banner.getCanonicalSlug());
         assertThat(bannerDto.numberOfMissions).isEqualTo(banner.getNumberOfMissions());
         assertThat(bannerDto.lengthMeters).isEqualTo(banner.getLengthMeters());
         assertThat(bannerDto.type).isEqualTo(banner.getType());
@@ -133,8 +133,8 @@ class BannerControllerTest {
         final BannerDto banner = a($BannerDto());
         final Banner savedBanner = fixPlaceInformation(a($Banner()));
 
-        when(bannerService.create(banner)).thenReturn(savedBanner.getSlug());
-        when(bannerService.findBySlugWithDetails(savedBanner.getSlug())).thenReturn(Optional.of(savedBanner));
+        when(bannerService.create(banner)).thenReturn(savedBanner.getCanonicalSlug());
+        when(bannerService.findBySlugWithDetails(savedBanner.getCanonicalSlug())).thenReturn(Optional.of(savedBanner));
 
         // THEN
         final var response = testController.post(banner, null);
@@ -143,7 +143,7 @@ class BannerControllerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         final BannerDto bannerDto = response.getBody();
         assertThat(bannerDto).isNotNull();
-        assertThat(bannerDto.id).isEqualTo(savedBanner.getSlug());
+        assertThat(bannerDto.id).isEqualTo(savedBanner.getCanonicalSlug());
         assertThat(bannerDto.numberOfMissions).isEqualTo(savedBanner.getNumberOfMissions());
         assertThat(bannerDto.lengthMeters).isEqualTo(savedBanner.getLengthMeters());
         assertThat(bannerDto.type).isEqualTo(savedBanner.getType());

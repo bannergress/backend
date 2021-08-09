@@ -22,7 +22,7 @@ public interface BannerSettingsService {
      * Retrieves banner settings user and a collection of banners.
      *
      * @param userId  ID of the user.
-     * @param banners Slugs of banner for which to retrieve the settings.
+     * @param banners Canonical slugs of banner for which to retrieve the settings.
      * @return Banner settings.
      */
     List<BannerSettings> getBannerSettings(String userId, Collection<String> bannerSlugs);
