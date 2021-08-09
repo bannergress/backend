@@ -52,7 +52,7 @@ public class MetaController {
             String distance = getDistance(banner);
             String place = getPlaceName(banner);
             String description = String.format("%s Missions, %s\n%s", banner.getNumberOfMissions(), distance, place);
-            String url = siteUrls.getBannerUrl(banner.getSlug());
+            String url = siteUrls.getBannerUrl(banner.getCanonicalSlug());
             String pictureUrl = banner.getPicture() == null ? null
                 : siteUrls.getPictureUrl(banner.getPicture().getHash());
             return new MetaBuilder() //

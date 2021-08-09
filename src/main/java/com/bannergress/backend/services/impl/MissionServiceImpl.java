@@ -63,7 +63,7 @@ public class MissionServiceImpl implements MissionService {
     public void assertNotAlreadyUsedInBanners(Collection<String> ids, List<String> acceptableBannerSlugs)
         throws MissionAlreadyUsedException {
         String acceptableBannerSlugsPart = acceptableBannerSlugs.isEmpty() ? ""
-            : " AND b.slug NOT IN :acceptableBannerSlugs";
+            : " AND b.canonicalSlug NOT IN :acceptableBannerSlugs";
         TypedQuery<Long> query = entityManager.createQuery("SELECT COUNT(m) FROM Mission m WHERE m.id IN :ids "
             + "AND NOT EXISTS (SELECT 1 FROM Banner b WHERE b MEMBER OF m.banners" + acceptableBannerSlugsPart + ")",
             Long.class);

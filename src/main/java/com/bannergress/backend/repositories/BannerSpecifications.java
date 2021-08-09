@@ -55,7 +55,10 @@ public class BannerSpecifications {
     }
 
     public static Specification<Banner> hasSlug(String slug) {
-        return (banner, cq, cb) -> cb.equal(banner.get(Banner_.slug), slug);
+        return (banner, cq, cb) -> {
+            Join<Banner, String> slugs = banner.join(Banner_.slugs);
+            return cb.equal(slugs, slug);
+        };
     }
 
     public static Specification<Banner> hasStartPlaceSlug(String startPlaceSlug) {

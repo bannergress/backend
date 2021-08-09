@@ -14,7 +14,7 @@ import java.util.UUID;
  */
 @Repository
 public interface BannerSettingsRepository extends JpaRepository<BannerSettings, UUID> {
-    Optional<BannerSettings> findByUserIdAndBannerSlug(String userId, String bannerSlug);
+    Optional<BannerSettings> findByUserIdAndBannerCanonicalSlug(String userId, String bannerSlug);
 
-    List<BannerSettings> findByUserIdAndBannerSlugIn(String userId, Collection<String> bannerSlugs);
+    List<BannerSettings> findByUserIdAndBannerCanonicalSlugIn(String userId, Collection<String> bannerSlugs);
 }

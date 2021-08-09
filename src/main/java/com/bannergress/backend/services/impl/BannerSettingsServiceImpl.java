@@ -37,16 +37,16 @@ public class BannerSettingsServiceImpl implements BannerSettingsService {
 
     @Override
     public List<BannerSettings> getBannerSettings(String userId, Collection<String> bannerSlugs) {
-        return bannerSettingsRepository.findByUserIdAndBannerSlugIn(userId, bannerSlugs);
+        return bannerSettingsRepository.findByUserIdAndBannerCanonicalSlugIn(userId, bannerSlugs);
     }
 
     private BannerSettings getOrCreate(String userId, String bannerSlug) {
-        Optional<BannerSettings> optionalBannerSettings = bannerSettingsRepository.findByUserIdAndBannerSlug(userId,
-            bannerSlug);
+        Optional<BannerSettings> optionalBannerSettings = bannerSettingsRepository
+            .findByUserIdAndBannerCanonicalSlug(userId, bannerSlug);
         return optionalBannerSettings.orElseGet(() -> {
             BannerSettings bannerSettings = new BannerSettings();
             bannerSettings.setUser(userService.getOrCreate(userId));
-            bannerSettings.setBanner(bannerRepository.findBySlug(bannerSlug).get());
+            bannerSettings.setBanner(bannerRepository.findByCanonicalSlug(bannerSlug).get());
             return bannerSettingsRepository.save(bannerSettings);
         });
     }
