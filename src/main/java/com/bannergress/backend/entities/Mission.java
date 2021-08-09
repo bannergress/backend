@@ -97,6 +97,7 @@ public class Mission {
      * Mission status.
      */
     @Column(name = "status", nullable = false)
+    @Enumerated(EnumType.STRING)
     private MissionStatus status = MissionStatus.disabled;
 
     /**
