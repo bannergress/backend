@@ -30,6 +30,7 @@ public interface BannerService {
      * @param author               Optional author of one of the banner missions.
      * @param listTypes            Optional types of lists the banner is on.
      * @param user                 Optional User ID (needed for listTypes).
+     * @param online               Optional online status.
      * @param orderBy              Optional sort order.
      * @param orderDirection       Sort direction.
      * @param proximityLatitude    Optional reference latitude for proximity sorting.
@@ -41,7 +42,7 @@ public interface BannerService {
     List<Banner> find(Optional<String> placeSlug, Optional<Double> minLatitude, Optional<Double> maxLatitude,
                       Optional<Double> minLongitude, Optional<Double> maxLongitude, Optional<String> query,
                       Optional<String> missionId, boolean onlyOfficialMissions, Optional<String> author,
-                      Optional<Collection<BannerListType>> listTypes, Optional<String> userId,
+                      Optional<Collection<BannerListType>> listTypes, Optional<String> userId, Optional<Boolean> online,
                       Optional<BannerSortOrder> orderBy, Direction orderDirection, Optional<Double> proximityLatitude,
                       Optional<Double> proximityLongitude, int offset, int limit);
 

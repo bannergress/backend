@@ -72,6 +72,10 @@ public class BannerSpecifications {
         return (banner, cq, cb) -> cb.like(cb.lower(banner.get(Banner_.title)), "%" + titlePart.toLowerCase() + "%");
     }
 
+    public static Specification<Banner> hasOnline(boolean online) {
+        return (banner, cq, cb) -> cb.equal(banner.get(Banner_.online), online);
+    }
+
     public static Specification<Banner> isInBanners(Collection<Banner> banners) {
         return (banner, cq, cb) -> banner.in(banners);
     }

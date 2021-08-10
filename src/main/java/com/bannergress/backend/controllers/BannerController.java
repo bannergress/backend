@@ -85,6 +85,7 @@ public class BannerController {
                                                 @RequestParam(defaultValue = "false") final boolean onlyOfficialMissions,
                                                 @RequestParam final Optional<String> author,
                                                 @RequestParam final Optional<Collection<BannerListType>> listTypes,
+                                                @RequestParam final Optional<Boolean> online,
                                                 @RequestParam final Optional<BannerSortOrder> orderBy,
                                                 @RequestParam(defaultValue = "ASC") final Direction orderDirection,
                                                 @RequestParam final Optional<Double> proximityLatitude,
@@ -112,7 +113,7 @@ public class BannerController {
         }
         final Collection<Banner> banners = bannerService.find(placeId, minLatitude, maxLatitude, minLongitude,
             maxLongitude, query, missionId, onlyOfficialMissions, author, listTypes,
-            Optional.ofNullable(principal).map(Principal::getName), orderBy, orderDirection, proximityLatitude,
+            Optional.ofNullable(principal).map(Principal::getName), online, orderBy, orderDirection, proximityLatitude,
             proximityLongitude, offset, limit);
         List<BannerDto> bannerDtos = banners.stream().map(this::toSummary).collect(Collectors.toUnmodifiableList());
         amendUserSettings(principal, bannerDtos);
