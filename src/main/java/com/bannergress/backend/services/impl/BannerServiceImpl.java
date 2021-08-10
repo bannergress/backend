@@ -1,13 +1,13 @@
 package com.bannergress.backend.services.impl;
 
 import com.bannergress.backend.dto.BannerDto;
+import com.bannergress.backend.dto.MissionDto;
 import com.bannergress.backend.entities.Banner;
 import com.bannergress.backend.entities.Mission;
 import com.bannergress.backend.entities.MissionStep;
 import com.bannergress.backend.entities.Place;
 import com.bannergress.backend.enums.BannerListType;
 import com.bannergress.backend.enums.BannerSortOrder;
-import com.bannergress.backend.enums.MissionStatus;
 import com.bannergress.backend.exceptions.MissionAlreadyUsedException;
 import com.bannergress.backend.repositories.BannerRepository;
 import com.bannergress.backend.repositories.BannerSpecifications;
@@ -198,8 +198,10 @@ public class BannerServiceImpl implements BannerService {
 
     private Banner createTransient(BannerDto bannerDto, List<String> acceptableBannerSlugs)
         throws MissionAlreadyUsedException {
-        Collection<String> missionIds = Collections2.transform(bannerDto.missions.values(),
-            missionDto -> missionDto.id);
+        Map<Integer, MissionDto> missions = Maps.filterValues(bannerDto.missions, missionDto -> missionDto.id != null);
+        Map<Integer, MissionDto> placeholders = Maps.filterValues(bannerDto.missions,
+            missionDto -> missionDto.id == null);
+        Collection<String> missionIds = Collections2.transform(missions.values(), missionDto -> missionDto.id);
         missionService.assertNotAlreadyUsedInBanners(missionIds, acceptableBannerSlugs);
         Banner banner = new Banner();
         banner.setTitle(bannerDto.title);
@@ -209,7 +211,8 @@ public class BannerServiceImpl implements BannerService {
         banner.setType(bannerDto.type);
         banner.getMissions().clear();
         banner.getMissions()
-            .putAll(Maps.transformValues(bannerDto.missions, missionDto -> missionRepository.getOne(missionDto.id)));
+            .putAll(Maps.transformValues(missions, missionDto -> missionRepository.getOne(missionDto.id)));
+        banner.getPlaceholders().addAll(placeholders.keySet());
         calculateData(banner);
         pictureService.refresh(banner);
         return banner;
@@ -252,13 +255,19 @@ public class BannerServiceImpl implements BannerService {
     @Override
     public void calculateData(Banner banner) {
         Point startPoint = null;
-        boolean complete = true;
-        boolean online = complete;
+        int numberOfSubmittedMissions = banner.getPlaceholders().size();
+        int numberOfDisabledMissions = 0;
 
         for (Mission mission : banner.getMissions().values()) {
-            online &= mission.getStatus() == MissionStatus.published;
-            if (mission.getType() == null) {
-                complete = false;
+            switch (mission.getStatus()) {
+                case disabled:
+                    numberOfDisabledMissions++;
+                    break;
+                case submitted:
+                    numberOfSubmittedMissions++;
+                    break;
+                default:
+                    break;
             }
             for (MissionStep step : mission.getSteps()) {
                 if (step.getPoi() != null) {
@@ -270,9 +279,10 @@ public class BannerServiceImpl implements BannerService {
             }
         }
         banner.setStartPoint(startPoint);
-        banner.setComplete(complete);
-        banner.setOnline(online);
-        banner.setNumberOfMissions(banner.getMissions().size());
+        banner.setOnline(numberOfSubmittedMissions == 0 && numberOfDisabledMissions == 0);
+        banner.setNumberOfMissions(banner.getMissions().size() + banner.getPlaceholders().size());
+        banner.setNumberOfDisabledMissions(numberOfDisabledMissions);
+        banner.setNumberOfSubmittedMissions(numberOfSubmittedMissions);
         if (startPoint != null && banner.getStartPlaces().isEmpty()) {
             Collection<Place> startPlaces = placesService.getPlaces(startPoint);
             banner.getStartPlaces().clear();

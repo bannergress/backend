@@ -3,6 +3,7 @@ package com.bannergress.backend.services.impl;
 import com.bannergress.backend.entities.Banner;
 import com.bannergress.backend.entities.Mission;
 import com.bannergress.backend.enums.MissionStatus;
+import org.assertj.core.util.Sets;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -37,6 +38,7 @@ class TestBannerPictureServiceImpl {
         }
         banner.setMissions(missions);
         banner.getMissions().get(3).setStatus(MissionStatus.disabled);
+        banner.setPlaceholders(Sets.newTreeSet(6, 11, 12, 17, 18, 19, 20, 21, 22, 23));
 
         byte[] pngData = bannerPictureService.createPicture(banner);
 

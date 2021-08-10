@@ -48,6 +48,16 @@ public class BannerDto {
     public int numberOfMissions;
 
     /**
+     * Number of submitted missions.
+     */
+    public int numberOfSubmittedMissions;
+
+    /**
+     * Number of disabled missions.
+     */
+    public int numberOfDisabledMissions;
+
+    /**
      * Map between the zero-based mission position and the mission. The mission
      * position must be less than {@link #numberOfMissions}. The map may be sparse,
      * i.e. not every position is necessarily mapped to a mission.
