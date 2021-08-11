@@ -2,6 +2,8 @@ package com.bannergress.backend.entities;
 
 import com.bannergress.backend.enums.BannerType;
 import com.bannergress.backend.utils.PojoBuilder;
+import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Maps;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.SortNatural;
@@ -74,6 +76,20 @@ public class Banner {
     private int numberOfMissions;
 
     /**
+     * Number of submitted ("not yet published") missions.
+     */
+    @Column(name = "number_of_submitted_missions", nullable = false)
+    @NotAudited
+    private int numberOfSubmittedMissions;
+
+    /**
+     * Number of disabled ("not published anymore") missions.
+     */
+    @Column(name = "number_of_disabled_missions", nullable = false)
+    @NotAudited
+    private int numberOfDisabledMissions;
+
+    /**
      * Map between the zero-based mission position and the mission. The mission
      * position must be less than {@link #numberOfMissions}. The map may be sparse,
      * i.e. not every position is necessarily mapped to a mission.
@@ -85,6 +101,16 @@ public class Banner {
     @AuditJoinTable(name = "banner_mission_audit")
     @SortNatural
     private SortedMap<Integer, Mission> missions = new TreeMap<>();
+
+    /**
+     * Set of zero-based mission positions where a mission is supposed to be. This set and the keyset of {@link #missions} are mutually exclusive.
+     */
+    @ElementCollection
+    @CollectionTable(name = "banner_placeholder", joinColumns = {@JoinColumn(name = "banner")})
+    @Column(name = "position")
+    @AuditJoinTable(name = "banner_placeholder_audit")
+    @SortNatural
+    private SortedSet<Integer> placeholders = new TreeSet<>();
 
     /**
      * Start portal of the first mission.
@@ -100,13 +126,6 @@ public class Banner {
     @Column(name = "length_meters", nullable = true)
     @NotAudited
     private Integer lengthMeters;
-
-    /**
-     * All mission information is present.
-     */
-    @Column(name = "complete", nullable = false)
-    @NotAudited
-    private boolean complete;
 
     /**
      * All missions are online.
@@ -210,12 +229,42 @@ public class Banner {
         this.numberOfMissions = numberOfMissions;
     }
 
+    public int getNumberOfSubmittedMissions() {
+        return numberOfSubmittedMissions;
+    }
+
+    public void setNumberOfSubmittedMissions(int numberOfSubmittedMissions) {
+        this.numberOfSubmittedMissions = numberOfSubmittedMissions;
+    }
+
+    public int getNumberOfDisabledMissions() {
+        return numberOfDisabledMissions;
+    }
+
+    public void setNumberOfDisabledMissions(int numberOfDisabledMissions) {
+        this.numberOfDisabledMissions = numberOfDisabledMissions;
+    }
+
     public SortedMap<Integer, Mission> getMissions() {
         return missions;
     }
 
     public void setMissions(SortedMap<Integer, Mission> missions) {
         this.missions = missions;
+    }
+
+    public SortedSet<Integer> getPlaceholders() {
+        return placeholders;
+    }
+
+    public void setPlaceholders(SortedSet<Integer> placeholders) {
+        this.placeholders = placeholders;
+    }
+
+    public ImmutableSortedMap<Integer, Optional<Mission>> getMissionsAndPlaceholders() {
+        return ImmutableSortedMap.<Integer, Optional<Mission>>naturalOrder()
+            .putAll(Maps.transformValues(missions, Optional::of))
+            .putAll(Maps.asMap(placeholders, p -> Optional.empty())).build();
     }
 
     public Point getStartPoint() {
@@ -240,14 +289,6 @@ public class Banner {
 
     public void setStartPlaces(Set<Place> startPlaces) {
         this.startPlaces = startPlaces;
-    }
-
-    public boolean isComplete() {
-        return complete;
-    }
-
-    public void setComplete(boolean complete) {
-        this.complete = complete;
     }
 
     public boolean isOnline() {
@@ -292,7 +333,7 @@ public class Banner {
         }
         final Banner banner = (Banner) o;
         return Objects.equals(uuid, banner.uuid) && numberOfMissions == banner.numberOfMissions
-            && complete == banner.complete && online == banner.online && Objects.equals(title, banner.title)
+            && online == banner.online && Objects.equals(title, banner.title)
             && Objects.equals(description, banner.description) && Objects.equals(missions, banner.missions)
             && Objects.equals(startPoint, banner.startPoint) && Objects.equals(lengthMeters, banner.lengthMeters)
             && Objects.equals(picture, banner.picture) && Objects.equals(startPlaces, banner.startPlaces)
@@ -302,7 +343,7 @@ public class Banner {
 
     @Override
     public int hashCode() {
-        return Objects.hash(uuid, title, description, numberOfMissions, missions, startPoint, lengthMeters, complete,
-            online, picture, startPlaces, created, type, canonicalSlug);
+        return Objects.hash(uuid, title, description, numberOfMissions, missions, startPoint, lengthMeters, online,
+            picture, startPlaces, created, type, canonicalSlug);
     }
 }

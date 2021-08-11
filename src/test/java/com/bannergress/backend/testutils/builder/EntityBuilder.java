@@ -22,7 +22,6 @@ public class EntityBuilder {
             .withNumberOfMissions(a($Int()))
             .withMissions(sortedMapWith(0, $Mission()))
             .withLengthMeters(a($Int()))
-            .withComplete(a($Boolean()))
             .withOnline(a($Boolean()))
             .withPicture(a($BannerPicture()))
             .withStartPlaces(setWith($Place()))

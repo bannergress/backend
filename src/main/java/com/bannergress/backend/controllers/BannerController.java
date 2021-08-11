@@ -2,8 +2,10 @@ package com.bannergress.backend.controllers;
 
 import com.bannergress.backend.dto.BannerDto;
 import com.bannergress.backend.dto.BannerSettingsDto;
+import com.bannergress.backend.dto.MissionDto;
 import com.bannergress.backend.entities.Banner;
 import com.bannergress.backend.entities.BannerSettings;
+import com.bannergress.backend.entities.Mission;
 import com.bannergress.backend.entities.PlaceInformation;
 import com.bannergress.backend.enums.BannerListType;
 import com.bannergress.backend.enums.BannerSortOrder;
@@ -204,6 +206,8 @@ public class BannerController {
         dto.id = banner.getCanonicalSlug();
         dto.title = banner.getTitle();
         dto.numberOfMissions = banner.getNumberOfMissions();
+        dto.numberOfSubmittedMissions = banner.getNumberOfSubmittedMissions();
+        dto.numberOfDisabledMissions = banner.getNumberOfDisabledMissions();
         dto.lengthMeters = banner.getLengthMeters();
         dto.startLatitude = getLatitude(banner.getStartPoint());
         dto.startLongitude = getLongitude(banner.getStartPoint());
@@ -220,10 +224,14 @@ public class BannerController {
 
     private BannerDto toDetails(Banner banner) {
         BannerDto dto = toSummary(banner);
-        dto.missions = Maps.transformValues(banner.getMissions(), MissionController::toDetails);
+        dto.missions = Maps.transformValues(banner.getMissionsAndPlaceholders(), this::toMissionOrPlaceholder);
         dto.type = banner.getType();
         dto.description = banner.getDescription();
         return dto;
+    }
+
+    private MissionDto toMissionOrPlaceholder(Optional<Mission> input) {
+        return input.map(MissionController::toDetails).orElse(new MissionDto());
     }
 
     private void amendUserSettings(Principal principal, Collection<BannerDto> bannerDtos) {

@@ -36,6 +36,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.SortedMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 
@@ -106,6 +107,9 @@ public class BannerPictureServiceImpl implements BannerPictureService {
             hasher.putInt(entry.getKey()).putUnencodedChars(entry.getValue().getPicture().toString())
                 .putBoolean(entry.getValue().getStatus() == MissionStatus.published);
         }
+        for (Integer position : banner.getPlaceholders()) {
+            hasher.putInt(position);
+        }
         return hasher.hash().toString();
     }
 
@@ -122,7 +126,8 @@ public class BannerPictureServiceImpl implements BannerPictureService {
 
     protected byte[] createPicture(Banner banner) {
         final int numberColumns = banner.getWidth();
-        final int numberRows = banner.getMissions().lastKey() / numberColumns + 1;
+        SortedMap<Integer, Optional<Mission>> missionsAndPlaceholders = banner.getMissionsAndPlaceholders();
+        final int numberRows = missionsAndPlaceholders.lastKey() / numberColumns + 1;
         final int DISTANCE_CIRCLES = 4;
         final int DIAMETER = 96;
         final int MISSIONSIZE = DIAMETER + DISTANCE_CIRCLES;
@@ -136,24 +141,27 @@ public class BannerPictureServiceImpl implements BannerPictureService {
 
         // loads, draws and masks the individual mission images to the banner image.
         try {
-            threadPool.submit(() -> banner.getMissions().entrySet().parallelStream().forEach(entry -> {
-                BufferedImage missionImage;
-                Request request = new Request.Builder().url(entry.getValue().getPicture()).build();
-                try (Response response = client.newCall(request).execute()) {
-                    missionImage = ImageIO.read(response.body().byteStream());
-                } catch (IOException ex) {
-                    throw new RuntimeException("failed ro read image: " + entry.getValue().getPicture(), ex);
-                }
+            threadPool.submit(() -> missionsAndPlaceholders.entrySet().parallelStream().forEach(entry -> {
+                Optional<BufferedImage> optionalMissionImage = entry.getValue().map(mission -> {
+                    Request request = new Request.Builder().url(mission.getPicture()).build();
+                    try (Response response = client.newCall(request).execute()) {
+                        return ImageIO.read(response.body().byteStream());
+                    } catch (IOException ex) {
+                        throw new RuntimeException("failed ro read image: " + mission.getPicture(), ex);
+                    }
+                });
                 int missionPosition = numberColumns * numberRows - entry.getKey().intValue() - 1;
                 int x1 = DISTANCE_CIRCLES + (missionPosition % numberColumns) * MISSIONSIZE;
                 int y1 = DISTANCE_CIRCLES + (missionPosition / numberColumns) * MISSIONSIZE;
                 int x2 = x1 + DIAMETER;
                 int y2 = y1 + DIAMETER;
                 synchronized (graphics) {
-                    graphics.drawImage(missionImage, x1, y1, x2, y2, 0, 0, missionImage.getWidth(),
-                        missionImage.getHeight(), null);
-                    BufferedImage maskImage = entry.getValue().getStatus() == MissionStatus.published ? maskImageOnline
-                        : maskImageOffline;
+                    optionalMissionImage.ifPresent(missionImage -> {
+                        graphics.drawImage(missionImage, x1, y1, x2, y2, 0, 0, missionImage.getWidth(),
+                            missionImage.getHeight(), null);
+                    });
+                    MissionStatus status = entry.getValue().map(Mission::getStatus).orElse(MissionStatus.submitted);
+                    BufferedImage maskImage = status == MissionStatus.published ? maskImageOnline : maskImageOffline;
                     graphics.drawImage(maskImage, x1, y1, x2, y2, 0, 0, maskImage.getWidth(), maskImage.getHeight(),
                         null);
                 }
