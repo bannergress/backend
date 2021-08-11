@@ -83,7 +83,7 @@ public class BannerServiceImpl implements BannerService {
                              Optional<Double> minLongitude, Optional<Double> maxLongitude, Optional<String> search,
                              Optional<String> missionId, boolean onlyOfficialMissions, Optional<String> author,
                              Optional<Collection<BannerListType>> listTypes, Optional<String> userId,
-                             Optional<BannerSortOrder> orderBy, Direction orderDirection,
+                             Optional<Boolean> online, Optional<BannerSortOrder> orderBy, Direction orderDirection,
                              Optional<Double> proximityLatitude, Optional<Double> proximityLongitude, int offset,
                              int limit) {
         List<Specification<Banner>> specifications = new ArrayList<>();
@@ -125,6 +125,9 @@ public class BannerServiceImpl implements BannerService {
             } else {
                 specifications.add(BannerSpecifications.isInUserList(listTypes.get(), userId.get()));
             }
+        }
+        if (online.isPresent()) {
+            specifications.add(BannerSpecifications.hasOnline(online.get()));
         }
 
         Sort sort;
