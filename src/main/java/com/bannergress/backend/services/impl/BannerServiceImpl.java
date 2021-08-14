@@ -201,10 +201,7 @@ public class BannerServiceImpl implements BannerService {
 
     private Banner createTransient(BannerDto bannerDto, List<String> acceptableBannerSlugs)
         throws MissionAlreadyUsedException {
-        Map<Integer, MissionDto> missions = Maps.filterValues(bannerDto.missions, missionDto -> missionDto.id != null);
-        Map<Integer, MissionDto> placeholders = Maps.filterValues(bannerDto.missions,
-            missionDto -> missionDto.id == null);
-        Collection<String> missionIds = Collections2.transform(missions.values(), missionDto -> missionDto.id);
+        Collection<String> missionIds = missionIds(bannerDto);
         missionService.assertNotAlreadyUsedInBanners(missionIds, acceptableBannerSlugs);
         Banner banner = new Banner();
         banner.setTitle(bannerDto.title);
@@ -213,12 +210,28 @@ public class BannerServiceImpl implements BannerService {
         banner.setWidth(bannerDto.width);
         banner.setType(bannerDto.type);
         banner.getMissions().clear();
-        banner.getMissions()
-            .putAll(Maps.transformValues(missions, missionDto -> missionRepository.getOne(missionDto.id)));
-        banner.getPlaceholders().addAll(placeholders.keySet());
+        banner.getMissions().putAll(actualMissionReferences(bannerDto));
+        banner.getPlaceholders().clear();
+        banner.getPlaceholders().addAll(placeHolderMissions(bannerDto).keySet());
         calculateData(banner);
         pictureService.refresh(banner);
         return banner;
+    }
+
+    private Map<Integer, Mission> actualMissionReferences(BannerDto bannerDto) {
+        return Maps.transformValues(actualMissions(bannerDto), missionDto -> missionRepository.getOne(missionDto.id));
+    }
+
+    private static Collection<String> missionIds(BannerDto bannerDto) {
+        return Collections2.transform(actualMissions(bannerDto).values(), missionDto -> missionDto.id);
+    }
+
+    private static Map<Integer, MissionDto> actualMissions(BannerDto bannerDto) {
+        return Maps.filterValues(bannerDto.missions, missionDto -> missionDto.id != null);
+    }
+
+    private static Map<Integer, MissionDto> placeHolderMissions(BannerDto bannerDto) {
+        return Maps.filterValues(bannerDto.missions, missionDto -> missionDto.id == null);
     }
 
     @Override
@@ -230,8 +243,7 @@ public class BannerServiceImpl implements BannerService {
 
     @Override
     public void update(String slug, BannerDto bannerDto) throws MissionAlreadyUsedException {
-        Collection<String> missionIds = Collections2.transform(bannerDto.missions.values(),
-            missionDto -> missionDto.id);
+        Collection<String> missionIds = missionIds(bannerDto);
         missionService.assertNotAlreadyUsedInBanners(missionIds, List.of(bannerDto.id));
         Banner banner = bannerRepository.findOne(BannerSpecifications.hasSlug(slug)).get();
         banner.setTitle(bannerDto.title);
@@ -239,8 +251,9 @@ public class BannerServiceImpl implements BannerService {
         banner.setWidth(bannerDto.width);
         banner.setType(bannerDto.type);
         banner.getMissions().clear();
-        banner.getMissions()
-            .putAll(Maps.transformValues(bannerDto.missions, missionDto -> missionRepository.getOne(missionDto.id)));
+        banner.getMissions().putAll(actualMissionReferences(bannerDto));
+        banner.getPlaceholders().clear();
+        banner.getPlaceholders().addAll(placeHolderMissions(bannerDto).keySet());
         calculateSlug(banner);
         bannerService.calculateData(banner);
         pictureService.refresh(banner);
