@@ -110,11 +110,17 @@ public class BannerPictureServiceImpl implements BannerPictureService {
         for (Integer position : banner.getPlaceholders()) {
             hasher.putInt(position);
         }
+        // The following lines break hash compatibility for banners with at least one disabled mission.
+        // Can be removed again when the IMPLEMENTATION_VERION increases.
+        if (banner.getNumberOfDisabledMissions() > 0) {
+            hasher.putUnencodedChars("EXTRA_DISABLED");
+        }
         return hasher.hash().toString();
     }
 
-    private static final BufferedImage maskImageOnline = loadImage("/mask-96-online.png");
-    private static final BufferedImage maskImageOffline = loadImage("/mask-96-offline.png");
+    private static final BufferedImage maskImageOnline = loadImage("/mask-100-online.png");
+    private static final BufferedImage maskImageOffline = loadImage("/mask-100-offline.png");
+    private static final BufferedImage maskImagePlaceholder = loadImage("/mask-100-placeholder.png");
 
     private static BufferedImage loadImage(String path) {
         try (InputStream stream = BannerPictureServiceImpl.class.getResourceAsStream(path)) {
@@ -126,13 +132,14 @@ public class BannerPictureServiceImpl implements BannerPictureService {
 
     protected byte[] createPicture(Banner banner) {
         final int numberColumns = banner.getWidth();
+        boolean allDisabled = banner.getNumberOfDisabledMissions() == banner.getNumberOfMissions();
         SortedMap<Integer, Optional<Mission>> missionsAndPlaceholders = banner.getMissionsAndPlaceholders();
         final int numberRows = missionsAndPlaceholders.lastKey() / numberColumns + 1;
-        final int DISTANCE_CIRCLES = 4;
-        final int DIAMETER = 96;
-        final int MISSIONSIZE = DIAMETER + DISTANCE_CIRCLES;
-        BufferedImage bannerImage = new BufferedImage(numberColumns * MISSIONSIZE + DISTANCE_CIRCLES,
-            numberRows * MISSIONSIZE + DISTANCE_CIRCLES, BufferedImage.TYPE_INT_RGB);
+        final int TILESIZE = 100;
+        final int OUTER_PADDING = 2;
+        final int MISSION_PADDING = 2;
+        BufferedImage bannerImage = new BufferedImage(numberColumns * TILESIZE + 2 * OUTER_PADDING,
+            numberRows * TILESIZE + 2 * OUTER_PADDING, BufferedImage.TYPE_INT_RGB);
         Graphics2D graphics = bannerImage.createGraphics();
         graphics.setPaint(new Color(46, 46, 46));
         graphics.fillRect(0, 0, bannerImage.getWidth(), bannerImage.getHeight());
@@ -147,30 +154,30 @@ public class BannerPictureServiceImpl implements BannerPictureService {
                     try (Response response = client.newCall(request).execute()) {
                         return ImageIO.read(response.body().byteStream());
                     } catch (IOException ex) {
-                        throw new RuntimeException("failed ro read image: " + mission.getPicture(), ex);
+                        throw new RuntimeException("failed to read image: " + mission.getPicture(), ex);
                     }
                 });
                 int missionPosition = numberColumns * numberRows - entry.getKey().intValue() - 1;
-                int x1 = DISTANCE_CIRCLES + (missionPosition % numberColumns) * MISSIONSIZE;
-                int y1 = DISTANCE_CIRCLES + (missionPosition / numberColumns) * MISSIONSIZE;
-                int x2 = x1 + DIAMETER;
-                int y2 = y1 + DIAMETER;
+                int x1 = OUTER_PADDING + (missionPosition % numberColumns) * TILESIZE;
+                int y1 = OUTER_PADDING + (missionPosition / numberColumns) * TILESIZE;
+                int x2 = x1 + TILESIZE;
+                int y2 = y1 + TILESIZE;
                 synchronized (graphics) {
                     optionalMissionImage.ifPresent(missionImage -> {
-                        graphics.drawImage(missionImage, x1, y1, x2, y2, 0, 0, missionImage.getWidth(),
+                        graphics.drawImage(missionImage, x1 + MISSION_PADDING, y1 + MISSION_PADDING,
+                            x2 - MISSION_PADDING, y2 - MISSION_PADDING, 0, 0, missionImage.getWidth(),
                             missionImage.getHeight(), null);
                     });
-                    MissionStatus status = entry.getValue().map(Mission::getStatus).orElse(MissionStatus.submitted);
-                    BufferedImage maskImage = status == MissionStatus.published ? maskImageOnline : maskImageOffline;
-                    graphics.drawImage(maskImage, x1, y1, x2, y2, 0, 0, maskImage.getWidth(), maskImage.getHeight(),
-                        null);
+                    MissionStatus drawStatus = allDisabled ? MissionStatus.published
+                        : entry.getValue().map(Mission::getStatus).orElse(MissionStatus.submitted);
+                    drawOverlay(graphics, x1, y1, x2, y2, drawStatus);
                 }
             })).get();
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
+        } finally {
+            graphics.dispose();
         }
-
-        graphics.dispose();
 
         try (ByteArrayOutputStream stream = new ByteArrayOutputStream(24 * 1024 * numberRows);
             ImageOutputStream imageOutputStream = ImageIO.createImageOutputStream(stream)) {
@@ -184,6 +191,24 @@ public class BannerPictureServiceImpl implements BannerPictureService {
             return stream.toByteArray();
         } catch (IOException ex) {
             throw new RuntimeException("failed to generate banner with id " + banner.getUuid(), ex);
+        }
+    }
+
+    private void drawOverlay(Graphics2D graphics, int x1, int y1, int x2, int y2, MissionStatus status) {
+        BufferedImage maskImage = getMaskImage(status);
+        graphics.drawImage(maskImage, x1, y1, x2, y2, 0, 0, maskImage.getWidth(), maskImage.getHeight(), null);
+    }
+
+    private BufferedImage getMaskImage(MissionStatus status) {
+        switch (status) {
+            case published:
+                return maskImageOnline;
+            case disabled:
+                return maskImageOffline;
+            case submitted:
+                return maskImagePlaceholder;
+            default:
+                throw new IllegalArgumentException();
         }
     }
 
