@@ -75,9 +75,7 @@ public class BannerPictureServiceImpl implements BannerPictureService {
     @Override
     public void refresh(Banner banner) {
         BannerPicture oldPicture = banner.getPicture();
-        if (oldPicture != null) {
-            oldPicture.setExpiration(Instant.now().plusSeconds(60));
-        }
+        setPictureExpired(oldPicture);
         String hash = hash(banner);
         BannerPicture newPicture = entityManager.find(BannerPicture.class, hash);
         if (newPicture == null) {
@@ -215,6 +213,13 @@ public class BannerPictureServiceImpl implements BannerPictureService {
     @Override
     public Optional<BannerPicture> findByHash(String hash) {
         return Optional.ofNullable(entityManager.find(BannerPicture.class, hash));
+    }
+
+    @Override
+    public void setPictureExpired(BannerPicture picture) {
+        if (picture != null) {
+            picture.setExpiration(Instant.now().plusSeconds(3_600));
+        }
     }
 
     @Override

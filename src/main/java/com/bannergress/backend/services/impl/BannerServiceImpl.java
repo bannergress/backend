@@ -237,7 +237,7 @@ public class BannerServiceImpl implements BannerService {
     @Override
     public Banner generatePreview(BannerDto bannerDto) throws MissionAlreadyUsedException {
         Banner banner = createTransient(bannerDto, bannerDto.id != null ? List.of(bannerDto.id) : List.of());
-        banner.getPicture().setExpiration(Instant.now().plusSeconds(3_600));
+        pictureService.setPictureExpired(banner.getPicture());
         return banner;
     }
 
@@ -262,6 +262,7 @@ public class BannerServiceImpl implements BannerService {
     @Override
     public void deleteBySlug(String slug) {
         Banner banner = bannerRepository.findOne(BannerSpecifications.hasSlug(slug)).get();
+        pictureService.setPictureExpired(banner.getPicture());
         for (Place place : banner.getStartPlaces()) {
             place.setNumberOfBanners(place.getNumberOfBanners() - 1);
         }
