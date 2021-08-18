@@ -18,5 +18,12 @@ public interface BannerPictureService {
 
     Optional<BannerPicture> findByHash(String hash);
 
+    /**
+     * Sets a picture as expired.
+     *
+     * @param picture Picture, may be <code>null</code>.
+     */
+    void setPictureExpired(BannerPicture picture);
+
     void removeExpired();
 }
