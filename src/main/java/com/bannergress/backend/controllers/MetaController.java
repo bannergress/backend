@@ -1,6 +1,7 @@
 package com.bannergress.backend.controllers;
 
 import com.bannergress.backend.entities.Banner;
+import com.bannergress.backend.entities.Place;
 import com.bannergress.backend.entities.PlaceInformation;
 import com.bannergress.backend.services.BannerService;
 import com.bannergress.backend.services.PlaceService;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -21,6 +24,7 @@ import java.util.Optional;
  */
 @RestController
 public class MetaController {
+    private static final String LANGUAGE = "en";
     private static final String OG_DESCRIPTION = "og:description";
     private static final String OG_IMAGE = "og:image";
     private static final String OG_SITE_NAME = "og:site_name";
@@ -49,9 +53,7 @@ public class MetaController {
         if (optionalBanner.isPresent()) {
             Banner banner = optionalBanner.get();
             String title = banner.getTitle();
-            String distance = getDistance(banner);
-            String place = getPlaceName(banner);
-            String description = String.format("%s Missions, %s\n%s", banner.getNumberOfMissions(), distance, place);
+            String description = getBannerDescription(banner);
             String url = siteUrls.getBannerUrl(banner.getCanonicalSlug());
             String pictureUrl = banner.getPicture() == null ? null
                 : siteUrls.getPictureUrl(banner.getPicture().getHash());
@@ -69,13 +71,40 @@ public class MetaController {
         }
     }
 
-    private String getPlaceName(Banner banner) {
+    private String getBannerDescription(Banner banner) {
+        String place = getBannerPlaceName(banner);
+        List<String> errors = getBannerErrors(banner);
+        if (errors.isEmpty()) {
+            String distance = getBannerDistance(banner);
+            return String.format("%s Missions, %s\n%s", banner.getNumberOfMissions(), distance, place);
+        } else {
+            return String.format("%s Missions (%s)\n%s", banner.getNumberOfMissions(), String.join(", ", errors),
+                place);
+        }
+    }
+
+    private List<String> getBannerErrors(Banner banner) {
+        List<String> errors = new ArrayList<>(2);
+        if (banner.getNumberOfSubmittedMissions() > 0) {
+            errors.add(String.format("%s missing",
+                banner.getNumberOfSubmittedMissions() == banner.getNumberOfMissions() ? "all"
+                    : banner.getNumberOfSubmittedMissions()));
+        }
+        if (banner.getNumberOfDisabledMissions() > 0) {
+            errors.add(
+                String.format("%s offline", banner.getNumberOfDisabledMissions() == banner.getNumberOfMissions() ? "all"
+                    : banner.getNumberOfDisabledMissions()));
+        }
+        return errors;
+    }
+
+    private String getBannerPlaceName(Banner banner) {
         Optional<PlaceInformation> placeInformation = placeService
-            .getMostAccuratePlaceInformation(banner.getStartPlaces(), "en");
+            .getMostAccuratePlaceInformation(banner.getStartPlaces(), LANGUAGE);
         return placeInformation.map(PlaceInformation::getFormattedAddress).orElse(UNKNOWN_LOCATION);
     }
 
-    private String getDistance(Banner banner) {
+    private String getBannerDistance(Banner banner) {
         return Optional.ofNullable(banner.getLengthMeters()).map(distance -> {
             if (distance >= 995) {
                 return BigDecimal.valueOf(distance / 1000d).round(new MathContext(2)).toPlainString() + "\u00A0km";
@@ -83,6 +112,28 @@ public class MetaController {
                 return BigDecimal.valueOf(distance).round(new MathContext(2)).toPlainString() + "\u00A0m";
             }
         }).orElse(UNKNOWN_DISTANCE);
+    }
+
+    @GetMapping("/meta/browse/{id}")
+    public String getPlaceMeta(@PathVariable String id) {
+        Optional<Place> optionalPlace = placeService.findPlaceBySlug(id);
+        if (optionalPlace.isPresent()) {
+            Place place = optionalPlace.get();
+            String title = String.format("Banners in %s", getPlaceName(place));
+            String url = siteUrls.getPlaceUrl(place.getSlug());
+            return new MetaBuilder() //
+                .add(OG_SITE_NAME, OG_SITE_NAME_BANNERGRESS) //
+                .add(OG_TYPE, OG_TYPE_ARTICLE) //
+                .add(OG_TITLE, title) //
+                .add(OG_URL, url) //
+                .toString();
+        } else {
+            return "";
+        }
+    }
+
+    private String getPlaceName(Place place) {
+        return placeService.getPlaceInformation(place, LANGUAGE).getFormattedAddress();
     }
 
     @GetMapping("/meta/**")
