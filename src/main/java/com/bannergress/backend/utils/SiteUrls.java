@@ -21,6 +21,10 @@ public class SiteUrls {
         return frontendPrefix + "/banner/" + URLEncoder.encode(slug, StandardCharsets.UTF_8);
     }
 
+    public String getPlaceUrl(String slug) {
+        return frontendPrefix + "/browse/" + URLEncoder.encode(slug, StandardCharsets.UTF_8);
+    }
+
     public String getPictureUrl(String hash) {
         return backendPrefix + "/bnrs/pictures/" + URLEncoder.encode(hash, StandardCharsets.UTF_8);
     }
