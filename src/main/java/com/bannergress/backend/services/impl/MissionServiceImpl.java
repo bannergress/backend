@@ -1,8 +1,10 @@
 package com.bannergress.backend.services.impl;
 
+import com.bannergress.backend.entities.Banner;
 import com.bannergress.backend.entities.Mission;
 import com.bannergress.backend.enums.MissionSortOrder;
 import com.bannergress.backend.exceptions.MissionAlreadyUsedException;
+import com.bannergress.backend.repositories.MissionRepository;
 import com.bannergress.backend.services.MissionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort.Direction;
@@ -22,6 +24,9 @@ import java.util.*;
 public class MissionServiceImpl implements MissionService {
     @Autowired
     private EntityManager entityManager;
+
+    @Autowired
+    private MissionRepository missionRepository;
 
     private Optional<String> latestRefreshableMission = Optional.empty();
 
@@ -62,18 +67,13 @@ public class MissionServiceImpl implements MissionService {
     @Override
     public void assertNotAlreadyUsedInBanners(Collection<String> ids, List<String> acceptableBannerSlugs)
         throws MissionAlreadyUsedException {
-        String acceptableBannerSlugsPart = acceptableBannerSlugs.isEmpty() ? ""
-            : " AND b.canonicalSlug NOT IN :acceptableBannerSlugs";
-        TypedQuery<Long> query = entityManager.createQuery("SELECT COUNT(m) FROM Mission m WHERE m.id IN :ids "
-            + "AND NOT EXISTS (SELECT 1 FROM Banner b WHERE b MEMBER OF m.banners" + acceptableBannerSlugsPart + ")",
-            Long.class);
-        query.setParameter("ids", ids);
-        if (!acceptableBannerSlugs.isEmpty()) {
-            query.setParameter("acceptableBannerSlugs", acceptableBannerSlugs);
-        }
-        long availableMissions = query.getSingleResult();
-        if (availableMissions < ids.size()) {
-            throw new MissionAlreadyUsedException();
+        for (String missionId : ids) {
+            Mission mission = missionRepository.getOne(missionId);
+            for (Banner banner : mission.getBanners()) {
+                if (!acceptableBannerSlugs.contains(banner.getCanonicalSlug())) {
+                    throw new MissionAlreadyUsedException();
+                }
+            }
         }
     }
 
