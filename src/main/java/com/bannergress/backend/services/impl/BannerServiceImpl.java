@@ -169,6 +169,13 @@ public class BannerServiceImpl implements BannerService {
         }
     }
 
+    private void preloadMissions(Collection<Mission> missions) {
+        if (!missions.isEmpty()) {
+            missionRepository
+                .findAll(MissionSpecifications.isInMissions(missions).and(MissionSpecifications.fetchDetails()));
+        }
+    }
+
     @Override
     public Optional<Banner> findBySlugWithDetails(String slug) {
         return bannerRepository.findOne(BannerSpecifications.hasSlug(slug).and(BannerSpecifications.fetchDetails()));
@@ -271,6 +278,8 @@ public class BannerServiceImpl implements BannerService {
 
     @Override
     public void calculateData(Banner banner) {
+        preloadMissions(banner.getMissions().values());
+
         Point startPoint = null;
         int numberOfSubmittedMissions = banner.getPlaceholders().size();
         int numberOfDisabledMissions = 0;

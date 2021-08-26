@@ -239,4 +239,12 @@ public class Mission {
     public void setLatestUpdateStatus(Instant latestUpdateStatus) {
         this.latestUpdateStatus = latestUpdateStatus;
     }
+
+    public List<Banner> getBanners() {
+        return banners;
+    }
+
+    public void setBanners(List<Banner> banners) {
+        this.banners = banners;
+    }
 }
