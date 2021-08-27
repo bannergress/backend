@@ -110,4 +110,13 @@ public interface BannerService {
      * @param UUID uuid.
      */
     void calculateBanner(UUID uuid);
+
+    /**
+     * Checks whether a banner is authored by a user, i.e. of the user is author of at least one mission of the banner.
+     *
+     * @param slug   Banner slug.
+     * @param userId User ID.
+     * @return <code>true</code>, if the user is an author of the banner.
+     */
+    boolean hasAuthor(String slug, String userId);
 }
