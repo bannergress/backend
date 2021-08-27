@@ -329,4 +329,10 @@ public class BannerServiceImpl implements BannerService {
         bannerService.calculateData(banner);
         pictureService.refresh(banner);
     }
+
+    @Override
+    public boolean hasAuthor(String slug, String author) {
+        return bannerRepository.count(BannerSpecifications.hasSlug(slug)
+            .and(BannerSpecifications.hasMissionWith(MissionSpecifications.hasAuthors(List.of(author))))) > 0;
+    }
 }

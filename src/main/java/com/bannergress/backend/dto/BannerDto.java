@@ -105,6 +105,11 @@ public class BannerDto {
      */
     public BannerListType listType;
 
+    /**
+     * Flag that indicates whether the user owns the banner.
+     */
+    public Boolean owner;
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) {

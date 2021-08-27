@@ -15,6 +15,8 @@ import com.bannergress.backend.services.BannerService;
 import com.bannergress.backend.services.BannerSettingsService;
 import com.bannergress.backend.services.PlaceService;
 import com.google.common.collect.Maps;
+import org.keycloak.KeycloakPrincipal;
+import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort.Direction;
@@ -40,9 +42,11 @@ import static com.bannergress.backend.utils.Spatial.getLongitude;
 /**
  * REST endpoint for banners.
  */
-@RestController
+@RestController("bannerController")
 @Validated
 public class BannerController {
+    private static final String AGENT_TOKEN_ATTRIBUTE = "agent";
+
     private static final Logger logger = LoggerFactory.getLogger(BannerController.class);
 
     private final BannerService bannerService;
@@ -132,7 +136,10 @@ public class BannerController {
     public ResponseEntity<BannerDto> get(@PathVariable final String id, Principal principal) {
         final Optional<Banner> banner = bannerService.findBySlugWithDetails(id);
         Optional<BannerDto> optionalBannerDto = banner.map(this::toDetails);
-        optionalBannerDto.ifPresent(bannerDto -> amendUserSettings(principal, List.of(bannerDto)));
+        optionalBannerDto.ifPresent(bannerDto -> {
+            amendUserSettings(principal, List.of(bannerDto));
+            amendOwner(principal, bannerDto);
+        });
         return ResponseEntity.of(optionalBannerDto);
     }
 
@@ -158,13 +165,29 @@ public class BannerController {
      * @return Updated banner data.
      * @throws MissionAlreadyUsedException If a mission is already used by another banner.
      */
-    @RolesAllowed(Roles.MANAGE_BANNERS)
+    @RolesAllowed(Roles.CREATE_BANNER)
+    @PreAuthorize("hasRole('manage-banners') or @bannerController.hasOwner(#id, #principal)")
     @PutMapping("/bnrs/{id}")
     public ResponseEntity<BannerDto> put(@PathVariable final String id, @Valid @RequestBody BannerDto banner,
                                          Principal principal)
         throws MissionAlreadyUsedException {
         bannerService.update(id, banner);
         return get(id, principal);
+    }
+
+    public boolean hasOwner(String id, Principal principal) {
+        return getAgent(principal).map(agent -> bannerService.hasAuthor(id, agent)).orElse(false);
+    }
+
+    private Optional<String> getAgent(Principal principal) {
+        if (principal instanceof KeycloakAuthenticationToken) {
+            return getAgent((Principal) ((KeycloakAuthenticationToken) principal).getPrincipal());
+        } else if (principal instanceof KeycloakPrincipal) {
+            return Optional.ofNullable((String) ((KeycloakPrincipal<?>) principal).getKeycloakSecurityContext()
+                .getToken().getOtherClaims().get(AGENT_TOKEN_ATTRIBUTE));
+        } else {
+            return Optional.empty();
+        }
     }
 
     /**
@@ -244,6 +267,12 @@ public class BannerController {
                 BannerListType listType = bannerListTypes.get(bannerDto.id);
                 bannerDto.listType = listType == BannerListType.none ? null : listType;
             }
+        }
+    }
+
+    private void amendOwner(Principal principal, BannerDto bannerDto) {
+        if (principal != null) {
+            bannerDto.owner = hasOwner(bannerDto.id, principal);
         }
     }
 }
