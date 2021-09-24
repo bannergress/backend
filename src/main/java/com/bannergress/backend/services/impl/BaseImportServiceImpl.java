@@ -24,6 +24,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public abstract class BaseImportServiceImpl {
+    private static final String AUTHOR_UNKNOWN = "unknown";
+
     @Autowired
     private AgentService agentService;
 
@@ -48,14 +50,13 @@ public abstract class BaseImportServiceImpl {
         return mission;
     }
 
-    /**
-     * @param mission
-     * @param newAuthor
-     * @param newAuthorFaction
-     */
     protected final void setMissionAuthor(Mission mission, String newAuthor, Faction newAuthorFaction) {
         if (newAuthor != null) {
-            mission.setAuthor(agentService.importAgent(newAuthor, newAuthorFaction));
+            if (newAuthor.equalsIgnoreCase(AUTHOR_UNKNOWN)) {
+                mission.setAuthor(null);
+            } else {
+                mission.setAuthor(agentService.importAgent(newAuthor, newAuthorFaction));
+            }
         }
     }
 

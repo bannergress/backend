@@ -53,7 +53,7 @@ public class TestIntelMissionDetailsDeserializer {
         ObjectMapper mapper = new ObjectMapper();
         IntelMissionDetails details = mapper.readValue(data, IntelMissionDetails.class);
         assertThat(details.authorFaction).isNull();
-        assertThat(details.authorName).isNull();
+        assertThat(details.authorName).isEqualTo("unknown");
     }
 
     @Test
