@@ -3,6 +3,7 @@ package com.bannergress.backend.controllers;
 import com.bannergress.backend.dto.UserDto;
 import com.bannergress.backend.entities.User;
 import com.bannergress.backend.exceptions.VerificationStateException;
+import com.bannergress.backend.services.AgentService;
 import com.bannergress.backend.services.UserMappingService;
 import com.bannergress.backend.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,9 @@ public class UserController {
     @Autowired
     private UserMappingService userMappingService;
 
+    @Autowired
+    private AgentService agentService;
+
     @GetMapping("/user")
     public UserDto get(Principal principal) {
         String userId = principal.getName();
@@ -35,7 +39,8 @@ public class UserController {
         UserDto result = new UserDto();
         result.verificationAgent = user.getVerificationAgent();
         result.verificationToken = user.getVerificationToken();
-        result.agent = userMappingService.getAgentName(userId).orElse(null);
+        result.agent = userMappingService.getAgentName(userId)
+            .map(agentName -> MissionController.toAgentSummary(agentService.importAgent(agentName, null))).orElse(null);
         return result;
     }
 

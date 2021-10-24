@@ -14,5 +14,5 @@ public class UserDto {
 
     public UUID verificationToken;
 
-    public String agent;
+    public NamedAgentDto agent;
 }
