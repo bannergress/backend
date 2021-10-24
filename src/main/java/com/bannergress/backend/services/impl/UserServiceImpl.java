@@ -58,4 +58,9 @@ public class UserServiceImpl implements UserService {
         }
         return agentName;
     }
+
+    @Override
+    public void unlink(String userId) {
+        userMappingService.setAgentName(userId, null);
+    }
 }
