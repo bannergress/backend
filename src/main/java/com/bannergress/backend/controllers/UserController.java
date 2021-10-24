@@ -52,4 +52,11 @@ public class UserController {
         userService.verify(userId);
         return get(principal);
     }
+
+    @PostMapping("/user/unlink")
+    public UserDto unlink(Principal principal) {
+        String userId = principal.getName();
+        userService.unlink(userId);
+        return get(principal);
+    }
 }

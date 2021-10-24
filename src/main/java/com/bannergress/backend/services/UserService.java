@@ -33,4 +33,11 @@ public interface UserService {
      * @throws VerificationStateException If the verification process hasn't been started.
      */
     public Optional<String> verify(String userId) throws VerificationStateException;
+
+    /**
+     * Unlinks a user from an agent name.
+     *
+     * @param userId user to unlink.
+     */
+    public void unlink(String userId);
 }
