@@ -8,6 +8,7 @@ import com.bannergress.backend.entities.MissionStep;
 import com.bannergress.backend.entities.Place;
 import com.bannergress.backend.enums.BannerListType;
 import com.bannergress.backend.enums.BannerSortOrder;
+import com.bannergress.backend.enums.MissionStatus;
 import com.bannergress.backend.exceptions.MissionAlreadyUsedException;
 import com.bannergress.backend.repositories.BannerRepository;
 import com.bannergress.backend.repositories.BannerSpecifications;
@@ -24,6 +25,7 @@ import com.bannergress.backend.utils.Spatial;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -334,5 +336,30 @@ public class BannerServiceImpl implements BannerService {
     public boolean hasAuthor(String slug, String author) {
         return bannerRepository.count(BannerSpecifications.hasSlug(slug)
             .and(BannerSpecifications.hasMissionWith(MissionSpecifications.hasAuthors(List.of(author))))) > 0;
+    }
+
+    @Override
+    public boolean isProbablyMaliciousEdit(String slug, BannerDto bannerDto, String userId) {
+        Banner banner = bannerRepository.findOne(BannerSpecifications.hasSlug(slug)).get();
+        Set<Mission> oldMissions = Set.copyOf(banner.getMissions().values());
+        Set<Mission> newMissions = Set.copyOf(actualMissionReferences(bannerDto).values());
+        // An edit is categorized as probably malicious if the last remaining mission of the editor is removed
+        boolean noOwnMissionsRemaining = newMissions.stream()
+            .noneMatch(mission -> mission.getAuthor() != null && mission.getAuthor().getName().equals(userId));
+        // An edit is categorized as probably malicious if the number of published missions is reduced
+        Stream<Mission> oldPublishedMissions = oldMissions.stream()
+            .filter(mission -> mission.getStatus() == MissionStatus.published);
+        Stream<Mission> newPublishedMissions = newMissions.stream()
+            .filter(mission -> mission.getStatus() == MissionStatus.published);
+        boolean publishedMissionCountReduced = oldPublishedMissions.count() > newPublishedMissions.count();
+        return noOwnMissionsRemaining || publishedMissionCountReduced;
+    }
+
+    @Override
+    public boolean isMistakeEdit(String slug, BannerDto bannerDto) {
+        Banner banner = bannerRepository.findOne(BannerSpecifications.hasSlug(slug)).get();
+        Set<Mission> oldMissions = Set.copyOf(banner.getMissions().values());
+        Set<Mission> newMissions = Set.copyOf(actualMissionReferences(bannerDto).values());
+        return Sets.intersection(oldMissions, newMissions).isEmpty();
     }
 }
