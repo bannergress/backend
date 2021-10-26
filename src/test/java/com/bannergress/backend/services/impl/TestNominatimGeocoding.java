@@ -2,6 +2,7 @@ package com.bannergress.backend.services.impl;
 
 import com.bannergress.backend.entities.Place;
 import com.bannergress.backend.services.GeocodingService;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import javax.persistence.EntityManager;
@@ -16,6 +17,7 @@ import static org.mockito.Mockito.when;
 
 public class TestNominatimGeocoding {
     @Test
+    @Disabled
     void testReadNominatim() throws IOException {
         final EntityManager entityManager = mock(EntityManager.class);
         when(entityManager.find(any(), any())).thenReturn(null);
