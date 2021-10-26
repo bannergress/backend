@@ -54,6 +54,8 @@ public class UserServiceImpl implements UserService {
         if (agentName.isPresent()) {
             userMappingService.setAgentName(userId, agentName.get());
             clearClaim(userId);
+        } else {
+            throw new VerificationStateException();
         }
         return agentName;
     }
