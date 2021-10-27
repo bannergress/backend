@@ -119,4 +119,23 @@ public interface BannerService {
      * @return <code>true</code>, if the user is an author of the banner.
      */
     boolean hasAuthor(String slug, String userId);
+
+    /**
+     * Checks whether an edit is probably malicious.
+     *
+     * @param slug      Banner slug.
+     * @param bannerDto Banner DTO.
+     * @param userId User ID of the editor.
+     * @return <code>true</code> if the edit is probably malicious.
+     */
+    boolean isProbablyMaliciousEdit(String slug, BannerDto bannerDto, String userId);
+
+    /**
+     * Checks whether an edit is a mistake.
+     *
+     * @param slug      Banner slug.
+     * @param bannerDto Banner DTO.
+     * @return <code>true</code> if the edit is a mistake.
+     */
+    boolean isMistakeEdit(String slug, BannerDto bannerDto);
 }

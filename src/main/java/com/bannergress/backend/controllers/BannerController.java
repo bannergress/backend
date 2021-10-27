@@ -25,8 +25,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.annotation.security.RolesAllowed;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 
@@ -166,11 +168,17 @@ public class BannerController {
      * @throws MissionAlreadyUsedException If a mission is already used by another banner.
      */
     @RolesAllowed(Roles.CREATE_BANNER)
-    @PreAuthorize("hasRole('manage-banners') or @bannerController.hasOwner(#id, #principal)")
+    @PreAuthorize("hasRole('" + Roles.MANAGE_BANNERS + "') or @bannerController.hasOwner(#id, #principal)")
     @PutMapping("/bnrs/{id}")
     public ResponseEntity<BannerDto> put(@PathVariable final String id, @Valid @RequestBody BannerDto banner,
-                                         Principal principal)
+                                         Principal principal, HttpServletRequest request)
         throws MissionAlreadyUsedException {
+        if (bannerService.isMistakeEdit(id, banner)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        } else if (!request.isUserInRole(Roles.MANAGE_BANNERS)
+            && bannerService.isProbablyMaliciousEdit(id, banner, getAgent(principal).get())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
         bannerService.update(id, banner);
         return get(id, principal);
     }
