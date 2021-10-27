@@ -53,8 +53,9 @@ public class UserServiceImpl implements UserService {
             user.getVerificationToken());
         if (agentName.isPresent()) {
             userMappingService.setAgentName(userId, agentName.get());
-            user.setVerificationAgent(null);
-            user.setVerificationToken(null);
+            clearClaim(userId);
+        } else {
+            throw new VerificationStateException();
         }
         return agentName;
     }
@@ -62,5 +63,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public void unlink(String userId) {
         userMappingService.setAgentName(userId, null);
+    }
+
+    @Override
+    public void clearClaim(String userId) {
+        User user = getOrCreate(userId);
+        user.setVerificationAgent(null);
+        user.setVerificationToken(null);
     }
 }

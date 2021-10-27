@@ -40,4 +40,11 @@ public interface UserService {
      * @param userId user to unlink.
      */
     public void unlink(String userId);
+
+    /**
+     * Clears a claim for an agent name to a user ID.
+     *
+     * @param userId User ID.
+     */
+    public void clearClaim(String userId);
 }
