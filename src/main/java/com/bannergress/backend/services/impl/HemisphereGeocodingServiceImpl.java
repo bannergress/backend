@@ -14,7 +14,7 @@ import java.util.Optional;
  * after that in Western/Eastern Hemisphere.
  */
 @Service
-@Profile("!googlemaps & !nominatim")
+@Profile("!googlemaps")
 public class HemisphereGeocodingServiceImpl implements GeocodingService {
     @Override
     public Optional<Place> getPlaceHierarchy(double latitude, double longitude) {
