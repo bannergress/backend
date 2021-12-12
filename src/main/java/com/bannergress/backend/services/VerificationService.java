@@ -1,6 +1,7 @@
 package com.bannergress.backend.services;
 
-import java.util.Optional;
+import com.bannergress.backend.exceptions.VerificationFailedException;
+
 import java.util.UUID;
 
 /**
@@ -12,7 +13,8 @@ public interface VerificationService {
      *
      * @param agent             Agent name to verify control.
      * @param verificationToken Token for agent verification.
-     * @return If the verification was successful: agent name, corrected for case sensitivity.
+     * @return agent name, corrected for case sensitivity.
+     * @throws VerificationFailedException If the control over the agent name could not be established.
      */
-    Optional<String> verify(String agent, UUID verificationToken);
+    String verify(String agent, UUID verificationToken) throws VerificationFailedException;
 }

@@ -1,6 +1,7 @@
 package com.bannergress.backend.services.impl;
 
 import com.bannergress.backend.entities.User;
+import com.bannergress.backend.exceptions.VerificationFailedException;
 import com.bannergress.backend.exceptions.VerificationStateException;
 import com.bannergress.backend.repositories.UserRepository;
 import com.bannergress.backend.services.UserMappingService;
@@ -44,20 +45,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<String> verify(String userId) throws VerificationStateException {
+    public void verify(String userId) throws VerificationStateException, VerificationFailedException {
         User user = getOrCreate(userId);
         if (user.getVerificationAgent() == null || user.getVerificationToken() == null) {
             throw new VerificationStateException();
         }
-        Optional<String> agentName = verificationService.verify(user.getVerificationAgent(),
-            user.getVerificationToken());
-        if (agentName.isPresent()) {
-            userMappingService.setAgentName(userId, agentName.get());
-            clearClaim(userId);
-        } else {
-            throw new VerificationStateException();
-        }
-        return agentName;
+        String agentName = verificationService.verify(user.getVerificationAgent(), user.getVerificationToken());
+        userMappingService.setAgentName(userId, agentName);
+        clearClaim(userId);
     }
 
     @Override
