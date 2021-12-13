@@ -1,7 +1,6 @@
 package com.bannergress.backend.services.impl;
 
 import com.bannergress.backend.dto.RSS;
-import com.bannergress.backend.exceptions.VerificationFailedException;
 import com.bannergress.backend.services.VerificationService;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
@@ -9,8 +8,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -30,10 +27,9 @@ public class CommunityForumVerificationServiceImpl implements VerificationServic
     }
 
     @Override
-    @Retryable(include = VerificationFailedException.class, maxAttemptsExpression = "${verification.maxAttempts:3}", backoff = @Backoff(delayExpression = "${verification.backoff:60000}"))
-    public String verify(String agent, UUID verificationToken) throws VerificationFailedException {
+    public Optional<String> verify(String agent, UUID verificationToken) {
         RSS rss = loadRssFeed();
-        return verify(agent, verificationToken, rss).orElseThrow(VerificationFailedException::new);
+        return verify(agent, verificationToken, rss);
     }
 
     private RSS loadRssFeed() {
