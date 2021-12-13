@@ -2,7 +2,6 @@ package com.bannergress.backend.controllers;
 
 import com.bannergress.backend.dto.UserDto;
 import com.bannergress.backend.entities.User;
-import com.bannergress.backend.exceptions.VerificationFailedException;
 import com.bannergress.backend.exceptions.VerificationStateException;
 import com.bannergress.backend.services.AgentService;
 import com.bannergress.backend.services.UserMappingService;
@@ -57,7 +56,7 @@ public class UserController {
     }
 
     @PostMapping("/user/verify")
-    public UserDto verify(Principal principal) throws VerificationStateException, VerificationFailedException {
+    public UserDto verify(Principal principal) throws VerificationStateException {
         String userId = principal.getName();
         userService.verify(userId);
         return get(principal);

@@ -1,7 +1,6 @@
 package com.bannergress.backend.services.impl;
 
 import com.bannergress.backend.dto.RSS;
-import com.bannergress.backend.exceptions.VerificationFailedException;
 import com.bannergress.backend.services.VerificationService;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
@@ -9,8 +8,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -23,21 +21,24 @@ public class CommunityForumVerificationServiceImpl implements VerificationServic
 
     private final String url;
 
+    private final String cacheBypassCookieHeader;
+
     public CommunityForumVerificationServiceImpl(
-        @Value(value = "${verification.url:https://community.ingress.com/en/activity/feed.rss}") String url) {
+        @Value(value = "${verification.url:https://community.ingress.com/en/activity/feed.rss}") String url,
+        @Value(value = "${verification.cookie:vfo_s=dummy}") String cacheBypassCookieHeader) {
         this.client = new OkHttpClient.Builder().cache(null).build();
         this.url = url;
+        this.cacheBypassCookieHeader = cacheBypassCookieHeader;
     }
 
     @Override
-    @Retryable(include = VerificationFailedException.class, maxAttemptsExpression = "${verification.maxAttempts:3}", backoff = @Backoff(delayExpression = "${verification.backoff:60000}"))
-    public String verify(String agent, UUID verificationToken) throws VerificationFailedException {
+    public Optional<String> verify(String agent, UUID verificationToken) {
         RSS rss = loadRssFeed();
-        return verify(agent, verificationToken, rss).orElseThrow(VerificationFailedException::new);
+        return verify(agent, verificationToken, rss);
     }
 
     private RSS loadRssFeed() {
-        Request request = new Request.Builder().url(url).build();
+        Request request = new Request.Builder().url(url).header(HttpHeaders.COOKIE, cacheBypassCookieHeader).build();
         try (Response response = client.newCall(request).execute()) {
             XmlMapper xmlMapper = new XmlMapper();
             xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);

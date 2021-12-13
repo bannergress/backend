@@ -4,7 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
- * Exception for when a verification fails because the user has not started the verification process yet.
+ * Exception for when a verification fails.
  */
 @ResponseStatus(HttpStatus.PRECONDITION_FAILED)
 public class VerificationStateException extends Exception {
