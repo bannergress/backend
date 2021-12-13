@@ -12,7 +12,7 @@ public class TestVerificationServiceImpl {
     @Test
     public void testCompletion() {
         VerificationService verificationService = new CommunityForumVerificationServiceImpl(
-            "https://community.ingress.com/en/activity/feed.rss");
+            "https://community.ingress.com/en/activity/feed.rss", "vfo_s=dummy");
         Optional<String> agent = verificationService.verify("someone", UUID.randomUUID());
         assertThat(agent).isEmpty();
     }

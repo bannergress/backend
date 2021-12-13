@@ -8,6 +8,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -20,10 +21,14 @@ public class CommunityForumVerificationServiceImpl implements VerificationServic
 
     private final String url;
 
+    private final String cacheBypassCookieHeader;
+
     public CommunityForumVerificationServiceImpl(
-        @Value(value = "${verification.url:https://community.ingress.com/en/activity/feed.rss}") String url) {
+        @Value(value = "${verification.url:https://community.ingress.com/en/activity/feed.rss}") String url,
+        @Value(value = "${verification.cookie:vfo_s=dummy}") String cacheBypassCookieHeader) {
         this.client = new OkHttpClient.Builder().cache(null).build();
         this.url = url;
+        this.cacheBypassCookieHeader = cacheBypassCookieHeader;
     }
 
     @Override
@@ -33,7 +38,7 @@ public class CommunityForumVerificationServiceImpl implements VerificationServic
     }
 
     private RSS loadRssFeed() {
-        Request request = new Request.Builder().url(url).build();
+        Request request = new Request.Builder().url(url).header(HttpHeaders.COOKIE, cacheBypassCookieHeader).build();
         try (Response response = client.newCall(request).execute()) {
             XmlMapper xmlMapper = new XmlMapper();
             xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
