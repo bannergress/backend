@@ -35,9 +35,9 @@ public class NamedAgent {
     private Faction faction;
 
     /**
-     * Missions from the author.
+     * Missions of the agent.
      */
-    @OneToMany(mappedBy = "author")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "author")
     private Set<Mission> missions;
 
     public String getName() {
@@ -55,11 +55,11 @@ public class NamedAgent {
     public void setFaction(Faction faction) {
         this.faction = faction;
     }
-
+    
     public Set<Mission> getMissions() {
         return missions;
     }
-
+    
     public void setMissions(Set<Mission> missions) {
         this.missions = missions;
     }
