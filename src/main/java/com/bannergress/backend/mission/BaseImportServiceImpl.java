@@ -2,9 +2,11 @@ package com.bannergress.backend.mission;
 
 import com.bannergress.backend.agent.AgentService;
 import com.bannergress.backend.agent.Faction;
+import com.bannergress.backend.agent.NamedAgent;
 import com.bannergress.backend.banner.Banner;
 import com.bannergress.backend.banner.BannerService;
 import com.bannergress.backend.banner.picture.BannerPictureService;
+import com.bannergress.backend.mission.queue.MissionQueueService;
 import com.bannergress.backend.mission.step.MissionStep;
 import com.bannergress.backend.mission.step.Objective;
 import com.bannergress.backend.poi.POI;
@@ -36,6 +38,9 @@ public abstract class BaseImportServiceImpl {
     private BannerPictureService bannerPictureService;
 
     @Autowired
+    private MissionQueueService missionQueueService;
+
+    @Autowired
     protected EntityManager entityManager;
 
     @Autowired
@@ -51,11 +56,22 @@ public abstract class BaseImportServiceImpl {
     }
 
     protected final void setMissionAuthor(Mission mission, String newAuthor, Faction newAuthorFaction) {
+        NamedAgent oldAuthorAgent = mission.getAuthor();
         if (newAuthor != null) {
+            missionQueueService.satisfyUpdateAuthor(mission);
+            NamedAgent newAuthorAgent;
             if (newAuthor.equalsIgnoreCase(AUTHOR_UNKNOWN)) {
-                mission.setAuthor(null);
+                newAuthorAgent = null;
             } else {
-                mission.setAuthor(agentService.importAgent(newAuthor, newAuthorFaction));
+                newAuthorAgent = agentService.importAgent(newAuthor, newAuthorFaction);
+            }
+            mission.setAuthor(newAuthorAgent);
+            if (oldAuthorAgent != null) {
+                for (Mission otherMission : oldAuthorAgent.getMissions()) {
+                    if (newAuthorAgent == null || !newAuthorAgent.getName().equals(oldAuthorAgent.getName())) {
+                        missionQueueService.queueUpdateAuthor(otherMission);
+                    }
+                }
             }
         }
     }
@@ -81,14 +97,26 @@ public abstract class BaseImportServiceImpl {
 
     protected final void setMissionStatus(Mission mission, MissionStatus newStatus, RecalculationTracker tracker) {
         boolean setLatestUpdate = newStatus != null;
-        newStatus = newStatus == null ? mission.getStatus() : newStatus;
+        MissionStatus oldStatus = mission.getStatus();
+        if (newStatus == null) {
+            newStatus = oldStatus;
+        } else {
+            missionQueueService.satisfyUpdateStatus(mission);
+        }
         if (newStatus == MissionStatus.published && isOfflineBecauseNoStepAvailable(mission)) {
             newStatus = MissionStatus.disabled;
         }
-        if (newStatus != mission.getStatus()) {
+        if (newStatus != oldStatus) {
             setLatestUpdate = true;
             mission.setStatus(newStatus);
             tracker.add(mission);
+            for (Banner banner : mission.getBanners()) {
+                for (Mission otherMission : banner.getMissions().values()) {
+                    if (otherMission.getStatus() == oldStatus) {
+                        missionQueueService.queueUpdateStatus(mission);
+                    }
+                }
+            }
         }
         if (setLatestUpdate) {
             mission.setLatestUpdateStatus(Instant.now());

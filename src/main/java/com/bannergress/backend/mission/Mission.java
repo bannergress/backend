@@ -131,6 +131,30 @@ public class Mission {
     private Instant latestUpdateStatus;
 
     /**
+     * Timestamp when an update request to the mission status was queued.<br/>
+     * <ul>
+     * <li>Timestamp in the past to indicate that that a request is queued.</li>
+     * <li>Timestamp in the future to indicate that a request is currently dequeued and will automatically re-enter the queue at the specified timestamp.</li>
+     * <li><code>null</code> to indicate that no request is queued.</li>
+     * </ul>
+     */
+    @Column(name = "status_update_queued_since", nullable = true, columnDefinition = "timestamp with time zone")
+    @NotAudited
+    private Instant statusUpdateQueuedSince;
+
+    /**
+     * Timestamp when an update request to the mission author was queued.<br/>
+     * <ul>
+     * <li>Timestamp in the past to indicate that that a request is queued.</li>
+     * <li>Timestamp in the future to indicate that a request is currently dequeued and will automatically re-enter the queue at the specified timestamp.</li>
+     * <li><code>null</code> to indicate that no request is queued.</li>
+     * </ul>
+     */
+    @Column(name = "author_update_queued_since", nullable = true, columnDefinition = "timestamp with time zone")
+    @NotAudited
+    private Instant authorUpdateQueuedSince;
+
+    /**
      * List of banners in which the mission is included.
      */
     @ManyToMany(mappedBy = "missions")
@@ -247,6 +271,22 @@ public class Mission {
 
     public void setLatestUpdateStatus(Instant latestUpdateStatus) {
         this.latestUpdateStatus = latestUpdateStatus;
+    }
+
+    public Instant getAuthorUpdateQueuedSince() {
+        return authorUpdateQueuedSince;
+    }
+
+    public void setAuthorUpdateQueuedSince(Instant authorUpdateQueuedSince) {
+        this.authorUpdateQueuedSince = authorUpdateQueuedSince;
+    }
+
+    public Instant getStatusUpdateQueuedSince() {
+        return statusUpdateQueuedSince;
+    }
+
+    public void setStatusUpdateQueuedSince(Instant statusUpdateQueuedSince) {
+        this.statusUpdateQueuedSince = statusUpdateQueuedSince;
     }
 
     public List<Banner> getBanners() {
