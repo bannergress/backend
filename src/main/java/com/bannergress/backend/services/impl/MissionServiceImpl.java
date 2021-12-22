@@ -68,7 +68,7 @@ public class MissionServiceImpl implements MissionService {
     public void assertNotAlreadyUsedInBanners(Collection<String> ids, List<String> acceptableBannerSlugs)
         throws MissionAlreadyUsedException {
         for (String missionId : ids) {
-            Mission mission = missionRepository.getOne(missionId);
+            Mission mission = missionRepository.getById(missionId);
             for (Banner banner : mission.getBanners()) {
                 if (!acceptableBannerSlugs.contains(banner.getCanonicalSlug())) {
                     throw new MissionAlreadyUsedException();
