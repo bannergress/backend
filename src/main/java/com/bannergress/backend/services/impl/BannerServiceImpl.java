@@ -47,11 +47,11 @@ import java.util.stream.Stream;
 @Transactional
 public class BannerServiceImpl implements BannerService {
     private static final List<String> OFFICIAL_MISSION_AUTHORS = ImmutableList.of( //
-        "MissionByNia", //
-        "MissionsByNIA", //
+        "MissionbyNIA", //
+        "MissionsbyNIA", //
         "MissionDaysNia", //
         "MissionsNIA", //
-        "MDNia2", //
+        "MDNIA2", //
         "MDNIA", //
         "MDNIA2020" //
     );
