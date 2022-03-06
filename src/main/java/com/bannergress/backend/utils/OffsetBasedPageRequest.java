@@ -57,4 +57,9 @@ public class OffsetBasedPageRequest implements Pageable {
     public boolean hasPrevious() {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public Pageable withPage(int pageNumber) {
+        throw new UnsupportedOperationException();
+    }
 }

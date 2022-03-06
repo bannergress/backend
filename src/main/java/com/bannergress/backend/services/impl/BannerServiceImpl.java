@@ -69,9 +69,6 @@ public class BannerServiceImpl implements BannerService {
     private PlaceService placesService;
 
     @Autowired
-    private BannerService bannerService;
-
-    @Autowired
     private BannerPictureService pictureService;
 
     @Autowired
@@ -228,7 +225,7 @@ public class BannerServiceImpl implements BannerService {
     }
 
     private Map<Integer, Mission> actualMissionReferences(BannerDto bannerDto) {
-        return Maps.transformValues(actualMissions(bannerDto), missionDto -> missionRepository.getOne(missionDto.id));
+        return Maps.transformValues(actualMissions(bannerDto), missionDto -> missionRepository.getById(missionDto.id));
     }
 
     private static Collection<String> missionIds(BannerDto bannerDto) {
@@ -264,7 +261,7 @@ public class BannerServiceImpl implements BannerService {
         banner.getPlaceholders().clear();
         banner.getPlaceholders().addAll(placeHolderMissions(bannerDto).keySet());
         calculateSlug(banner);
-        bannerService.calculateData(banner);
+        calculateData(banner);
         pictureService.refresh(banner);
     }
 
@@ -328,7 +325,7 @@ public class BannerServiceImpl implements BannerService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void calculateBanner(UUID uuid) {
         Banner banner = bannerRepository.findById(uuid).get();
-        bannerService.calculateData(banner);
+        calculateData(banner);
         pictureService.refresh(banner);
     }
 

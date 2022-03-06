@@ -20,10 +20,4 @@ public class ErrorStatusController implements ErrorController {
         return errorCode == null ? ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()
             : ResponseEntity.status(errorCode).build();
     }
-
-    @Override
-    @Deprecated
-    public String getErrorPath() {
-        return null;
-    }
 }
