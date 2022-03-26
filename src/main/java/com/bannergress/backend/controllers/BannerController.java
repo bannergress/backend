@@ -279,6 +279,8 @@ public class BannerController {
         dto.missions = Maps.transformValues(banner.getMissionsAndPlaceholders(), this::toMissionOrPlaceholder);
         dto.type = banner.getType();
         dto.description = banner.getDescription();
+        dto.warning = banner.getWarning();
+        dto.plannedOfflineDate = banner.getPlannedOfflineDate();
         return dto;
     }
 

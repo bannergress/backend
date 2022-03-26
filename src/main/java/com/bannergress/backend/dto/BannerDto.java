@@ -13,6 +13,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.Objects;
 
@@ -122,6 +123,16 @@ public class BannerDto {
      */
     @Hidden
     public Boolean owner;
+
+    /**
+     * Warning text.
+     */
+    public String warning;
+
+    /**
+     * Planned date when the banner will be put offline.
+     */
+    public LocalDate plannedOfflineDate;
 
     @Override
     public boolean equals(final Object o) {
