@@ -38,3 +38,4 @@ out/
 /application.yml
 /*.db
 caches
+/searchindex/
