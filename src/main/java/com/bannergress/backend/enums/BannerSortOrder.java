@@ -17,5 +17,7 @@ public enum BannerSortOrder {
     /** Order by {@link BannerSettings#listAdded}. */
     listAdded,
     /** Order by distance between {@link Banner#getStartPoint} and a given point. */
-    proximityStartPoint
+    proximityStartPoint,
+    /** Order by relevance of the search result. */
+    relevance
 }
