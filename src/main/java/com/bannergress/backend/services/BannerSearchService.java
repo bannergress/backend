@@ -42,4 +42,7 @@ public interface BannerSearchService {
                       Optional<Collection<BannerListType>> listTypes, Optional<String> userId, Optional<Boolean> online,
                       Optional<BannerSortOrder> orderBy, Direction orderDirection, Optional<Double> proximityLatitude,
                       Optional<Double> proximityLongitude, int offset, int limit);
+
+    /** Updates the search index. */
+    void updateIndex();
 }

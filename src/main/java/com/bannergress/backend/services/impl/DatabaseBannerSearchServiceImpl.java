@@ -113,4 +113,9 @@ public class DatabaseBannerSearchServiceImpl extends BaseBannerSearchServiceImpl
         preloadPlaceInformation(banners);
         return banners;
     }
+
+    @Override
+    public void updateIndex() {
+        // Nothing to do, database index is always up-to-date
+    }
 }

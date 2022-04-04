@@ -1,6 +1,6 @@
 package com.bannergress.backend.services.impl;
 
-import com.bannergress.backend.entities.*;
+import com.bannergress.backend.entities.Banner;
 import com.bannergress.backend.enums.BannerListType;
 import com.bannergress.backend.enums.BannerSortOrder;
 import com.bannergress.backend.services.BannerSearchService;
@@ -165,6 +165,15 @@ public class LuceneBannerSearchServiceImpl extends BaseBannerSearchServiceImpl {
                     f2.should(f.match().field(FIELD_SETTINGS_LIST_TYPE).matching(listType));
                 }
             }));
+        }
+    }
+
+    @Override
+    public void updateIndex() {
+        try {
+            Search.session(entityManager).massIndexer(Banner.class).startAndWait();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 }

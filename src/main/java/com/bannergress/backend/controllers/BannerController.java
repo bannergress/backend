@@ -229,6 +229,12 @@ public class BannerController {
         pool.shutdown();
     }
 
+    @RolesAllowed(Roles.MANAGE_BANNERS)
+    @PostMapping("/bnrs/reindex")
+    public void reindexAllBanners() {
+        bannerSearchService.updateIndex();
+    }
+
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/bnrs/{id}/settings")
     public void postSettings(@PathVariable final String id, @Valid @RequestBody BannerSettingsDto settings,
