@@ -8,6 +8,9 @@ import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.IndexedEmbedded;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 
 import javax.persistence.*;
 
@@ -31,18 +34,21 @@ public class Mission {
      */
     @Id
     @Column(name = "id")
+    @KeywordField
     private String id;
 
     /**
      * Title.
      */
     @Column(name = "title", nullable = false)
+    @FullTextField
     private String title;
 
     /**
      * Description.
      */
     @Column(name = "description", nullable = true)
+    @FullTextField
     private String description;
 
     /**
@@ -56,6 +62,7 @@ public class Mission {
      */
     @ManyToOne(optional = true)
     @JoinColumn(name = "author")
+    @IndexedEmbedded
     private NamedAgent author;
 
     /**

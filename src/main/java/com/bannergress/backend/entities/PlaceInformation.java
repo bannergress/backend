@@ -2,6 +2,7 @@ package com.bannergress.backend.entities;
 
 import com.bannergress.backend.utils.PojoBuilder;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
 
 import javax.persistence.*;
 
@@ -39,6 +40,7 @@ public class PlaceInformation {
      * Long name.
      */
     @Column(name = "long_name", nullable = false)
+    @FullTextField
     private String longName;
 
     /**
@@ -51,6 +53,7 @@ public class PlaceInformation {
      * Formatted address.
      */
     @Column(name = "formatted_address", nullable = false)
+    @FullTextField
     private String formattedAddress;
 
     public UUID getUuid() {

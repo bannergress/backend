@@ -27,6 +27,8 @@ dependencies {
 	implementation 'org.keycloak:keycloak-spring-boot-starter'
 	implementation "org.hibernate:hibernate-envers"
   implementation 'org.hibernate:hibernate-spatial'
+  implementation "org.hibernate.search:hibernate-search-mapper-orm:${hibernate_search_version}"
+  implementation "org.hibernate.search:hibernate-search-backend-lucene:${hibernate_search_version}"
   implementation 'org.flywaydb:flyway-core'
 	implementation "com.google.guava:guava:${guava_version}"
 	implementation "com.google.maps:google-maps-services:${google_maps_services_version}"

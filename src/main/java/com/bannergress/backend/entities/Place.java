@@ -4,11 +4,14 @@ import com.bannergress.backend.enums.PlaceType;
 import com.bannergress.backend.utils.PojoBuilder;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
 import org.hibernate.annotations.NaturalId;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.IndexedEmbedded;
 
 import javax.persistence.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Represents a Google Maps Place.
@@ -29,6 +32,7 @@ public class Place {
      */
     @NaturalId
     @Column(name = "slug", nullable = false)
+    @GenericField
     private String slug;
 
     /**
@@ -45,6 +49,7 @@ public class Place {
      * Language-specific information.
      */
     @OneToMany(mappedBy = "place", cascade = CascadeType.ALL, orphanRemoval = true)
+    @IndexedEmbedded
     private List<PlaceInformation> information = new ArrayList<>();
 
     /**
@@ -80,6 +85,12 @@ public class Place {
     @ManyToOne(optional = true)
     @JoinColumn(name = "parent_place")
     private Place parentPlace;
+
+    /**
+     * Banners starting at the place.
+     */
+    @ManyToMany(mappedBy = "startPlaces")
+    private Set<Banner> banners;
 
     public String getId() {
         return id;
@@ -167,5 +178,13 @@ public class Place {
 
     public void setParentPlace(Place parentPlace) {
         this.parentPlace = parentPlace;
+    }
+
+    public Set<Banner> getBanners() {
+        return banners;
+    }
+
+    public void setBanners(Set<Banner> banners) {
+        this.banners = banners;
     }
 }

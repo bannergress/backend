@@ -1,6 +1,7 @@
 package com.bannergress.backend.entities;
 
 import com.bannergress.backend.enums.BannerType;
+import com.bannergress.backend.utils.PointBridge;
 import com.bannergress.backend.utils.PojoBuilder;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Maps;
@@ -11,6 +12,14 @@ import org.hibernate.envers.AuditJoinTable;
 import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
+import org.hibernate.search.engine.backend.types.ObjectStructure;
+import org.hibernate.search.engine.backend.types.Searchable;
+import org.hibernate.search.engine.backend.types.Sortable;
+import org.hibernate.search.mapper.pojo.bridge.mapping.annotation.ValueBridgeRef;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.IndexedEmbedded;
 import org.locationtech.jts.geom.Point;
 
 import javax.persistence.*;
@@ -26,6 +35,7 @@ import java.util.*;
 @Audited
 @AuditTable("banner_audit")
 @GeneratePojoBuilder(withBuilderInterface = PojoBuilder.class)
+@Indexed
 public class Banner {
     /**
      * Internal ID without further meaning.
@@ -33,6 +43,7 @@ public class Banner {
     @Id
     @Column(name = "uuid", columnDefinition = "uuid")
     @GeneratedValue
+    @GenericField(searchable = Searchable.NO, sortable = Sortable.YES)
     private UUID uuid;
 
     /**
@@ -56,12 +67,15 @@ public class Banner {
      * Title.
      */
     @Column(name = "title", nullable = false)
+    @FullTextField
+    @GenericField(name = "titleSort", searchable = Searchable.NO, sortable = Sortable.YES)
     private String title;
 
     /**
      * Description.
      */
     @Column(name = "description", nullable = true)
+    @FullTextField
     private String description;
 
     /** Width of the banner in missions. */
@@ -73,6 +87,7 @@ public class Banner {
      */
     @Column(name = "number_of_missions", nullable = false)
     @NotAudited
+    @GenericField(searchable = Searchable.NO, sortable = Sortable.YES)
     private int numberOfMissions;
 
     /**
@@ -100,6 +115,7 @@ public class Banner {
     @MapKeyColumn(name = "position")
     @AuditJoinTable(name = "banner_mission_audit")
     @SortNatural
+    @IndexedEmbedded
     private SortedMap<Integer, Mission> missions = new TreeMap<>();
 
     /**
@@ -118,6 +134,7 @@ public class Banner {
     @Basic
     @Column(name = "start_point", nullable = true)
     @NotAudited
+    @GenericField(searchable = Searchable.YES, sortable = Sortable.YES, valueBridge = @ValueBridgeRef(type = PointBridge.class))
     private Point startPoint;
 
     /**
@@ -125,6 +142,7 @@ public class Banner {
      */
     @Column(name = "length_meters", nullable = true)
     @NotAudited
+    @GenericField(searchable = Searchable.NO, sortable = Sortable.YES)
     private Integer lengthMeters;
 
     /**
@@ -132,6 +150,7 @@ public class Banner {
      */
     @Column(name = "online", nullable = false)
     @NotAudited
+    @GenericField(searchable = Searchable.YES, sortable = Sortable.NO)
     private boolean online;
 
     /**
@@ -150,6 +169,7 @@ public class Banner {
     @JoinTable(name = "banner_start_place", joinColumns = {@JoinColumn(name = "banner")}, inverseJoinColumns = {
         @JoinColumn(name = "place")})
     @NotAudited
+    @IndexedEmbedded
     private Set<Place> startPlaces = new HashSet<>();
 
     /**
@@ -157,6 +177,7 @@ public class Banner {
      */
     @Column(name = "created", nullable = false)
     @NotAudited
+    @GenericField(searchable = Searchable.NO, sortable = Sortable.YES)
     private Instant created;
 
     /**
@@ -171,6 +192,7 @@ public class Banner {
      */
     @OneToMany(mappedBy = "banner", cascade = CascadeType.ALL)
     @NotAudited
+    @IndexedEmbedded(structure = ObjectStructure.NESTED)
     private List<BannerSettings> settings;
 
     public UUID getUuid() {

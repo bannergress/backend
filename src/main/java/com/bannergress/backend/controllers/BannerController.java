@@ -11,6 +11,7 @@ import com.bannergress.backend.enums.BannerListType;
 import com.bannergress.backend.enums.BannerSortOrder;
 import com.bannergress.backend.exceptions.MissionAlreadyUsedException;
 import com.bannergress.backend.security.Roles;
+import com.bannergress.backend.services.BannerSearchService;
 import com.bannergress.backend.services.BannerService;
 import com.bannergress.backend.services.BannerSettingsService;
 import com.bannergress.backend.services.PlaceService;
@@ -53,15 +54,18 @@ public class BannerController {
 
     private final BannerService bannerService;
 
+    private final BannerSearchService bannerSearchService;
+
     private final PlaceService placeService;
 
     private final BannerSettingsService bannerSettingsService;
 
     public BannerController(final BannerService bannerService, final PlaceService placeService,
-        final BannerSettingsService bannerSettingsService) {
+        final BannerSettingsService bannerSettingsService, BannerSearchService bannerSearchService) {
         this.bannerService = bannerService;
         this.placeService = placeService;
         this.bannerSettingsService = bannerSettingsService;
+        this.bannerSearchService = bannerSearchService;
     }
 
     /**
@@ -119,7 +123,7 @@ public class BannerController {
             // Sort by proximity to start point needs reference coordinates
             return ResponseEntity.badRequest().build();
         }
-        final Collection<Banner> banners = bannerService.find(placeId, minLatitude, maxLatitude, minLongitude,
+        final Collection<Banner> banners = bannerSearchService.find(placeId, minLatitude, maxLatitude, minLongitude,
             maxLongitude, query, missionId, onlyOfficialMissions, author, listTypes,
             Optional.ofNullable(principal).map(Principal::getName), online, orderBy, orderDirection, proximityLatitude,
             proximityLongitude, offset, limit);
@@ -223,6 +227,12 @@ public class BannerController {
             }
         })).get();
         pool.shutdown();
+    }
+
+    @RolesAllowed(Roles.MANAGE_BANNERS)
+    @PostMapping("/bnrs/reindex")
+    public void reindexAllBanners() {
+        bannerSearchService.updateIndex();
     }
 
     @PreAuthorize("isAuthenticated()")

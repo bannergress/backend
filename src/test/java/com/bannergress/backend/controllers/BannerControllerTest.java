@@ -3,6 +3,7 @@ package com.bannergress.backend.controllers;
 import com.bannergress.backend.dto.BannerDto;
 import com.bannergress.backend.entities.Banner;
 import com.bannergress.backend.exceptions.MissionAlreadyUsedException;
+import com.bannergress.backend.services.BannerSearchService;
 import com.bannergress.backend.services.BannerService;
 import com.bannergress.backend.services.impl.BannerSettingsServiceImpl;
 import com.bannergress.backend.services.impl.PlaceServiceImpl;
@@ -29,9 +30,10 @@ import static org.mockito.Mockito.when;
 class BannerControllerTest {
 
     private final BannerService bannerService = mock(BannerService.class);
+    private final BannerSearchService bannerSearchService = mock(BannerSearchService.class);
 
     private final BannerController testController = new BannerController(bannerService, new PlaceServiceImpl(),
-        new BannerSettingsServiceImpl());
+        new BannerSettingsServiceImpl(), bannerSearchService);
 
     @Test
     void list() {
@@ -39,7 +41,7 @@ class BannerControllerTest {
         final Optional<String> place = Optional.of(a($String()));
         final Banner banner = fixPlaceInformation(a($Banner()));
 
-        when(bannerService.find(eq(place), eq(Optional.empty()), eq(Optional.empty()), eq(Optional.empty()),
+        when(bannerSearchService.find(eq(place), eq(Optional.empty()), eq(Optional.empty()), eq(Optional.empty()),
             eq(Optional.empty()), eq(Optional.empty()), eq(Optional.empty()), eq(false), eq(Optional.empty()),
             eq(Optional.empty()), eq(Optional.empty()), eq(Optional.empty()), eq(Optional.empty()), any(),
             eq(Optional.empty()), eq(Optional.empty()), eq(0), anyInt())).thenReturn(List.of(banner));
@@ -75,8 +77,8 @@ class BannerControllerTest {
         final Optional<Double> maxLong = Optional.of(a($Double()));
         final Banner banner = fixPlaceInformation(a($Banner()));
 
-        when(bannerService.find(eq(Optional.empty()), eq(minLat), eq(maxLat), eq(minLong), eq(maxLong), any(), any(),
-            eq(false), any(), any(), any(), any(), any(), any(), any(), any(), eq(0), anyInt()))
+        when(bannerSearchService.find(eq(Optional.empty()), eq(minLat), eq(maxLat), eq(minLong), eq(maxLong), any(),
+            any(), eq(false), any(), any(), any(), any(), any(), any(), any(), any(), eq(0), anyInt()))
                 .thenReturn(List.of(banner));
 
         // THEN
