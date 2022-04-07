@@ -5,6 +5,7 @@ import com.bannergress.backend.enums.BannerType;
 import com.bannergress.backend.utils.PojoBuilder;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import io.swagger.v3.oas.annotations.Hidden;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
 
 import javax.validation.constraints.Max;
@@ -45,16 +46,22 @@ public class BannerDto {
     /**
      * Number of missions.
      */
+    @Min(1)
+    @Max(3000)
     public int numberOfMissions;
 
     /**
      * Number of submitted missions.
      */
+    @Min(0)
+    @Max(3000)
     public int numberOfSubmittedMissions;
 
     /**
      * Number of disabled missions.
      */
+    @Min(0)
+    @Max(3000)
     public int numberOfDisabledMissions;
 
     /**
@@ -67,11 +74,15 @@ public class BannerDto {
     /**
      * Latitude of the start portal of the first mission.
      */
+    @Min(-90)
+    @Max(90)
     public Double startLatitude;
 
     /**
      * Longitude of the start portal of the first mission.
      */
+    @Min(-180)
+    @Max(180)
     public Double startLongitude;
 
     /**
@@ -82,6 +93,7 @@ public class BannerDto {
     /**
      * Length in meters.
      */
+    @Min(0)
     public Integer lengthMeters;
 
     /**
@@ -108,6 +120,7 @@ public class BannerDto {
     /**
      * Flag that indicates whether the user owns the banner.
      */
+    @Hidden
     public Boolean owner;
 
     @Override

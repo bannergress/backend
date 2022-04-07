@@ -15,7 +15,10 @@ import com.bannergress.backend.services.BannerSearchService;
 import com.bannergress.backend.services.BannerService;
 import com.bannergress.backend.services.BannerSettingsService;
 import com.bannergress.backend.services.PlaceService;
+import com.bannergress.backend.validation.NianticId;
 import com.google.common.collect.Maps;
+import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.keycloak.KeycloakPrincipal;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.slf4j.Logger;
@@ -32,6 +35,7 @@ import javax.annotation.security.RolesAllowed;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 
 import java.security.Principal;
 import java.util.*;
@@ -87,23 +91,23 @@ public class BannerController {
      * @return Banners.
      */
     @GetMapping(value = "/bnrs")
-    public ResponseEntity<List<BannerDto>> list(@RequestParam final Optional<String> placeId,
-                                                @RequestParam final Optional<Double> minLatitude,
-                                                @RequestParam final Optional<Double> maxLatitude,
-                                                @RequestParam final Optional<Double> minLongitude,
-                                                @RequestParam final Optional<Double> maxLongitude,
-                                                @RequestParam final Optional<String> query,
-                                                @RequestParam final Optional<String> missionId,
-                                                @RequestParam(defaultValue = "false") final boolean onlyOfficialMissions,
-                                                @RequestParam final Optional<String> author,
-                                                @RequestParam final Optional<Collection<BannerListType>> listTypes,
-                                                @RequestParam final Optional<Boolean> online,
-                                                @RequestParam final Optional<BannerSortOrder> orderBy,
-                                                @RequestParam(defaultValue = "ASC") final Direction orderDirection,
-                                                @RequestParam final Optional<Double> proximityLatitude,
-                                                @RequestParam final Optional<Double> proximityLongitude,
-                                                @RequestParam(defaultValue = "0") final int offset,
-                                                @RequestParam(defaultValue = "20") @Max(100) final int limit,
+    public ResponseEntity<List<BannerDto>> list(@RequestParam @Parameter(description = "Place ID the banner belongs to.") final Optional<String> placeId,
+                                                @RequestParam @Parameter(description = "Minimum latitude of the banner start point bounding box. Only valid in combination with all other bounding box parameters.") final Optional<@Min(-90) @Max(90) Double> minLatitude,
+                                                @RequestParam @Parameter(description = "Maximum latitude of the banner start point bounding box. Only valid in combination with all other bounding box parameters.") final Optional<@Min(-90) @Max(90) Double> maxLatitude,
+                                                @RequestParam @Parameter(description = "Minimum longitude of the banner start point bounding box. Only valid in combination with all other bounding box parameters.") final Optional<@Min(-180) @Max(180) Double> minLongitude,
+                                                @RequestParam @Parameter(description = "Minimum longitude of the banner start point bounding box. Only valid in combination with all other bounding box parameters.") final Optional<@Min(-180) @Max(180) Double> maxLongitude,
+                                                @RequestParam @Parameter(description = "Query string. The exact search algorithm may change over time.") final Optional<String> query,
+                                                @RequestParam @Parameter(description = "ID of a mission that is part of the banner.") final Optional<@NianticId String> missionId,
+                                                @RequestParam(defaultValue = "false") @Parameter(description = "Only banners with missions created by Niantic.") final boolean onlyOfficialMissions,
+                                                @RequestParam @Parameter(description = "Agent who created one of the missions of the banner.") final Optional<String> author,
+                                                @RequestParam @Parameter(description = "List(s) the banner is on (requires authentication).") final Optional<Collection<BannerListType>> listTypes,
+                                                @RequestParam @Parameter(description = "Only list online/offline banners.") final Optional<Boolean> online,
+                                                @RequestParam @Parameter(description = "Sort order.") final Optional<BannerSortOrder> orderBy,
+                                                @RequestParam(defaultValue = "ASC") @Parameter(description = "Order direction.") final Direction orderDirection,
+                                                @RequestParam @Parameter(description = "Latitude of the proximity reference point. Required for orderBy=proximityStartPoint.") final Optional<@Min(-90) @Max(90) Double> proximityLatitude,
+                                                @RequestParam @Parameter(description = "Longitude of the proximity reference point. Required for orderBy=proximityStartPoint.") final Optional<@Min(-180) @Max(180) Double> proximityLongitude,
+                                                @RequestParam(defaultValue = "0") @Parameter(description = "0-based offset for searching.") @Min(0) final int offset,
+                                                @RequestParam(defaultValue = "20") @Parameter(description = "Maximum number of results.") @Min(1) @Max(100) final int limit,
                                                 Principal principal) {
         if ((author.isPresent() || listTypes.isPresent()) && principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -151,6 +155,7 @@ public class BannerController {
 
     @RolesAllowed(Roles.CREATE_BANNER)
     @PostMapping("/bnrs")
+    @Hidden
     public ResponseEntity<BannerDto> post(@Valid @RequestBody BannerDto banner, Principal principal)
         throws MissionAlreadyUsedException {
         String id = bannerService.create(banner);
@@ -159,6 +164,7 @@ public class BannerController {
 
     @RolesAllowed(Roles.CREATE_BANNER)
     @PostMapping("/bnrs/preview")
+    @Hidden
     public BannerDto preview(@Valid @RequestBody BannerDto banner) throws MissionAlreadyUsedException {
         return toDetails(bannerService.generatePreview(banner));
     }
@@ -174,6 +180,7 @@ public class BannerController {
     @RolesAllowed(Roles.CREATE_BANNER)
     @PreAuthorize("hasRole('" + Roles.MANAGE_BANNERS + "') or @bannerController.hasOwner(#id, #principal)")
     @PutMapping("/bnrs/{id}")
+    @Hidden
     public ResponseEntity<BannerDto> put(@PathVariable final String id, @Valid @RequestBody BannerDto banner,
                                          Principal principal, HttpServletRequest request)
         throws MissionAlreadyUsedException {
@@ -209,12 +216,14 @@ public class BannerController {
      */
     @RolesAllowed(Roles.MANAGE_BANNERS)
     @DeleteMapping("/bnrs/{id}")
+    @Hidden
     public void delete(@PathVariable final String id) {
         bannerService.deleteBySlug(id);
     }
 
     @RolesAllowed(Roles.MANAGE_BANNERS)
     @PostMapping("/bnrs/recalculate")
+    @Hidden
     public void calculateAllBanners() throws InterruptedException, ExecutionException {
         List<UUID> uuids = bannerService.findAllUUIDs();
         ForkJoinPool pool = new ForkJoinPool(5);
@@ -231,12 +240,14 @@ public class BannerController {
 
     @RolesAllowed(Roles.MANAGE_BANNERS)
     @PostMapping("/bnrs/reindex")
+    @Hidden
     public void reindexAllBanners() {
         bannerSearchService.updateIndex();
     }
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/bnrs/{id}/settings")
+    @Hidden
     public void postSettings(@PathVariable final String id, @Valid @RequestBody BannerSettingsDto settings,
                              Principal principal) {
         bannerSettingsService.addBannerToList(principal.getName(), id, settings.listType);

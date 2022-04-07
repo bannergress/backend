@@ -35,6 +35,7 @@ dependencies {
   implementation "com.squareup.okhttp3:okhttp:${okhttp_version}"
   implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml'
   implementation "org.keycloak:keycloak-admin-client:${keycloak_version}"
+  implementation "org.springdoc:springdoc-openapi-ui:${springdoc_version}"
 
   annotationProcessor 'org.hibernate:hibernate-jpamodelgen'
   annotationProcessor "net.karneim:pojobuilder:$pojobuilder_version"

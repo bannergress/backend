@@ -32,8 +32,8 @@ public class PoiDto {
     /**
      * Latitude.
      */
-    @Min(-180)
-    @Max(180)
+    @Min(-90)
+    @Max(90)
     public Double latitude;
 
     /**
