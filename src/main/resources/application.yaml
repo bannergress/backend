@@ -26,6 +26,12 @@ spring:
 keycloak:
   bearer-only: true
 
+springdoc:
+  paths-to-match:
+  - /bnrs
+  swagger-ui:
+    supported-submit-methods: []
+
 
 ---
 # This settings get activated when the 'dev' spring profile is active

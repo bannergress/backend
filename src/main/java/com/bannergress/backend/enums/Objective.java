@@ -1,8 +1,11 @@
 package com.bannergress.backend.enums;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 /**
  * Represents the action that has to be performed at a location.
  */
+@Schema(enumAsRef = true)
 public enum Objective {
     /**
      * Hack this portal.

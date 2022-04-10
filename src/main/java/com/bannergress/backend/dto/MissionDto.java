@@ -5,8 +5,10 @@ import com.bannergress.backend.enums.MissionType;
 import com.bannergress.backend.utils.PojoBuilder;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import io.swagger.v3.oas.annotations.Hidden;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import java.net.URL;
@@ -28,15 +30,19 @@ public class MissionDto {
 
     public MissionType type;
 
+    @Hidden
     public Boolean online;
 
+    @Hidden
     public String online_info;
 
     public MissionStatus status;
 
     public NamedAgentDto author;
 
+    @Min(0)
     public Long averageDurationMilliseconds;
 
+    @Min(0)
     public Integer lengthMeters;
 }

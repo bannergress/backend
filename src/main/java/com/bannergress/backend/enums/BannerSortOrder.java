@@ -1,10 +1,12 @@
 package com.bannergress.backend.enums;
 
 import com.bannergress.backend.entities.Banner;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * Possible sort orders for banners.
  */
+@Schema(enumAsRef = true)
 public enum BannerSortOrder {
     /** Order by {@link Banner#getCreated}. */
     created,
