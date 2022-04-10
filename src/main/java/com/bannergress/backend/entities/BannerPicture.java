@@ -23,7 +23,6 @@ public class BannerPicture {
     @Access(AccessType.PROPERTY)
     private String hash;
 
-    @Lob
     @Column(name = "picture", nullable = false)
     private byte[] picture;
 
