@@ -25,6 +25,7 @@ import org.locationtech.jts.geom.Point;
 import javax.persistence.*;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.*;
 
 /**
@@ -195,6 +196,18 @@ public class Banner {
     @IndexedEmbedded(structure = ObjectStructure.NESTED)
     private List<BannerSettings> settings;
 
+    /**
+     * Warning text.
+     */
+    @Column(name = "warning", nullable = true)
+    private String warning;
+
+    /**
+     * Planned date where missions are expected to be put offline.
+     */
+    @Column(name = "planned_offline_date", nullable = true)
+    private LocalDate plannedOfflineDate;
+
     public UUID getUuid() {
         return uuid;
     }
@@ -343,6 +356,22 @@ public class Banner {
 
     public void setType(BannerType type) {
         this.type = type;
+    }
+
+    public LocalDate getPlannedOfflineDate() {
+        return plannedOfflineDate;
+    }
+
+    public void setPlannedOfflineDate(LocalDate plannedOfflineDate) {
+        this.plannedOfflineDate = plannedOfflineDate;
+    }
+
+    public void setWarning(String warning) {
+        this.warning = warning;
+    }
+
+    public String getWarning() {
+        return warning;
     }
 
     @Override

@@ -111,6 +111,8 @@ public class BannerServiceImpl implements BannerService {
         banner.getMissions().putAll(actualMissionReferences(bannerDto));
         banner.getPlaceholders().clear();
         banner.getPlaceholders().addAll(placeHolderMissions(bannerDto).keySet());
+        banner.setWarning(bannerDto.warning);
+        banner.setPlannedOfflineDate(bannerDto.plannedOfflineDate);
         calculateData(banner);
         pictureService.refresh(banner);
         return banner;
@@ -152,6 +154,8 @@ public class BannerServiceImpl implements BannerService {
         banner.getMissions().putAll(actualMissionReferences(bannerDto));
         banner.getPlaceholders().clear();
         banner.getPlaceholders().addAll(placeHolderMissions(bannerDto).keySet());
+        banner.setWarning(bannerDto.warning);
+        banner.setPlannedOfflineDate(bannerDto.plannedOfflineDate);
         calculateSlug(banner);
         calculateData(banner);
         pictureService.refresh(banner);
