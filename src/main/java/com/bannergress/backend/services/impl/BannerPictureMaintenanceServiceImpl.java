@@ -7,6 +7,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Implements {@link BannerPictureService} to call
  * {@link BannerPictureService#removeExpired()} at a fixed rate to remove orphaned banner
@@ -20,7 +22,7 @@ public class BannerPictureMaintenanceServiceImpl implements BannerPictureMainten
     BannerPictureService bannerPictureService;
 
     @Override
-    @Scheduled(fixedRate = 3600_000)
+    @Scheduled(fixedRate = 1, timeUnit = TimeUnit.MINUTES)
     public void removeExpired() {
         bannerPictureService.removeExpired();
     }
