@@ -16,11 +16,11 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Default implementation of {@link MissionService}.
@@ -29,12 +29,7 @@ import java.util.*;
 @Transactional
 public class MissionServiceImpl implements MissionService {
     @Autowired
-    private EntityManager entityManager;
-
-    @Autowired
     private MissionRepository missionRepository;
-
-    private Optional<String> latestRefreshableMission = Optional.empty();
 
     @Override
     public Collection<Mission> findUnusedMissions(String search, Optional<MissionSortOrder> orderBy,
@@ -76,26 +71,5 @@ public class MissionServiceImpl implements MissionService {
                 }
             }
         }
-    }
-
-    @Override
-    public synchronized Collection<String> findNextRequestedMissions(int amount) {
-        final List<String> missionIds = new ArrayList<>();
-        if (latestRefreshableMission.isPresent()) {
-            TypedQuery<String> query = entityManager.createQuery("SELECT m.id FROM Mission m"
-                + " WHERE m.id > :latestId AND m.latestUpdateDetails IS NULL ORDER BY m.id", String.class);
-            query.setMaxResults(amount);
-            query.setParameter("latestId", latestRefreshableMission.get());
-            missionIds.addAll(query.getResultList());
-        }
-        if (missionIds.size() < amount) {
-            TypedQuery<String> query = entityManager.createQuery(
-                "SELECT m.id FROM Mission m WHERE m.latestUpdateDetails IS NULL ORDER BY m.id", String.class);
-            query.setMaxResults(amount - missionIds.size());
-            missionIds.addAll(query.getResultList());
-        }
-        final Set<String> result = new HashSet<>(missionIds);
-        latestRefreshableMission = result.size() < amount ? Optional.empty() : Optional.of(missionIds.get(amount - 1));
-        return result;
     }
 }
