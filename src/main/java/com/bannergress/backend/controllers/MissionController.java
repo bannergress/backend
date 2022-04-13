@@ -14,12 +14,9 @@ import com.bannergress.backend.validation.NianticId;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import org.keycloak.KeycloakPrincipal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -30,6 +27,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import java.security.Principal;
 import java.util.*;
 
 import static com.bannergress.backend.utils.Spatial.getLatitude;
@@ -52,10 +50,11 @@ public class MissionController {
                                             @RequestParam final Optional<MissionSortOrder> orderBy,
                                             @RequestParam(defaultValue = "ASC") final Direction orderDirection,
                                             @RequestParam(defaultValue = "0") final int offset,
-                                            @RequestParam(defaultValue = "20") @Max(100) final int limit) {
+                                            @RequestParam(defaultValue = "20") @Max(100) final int limit,
+                                            Principal principal) {
         Collection<Mission> unusedMissions = missionService.findUnusedMissions(query, orderBy, orderDirection, offset,
             limit);
-        return Collections2.transform(unusedMissions, MissionController::toSummaryForUnused);
+        return Collections2.transform(unusedMissions, mission -> toSummaryForUnused(mission, principal));
     }
 
     @PostMapping("/missions/status")
@@ -77,16 +76,16 @@ public class MissionController {
     }
 
     @GetMapping("/missions/{id}")
-    public MissionDto get(@PathVariable String id) {
+    public MissionDto get(@PathVariable String id, Principal principal) {
         Optional<Mission> mission = missionService.findById(id);
         if (mission.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         } else {
-            return toDetails(mission.get());
+            return toDetails(mission.get(), principal);
         }
     }
 
-    private static MissionDto toSummary(Mission mission) {
+    private static MissionDto toSummary(Mission mission, Principal principal) {
         MissionDto dto = new MissionDto();
         dto.id = mission.getId();
         dto.title = mission.getTitle();
@@ -94,16 +93,15 @@ public class MissionController {
         return dto;
     }
 
-    public static MissionDto toSummaryForUnused(Mission mission) {
-        MissionDto dto = toSummary(mission);
+    public static MissionDto toSummaryForUnused(Mission mission, Principal principal) {
+        MissionDto dto = toSummary(mission, principal);
         dto.description = mission.getDescription();
-        dto.author = mission.getAuthor() == null ? null : toAgentSummary(mission.getAuthor());
+        dto.author = mission.getAuthor() == null ? null : toAgentSummary(mission.getAuthor(), principal);
         return dto;
     }
 
-    public static NamedAgentDto toAgentSummary(NamedAgent agent) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !(authentication.getPrincipal() instanceof KeycloakPrincipal)) {
+    public static NamedAgentDto toAgentSummary(NamedAgent agent, Principal principal) {
+        if (BannerController.getAgent(principal).isEmpty()) {
             return null;
         }
         NamedAgentDto result = new NamedAgentDto();
@@ -112,15 +110,15 @@ public class MissionController {
         return result;
     }
 
-    public static MissionDto toDetails(Mission mission) {
-        MissionDto dto = toSummary(mission);
+    public static MissionDto toDetails(Mission mission, Principal principal) {
+        MissionDto dto = toSummary(mission, principal);
         dto.steps = Lists.transform(mission.getSteps(), MissionController::toMissionStepDetails);
         dto.description = mission.getDescription();
         dto.type = mission.getType();
         dto.online = mission.getStatus() == MissionStatus.published;
         dto.online_info = ONLINE_DEPRECATION;
         dto.status = mission.getStatus();
-        dto.author = mission.getAuthor() == null ? null : toAgentSummary(mission.getAuthor());
+        dto.author = mission.getAuthor() == null ? null : toAgentSummary(mission.getAuthor(), principal);
         dto.averageDurationMilliseconds = mission.getAverageDurationMilliseconds();
         dto.lengthMeters = DistanceCalculation.calculateLengthMeters(List.of(mission));
         return dto;
