@@ -2,12 +2,18 @@ package com.bannergress.backend.services.impl;
 
 import com.bannergress.backend.entities.Banner;
 import com.bannergress.backend.entities.Mission;
+import com.bannergress.backend.entities.Mission_;
 import com.bannergress.backend.enums.MissionSortOrder;
 import com.bannergress.backend.exceptions.MissionAlreadyUsedException;
 import com.bannergress.backend.repositories.MissionRepository;
+import com.bannergress.backend.repositories.MissionSpecifications;
 import com.bannergress.backend.services.MissionService;
+import com.bannergress.backend.utils.OffsetBasedPageRequest;
+import com.google.common.collect.ImmutableList;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
@@ -33,35 +39,30 @@ public class MissionServiceImpl implements MissionService {
     @Override
     public Collection<Mission> findUnusedMissions(String search, Optional<MissionSortOrder> orderBy,
                                                   Direction orderDirection, int offset, int limit) {
-        String queryString = "SELECT m FROM Mission m WHERE (LOWER(m.title) LIKE :search "
-            + "OR LOWER(m.author.name) = :searchExact)"
-            + "AND m.banners IS EMPTY AND m.latestUpdateDetails IS NOT NULL";
-        if (orderBy.isPresent()) {
-            switch (orderBy.get()) {
+        Specification<Mission> specification = (MissionSpecifications.hasTitlePart(search)
+            .or(MissionSpecifications.hasAuthors(ImmutableList.of(search)))) //
+                .and(MissionSpecifications.hasNoBanners()) //
+                .and(MissionSpecifications.hasLatestUpdateDetails());
+        Sort sort = orderBy.map(order -> {
+            switch (order) {
                 case title:
-                    queryString += " ORDER BY m.title " + orderDirection.toString();
-                    break;
+                    return Sort.by(orderDirection, Mission_.TITLE);
+                default:
+                    return Sort.by(orderDirection, Mission_.ID);
             }
-        }
-        TypedQuery<Mission> query = entityManager.createQuery(queryString, Mission.class);
-        query.setParameter("search", "%" + search.toLowerCase() + "%");
-        query.setParameter("searchExact", search.toLowerCase());
-        query.setFirstResult(offset);
-        query.setMaxResults(limit);
-        return query.getResultList();
+        }).orElse(Sort.by(Direction.ASC, Mission_.ID));
+        OffsetBasedPageRequest request = new OffsetBasedPageRequest(offset, limit, sort);
+        return missionRepository.findAll(specification, request).getContent();
     }
 
     @Override
     public Optional<Mission> findById(String id) {
-        return Optional.ofNullable(entityManager.find(Mission.class, id));
+        return missionRepository.findById(id);
     }
 
     @Override
     public Collection<Mission> findByIds(Collection<String> ids) {
-        TypedQuery<Mission> query = entityManager.createQuery("SELECT m FROM Mission m WHERE m.id IN :ids",
-            Mission.class);
-        query.setParameter("ids", ids);
-        return query.getResultList();
+        return missionRepository.findAll(MissionSpecifications.hasIds(ids));
     }
 
     @Override

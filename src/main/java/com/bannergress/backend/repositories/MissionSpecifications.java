@@ -20,6 +20,22 @@ public class MissionSpecifications {
         };
     }
 
+    public static Specification<Mission> hasNoBanners() {
+        return (mission, cq, cb) -> cb.isEmpty(mission.get(Mission_.banners));
+    }
+
+    public static Specification<Mission> hasTitlePart(String titlePart) {
+        return (mission, cq, cb) -> cb.like(cb.lower(mission.get(Mission_.title)), "%" + titlePart.toLowerCase() + "%");
+    }
+
+    public static Specification<Mission> hasLatestUpdateDetails() {
+        return (mission, cq, cb) -> mission.get(Mission_.latestUpdateDetails).isNotNull();
+    }
+
+    public static Specification<Mission> hasIds(Collection<String> ids) {
+        return (mission, cq, cb) -> mission.get(Mission_.id).in(ids);
+    }
+
     public static Specification<Mission> isInMissions(Collection<Mission> missions) {
         return (mission, cq, cb) -> mission.in(missions);
     }
