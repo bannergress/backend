@@ -37,7 +37,8 @@ public class UserController {
         result.verificationAgent = user.getVerificationAgent();
         result.verificationToken = user.getVerificationToken();
         result.agent = userMappingService.getAgentName(userId)
-            .map(agentName -> MissionController.toAgentSummary(agentService.importAgent(agentName, null))).orElse(null);
+            .map(agentName -> MissionController.toAgentSummary(agentService.importAgent(agentName, null), principal))
+            .orElse(null);
         return result;
     }
 
