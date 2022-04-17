@@ -115,6 +115,7 @@ public class MissionController {
         dto.author = mission.getAuthor() == null ? null : toAgentSummary(mission.getAuthor(), principal);
         dto.averageDurationMilliseconds = mission.getAverageDurationMilliseconds();
         dto.lengthMeters = DistanceCalculation.calculateLengthMeters(List.of(mission));
+        dto.latestUpdateStatus = mission.getLatestUpdateStatus();
         return dto;
     }
 
