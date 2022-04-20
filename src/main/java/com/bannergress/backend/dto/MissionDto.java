@@ -12,6 +12,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import java.net.URL;
+import java.time.Instant;
 import java.util.List;
 
 @JsonInclude(Include.NON_NULL)
@@ -37,6 +38,8 @@ public class MissionDto {
     public String online_info;
 
     public MissionStatus status;
+
+    public Instant latestUpdateStatus;
 
     public NamedAgentDto author;
 
