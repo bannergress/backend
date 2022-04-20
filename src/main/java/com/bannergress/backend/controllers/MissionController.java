@@ -6,7 +6,6 @@ import com.bannergress.backend.entities.MissionStep;
 import com.bannergress.backend.entities.NamedAgent;
 import com.bannergress.backend.entities.POI;
 import com.bannergress.backend.enums.MissionSortOrder;
-import com.bannergress.backend.enums.MissionStatus;
 import com.bannergress.backend.security.Roles;
 import com.bannergress.backend.services.MissionService;
 import com.bannergress.backend.utils.DistanceCalculation;
@@ -38,8 +37,6 @@ import static com.bannergress.backend.utils.Spatial.getLongitude;
 @RestController
 @Validated
 public class MissionController {
-    private static final String ONLINE_DEPRECATION = "use status instead of online";
-
     @Autowired
     MissionService missionService;
 
@@ -109,8 +106,6 @@ public class MissionController {
         dto.steps = Lists.transform(mission.getSteps(), MissionController::toMissionStepDetails);
         dto.description = mission.getDescription();
         dto.type = mission.getType();
-        dto.online = mission.getStatus() == MissionStatus.published;
-        dto.online_info = ONLINE_DEPRECATION;
         dto.status = mission.getStatus();
         dto.author = mission.getAuthor() == null ? null : toAgentSummary(mission.getAuthor(), principal);
         dto.averageDurationMilliseconds = mission.getAverageDurationMilliseconds();

@@ -5,7 +5,6 @@ import com.bannergress.backend.enums.MissionType;
 import com.bannergress.backend.utils.PojoBuilder;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import io.swagger.v3.oas.annotations.Hidden;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
 
 import javax.validation.constraints.Min;
@@ -30,12 +29,6 @@ public class MissionDto {
     public String description;
 
     public MissionType type;
-
-    @Hidden
-    public Boolean online;
-
-    @Hidden
-    public String online_info;
 
     public MissionStatus status;
 
