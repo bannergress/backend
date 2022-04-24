@@ -145,7 +145,7 @@ public class BannerController {
     @GetMapping("/bnrs/{id}")
     public ResponseEntity<BannerDto> get(@PathVariable final String id, Principal principal) {
         final Optional<Banner> banner = bannerService.findBySlugWithDetails(id);
-        Optional<BannerDto> optionalBannerDto = banner.map(b -> toDetails(b, principal));
+        Optional<BannerDto> optionalBannerDto = banner.map(this::toDetails);
         optionalBannerDto.ifPresent(bannerDto -> {
             amendUserSettings(principal, List.of(bannerDto));
             amendOwner(principal, bannerDto);
@@ -165,9 +165,8 @@ public class BannerController {
     @RolesAllowed(Roles.CREATE_BANNER)
     @PostMapping("/bnrs/preview")
     @Hidden
-    public BannerDto preview(@Valid @RequestBody BannerDto banner, Principal principal)
-        throws MissionAlreadyUsedException {
-        return toDetails(bannerService.generatePreview(banner), principal);
+    public BannerDto preview(@Valid @RequestBody BannerDto banner) throws MissionAlreadyUsedException {
+        return toDetails(bannerService.generatePreview(banner));
     }
 
     /**
@@ -199,7 +198,7 @@ public class BannerController {
         return getAgent(principal).map(agent -> bannerService.hasAuthor(id, agent)).orElse(false);
     }
 
-    public static Optional<String> getAgent(Principal principal) {
+    private Optional<String> getAgent(Principal principal) {
         if (principal instanceof KeycloakAuthenticationToken) {
             return getAgent((Principal) ((KeycloakAuthenticationToken) principal).getPrincipal());
         } else if (principal instanceof KeycloakPrincipal) {
@@ -275,10 +274,9 @@ public class BannerController {
         return dto;
     }
 
-    private BannerDto toDetails(Banner banner, Principal principal) {
+    private BannerDto toDetails(Banner banner) {
         BannerDto dto = toSummary(banner);
-        dto.missions = Maps.transformValues(banner.getMissionsAndPlaceholders(),
-            mission -> toMissionOrPlaceholder(mission, principal));
+        dto.missions = Maps.transformValues(banner.getMissionsAndPlaceholders(), this::toMissionOrPlaceholder);
         dto.type = banner.getType();
         dto.description = banner.getDescription();
         dto.warning = banner.getWarning();
@@ -286,8 +284,8 @@ public class BannerController {
         return dto;
     }
 
-    private MissionDto toMissionOrPlaceholder(Optional<Mission> input, Principal principal) {
-        return input.map(mission -> MissionController.toDetails(mission, principal)).orElse(new MissionDto());
+    private MissionDto toMissionOrPlaceholder(Optional<Mission> input) {
+        return input.map(MissionController::toDetails).orElse(new MissionDto());
     }
 
     private void amendUserSettings(Principal principal, Collection<BannerDto> bannerDtos) {
