@@ -22,6 +22,7 @@ public interface BannerSearchService {
      * @param minLongitude         Optional minimum longitude.
      * @param maxLongitude         Optional maximum longitude.
      * @param query                Optional query string.
+     * @param queryAuthor          Should the query string be extended to author information?
      * @param missionId            Optional ID of mission which has to be contained in banner.
      * @param onlyOfficialMissions Whether to only include official mission accounts.
      * @param author               Optional author of one of the banner missions.
@@ -38,10 +39,10 @@ public interface BannerSearchService {
      */
     List<Banner> find(Optional<String> placeSlug, Optional<Double> minLatitude, Optional<Double> maxLatitude,
                       Optional<Double> minLongitude, Optional<Double> maxLongitude, Optional<String> query,
-                      Optional<String> missionId, boolean onlyOfficialMissions, Optional<String> author,
-                      Optional<Collection<BannerListType>> listTypes, Optional<String> userId, Optional<Boolean> online,
-                      Optional<BannerSortOrder> orderBy, Direction orderDirection, Optional<Double> proximityLatitude,
-                      Optional<Double> proximityLongitude, int offset, int limit);
+                      boolean queryAuthor, Optional<String> missionId, boolean onlyOfficialMissions,
+                      Optional<String> author, Optional<Collection<BannerListType>> listTypes, Optional<String> userId,
+                      Optional<Boolean> online, Optional<BannerSortOrder> orderBy, Direction orderDirection,
+                      Optional<Double> proximityLatitude, Optional<Double> proximityLongitude, int offset, int limit);
 
     /** Updates the search index. */
     void updateIndex();

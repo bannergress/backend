@@ -7,6 +7,7 @@ import com.bannergress.backend.services.BannerSearchService;
 import org.hibernate.search.engine.search.common.BooleanOperator;
 import org.hibernate.search.engine.search.predicate.dsl.PredicateFinalStep;
 import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
+import org.hibernate.search.engine.search.predicate.dsl.SimpleQueryStringPredicateFieldMoreStep;
 import org.hibernate.search.engine.search.sort.dsl.SortOrder;
 import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.orm.session.SearchSession;
@@ -56,11 +57,11 @@ public class LuceneBannerSearchServiceImpl extends BaseBannerSearchServiceImpl {
     @Override
     public List<Banner> find(Optional<String> placeSlug, Optional<Double> minLatitude, Optional<Double> maxLatitude,
                              Optional<Double> minLongitude, Optional<Double> maxLongitude, Optional<String> search,
-                             Optional<String> missionId, boolean onlyOfficialMissions, Optional<String> author,
-                             Optional<Collection<BannerListType>> listTypes, Optional<String> userId,
-                             Optional<Boolean> online, Optional<BannerSortOrder> orderBy, Direction orderDirection,
-                             Optional<Double> proximityLatitude, Optional<Double> proximityLongitude, int offset,
-                             int limit) {
+                             boolean queryAuthor, Optional<String> missionId, boolean onlyOfficialMissions,
+                             Optional<String> author, Optional<Collection<BannerListType>> listTypes,
+                             Optional<String> userId, Optional<Boolean> online, Optional<BannerSortOrder> orderBy,
+                             Direction orderDirection, Optional<Double> proximityLatitude,
+                             Optional<Double> proximityLongitude, int offset, int limit) {
         SearchSession searchSession = Search.session(entityManager);
         List<Banner> result = searchSession.search(Banner.class).where(factory -> factory.bool(b -> {
             b.filter(factory.matchAll());
@@ -72,15 +73,17 @@ public class LuceneBannerSearchServiceImpl extends BaseBannerSearchServiceImpl {
                     minLongitude.get(), minLatitude.get(), maxLongitude.get()));
             }
             if (search.isPresent()) {
-                b.must(factory.simpleQueryString() //
+                SimpleQueryStringPredicateFieldMoreStep<?, ?> step = factory.simpleQueryString() //
                     .field(FIELD_TITLE).boost(5) //
                     .field(FIELD_DESCRIPTION).boost(0.1f) //
                     .field(FIELD_MISSIONS_ID) //
                     .field(FIELD_MISSIONS_TITLE) //
-                    .field(FIELD_MISSIONS_AUTHOR_NAME) //
                     .field(FIELD_START_PLACES_INFORMATION_LONG_NAME) //
-                    .field(FIELD_START_PLACES_INFORMATION_FORMATTED_ADDRESS) //
-                    .matching(search.get()).defaultOperator(BooleanOperator.AND));
+                    .field(FIELD_START_PLACES_INFORMATION_FORMATTED_ADDRESS);
+                if (queryAuthor) {
+                    step = step.field(FIELD_MISSIONS_AUTHOR_NAME);
+                }
+                b.must(step.matching(search.get()).defaultOperator(BooleanOperator.AND));
             }
             if (missionId.isPresent()) {
                 b.filter(factory.match().field(FIELD_MISSIONS_ID).matching(missionId.get()));
