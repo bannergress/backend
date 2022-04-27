@@ -35,11 +35,11 @@ public class DatabaseBannerSearchServiceImpl extends BaseBannerSearchServiceImpl
     @Override
     public List<Banner> find(Optional<String> placeSlug, Optional<Double> minLatitude, Optional<Double> maxLatitude,
                              Optional<Double> minLongitude, Optional<Double> maxLongitude, Optional<String> search,
-                             Optional<String> missionId, boolean onlyOfficialMissions, Optional<String> author,
-                             Optional<Collection<BannerListType>> listTypes, Optional<String> userId,
-                             Optional<Boolean> online, Optional<BannerSortOrder> orderBy, Direction orderDirection,
-                             Optional<Double> proximityLatitude, Optional<Double> proximityLongitude, int offset,
-                             int limit) {
+                             boolean queryAuthor, Optional<String> missionId, boolean onlyOfficialMissions,
+                             Optional<String> author, Optional<Collection<BannerListType>> listTypes,
+                             Optional<String> userId, Optional<Boolean> online, Optional<BannerSortOrder> orderBy,
+                             Direction orderDirection, Optional<Double> proximityLatitude,
+                             Optional<Double> proximityLongitude, int offset, int limit) {
         List<Specification<Banner>> specifications = new ArrayList<>();
         if (placeSlug.isPresent()) {
             specifications.add(BannerSpecifications.hasStartPlaceSlug(placeSlug.get()));

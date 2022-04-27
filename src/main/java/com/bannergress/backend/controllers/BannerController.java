@@ -109,7 +109,8 @@ public class BannerController {
                                                 @RequestParam(defaultValue = "0") @Parameter(description = "0-based offset for searching.") @Min(0) final int offset,
                                                 @RequestParam(defaultValue = "20") @Parameter(description = "Maximum number of results.") @Min(1) @Max(100) final int limit,
                                                 Principal principal) {
-        if ((author.isPresent() || listTypes.isPresent()) && principal == null) {
+        boolean isAuthenticated = principal != null;
+        if ((author.isPresent() || listTypes.isPresent()) && !isAuthenticated) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         int numberOfBounds = (minLatitude.isPresent() ? 1 : 0) + (maxLatitude.isPresent() ? 1 : 0)
@@ -128,7 +129,7 @@ public class BannerController {
             return ResponseEntity.badRequest().build();
         }
         final Collection<Banner> banners = bannerSearchService.find(placeId, minLatitude, maxLatitude, minLongitude,
-            maxLongitude, query, missionId, onlyOfficialMissions, author, listTypes,
+            maxLongitude, query, isAuthenticated, missionId, onlyOfficialMissions, author, listTypes,
             Optional.ofNullable(principal).map(Principal::getName), online, orderBy, orderDirection, proximityLatitude,
             proximityLongitude, offset, limit);
         List<BannerDto> bannerDtos = banners.stream().map(this::toSummary).collect(Collectors.toUnmodifiableList());

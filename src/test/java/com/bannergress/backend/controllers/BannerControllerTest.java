@@ -42,9 +42,10 @@ class BannerControllerTest {
         final Banner banner = fixPlaceInformation(a($Banner()));
 
         when(bannerSearchService.find(eq(place), eq(Optional.empty()), eq(Optional.empty()), eq(Optional.empty()),
-            eq(Optional.empty()), eq(Optional.empty()), eq(Optional.empty()), eq(false), eq(Optional.empty()),
-            eq(Optional.empty()), eq(Optional.empty()), eq(Optional.empty()), eq(Optional.empty()), any(),
-            eq(Optional.empty()), eq(Optional.empty()), eq(0), anyInt())).thenReturn(List.of(banner));
+            eq(Optional.empty()), eq(Optional.empty()), eq(false), eq(Optional.empty()), eq(false),
+            eq(Optional.empty()), eq(Optional.empty()), eq(Optional.empty()), eq(Optional.empty()),
+            eq(Optional.empty()), any(), eq(Optional.empty()), eq(Optional.empty()), eq(0), anyInt()))
+                .thenReturn(List.of(banner));
 
         // THEN
         final ResponseEntity<List<BannerDto>> result = testController.list(place, Optional.empty(), Optional.empty(),
@@ -78,7 +79,7 @@ class BannerControllerTest {
         final Banner banner = fixPlaceInformation(a($Banner()));
 
         when(bannerSearchService.find(eq(Optional.empty()), eq(minLat), eq(maxLat), eq(minLong), eq(maxLong), any(),
-            any(), eq(false), any(), any(), any(), any(), any(), any(), any(), any(), eq(0), anyInt()))
+            eq(false), any(), eq(false), any(), any(), any(), any(), any(), any(), any(), any(), eq(0), anyInt()))
                 .thenReturn(List.of(banner));
 
         // THEN
