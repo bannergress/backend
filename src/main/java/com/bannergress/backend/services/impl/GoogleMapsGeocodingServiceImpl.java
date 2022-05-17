@@ -11,7 +11,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Geocoding using Google Maps API.
@@ -29,7 +31,7 @@ public class GoogleMapsGeocodingServiceImpl implements GeocodingService {
     }
 
     @Override
-    public Optional<Place> getPlaceHierarchy(double latitude, double longitude) {
+    public Set<Place> getPlaces(double latitude, double longitude) {
         try {
             GeocodingResult[] geocodingResults = GeocodingApi //
                 .reverseGeocode(apiContext, new LatLng(latitude, longitude)) //
@@ -39,7 +41,7 @@ public class GoogleMapsGeocodingServiceImpl implements GeocodingService {
                     AddressType.LOCALITY)
                 .language(DEFAULT_LANGUAGE) //
                 .await();
-            List<Place> result = new ArrayList<>();
+            Set<Place> result = new HashSet<>();
             for (GeocodingResult geocodingResult : geocodingResults) {
                 if (isColloquialResult(geocodingResult)) {
                     continue;
@@ -53,10 +55,7 @@ public class GoogleMapsGeocodingServiceImpl implements GeocodingService {
                     }
                 }
             }
-            return result.stream().sorted(Comparator.comparing(Place::getType)).reduce((a, b) -> {
-                b.setParentPlace(a);
-                return b;
-            });
+            return result;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

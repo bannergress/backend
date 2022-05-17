@@ -19,6 +19,7 @@ import com.bannergress.backend.services.PlaceService;
 import com.bannergress.backend.utils.DistanceCalculation;
 import com.bannergress.backend.utils.SlugGenerator;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.locationtech.jts.geom.Point;
@@ -77,7 +78,8 @@ public class BannerServiceImpl implements BannerService {
         Banner banner = createTransient(bannerDto, List.of());
         calculateSlug(banner);
         bannerRepository.save(banner);
-        banner.getStartPlaces().forEach(place -> place.setNumberOfBanners(place.getNumberOfBanners() + 1));
+        banner.getStartPlaces().forEach(p -> p.getBanners().add(banner));
+        placesService.updatePlaces(banner.getStartPlaces());
         return banner.getCanonicalSlug();
     }
 
@@ -165,9 +167,9 @@ public class BannerServiceImpl implements BannerService {
     public void deleteBySlug(String slug) {
         Banner banner = bannerRepository.findOne(BannerSpecifications.hasSlug(slug)).get();
         pictureService.setPictureExpired(banner.getPicture());
-        for (Place place : banner.getStartPlaces()) {
-            place.setNumberOfBanners(place.getNumberOfBanners() - 1);
-        }
+        Set<Place> startPlaces = ImmutableSet.copyOf(banner.getStartPlaces());
+        banner.getStartPlaces().forEach(p -> p.getBanners().remove(banner));
+        placesService.updatePlaces(startPlaces);
         bannerRepository.delete(banner);
     }
 

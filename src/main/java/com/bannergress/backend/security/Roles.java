@@ -23,4 +23,9 @@ public interface Roles {
      * Role which allows to manage banners.
      */
     String MANAGE_BANNERS = "manage-banners";
+
+    /**
+     * Role which allows to manage places.
+     */
+    String MANAGE_PLACES = "manage-places";
 }

@@ -4,10 +4,11 @@ import com.bannergress.backend.entities.Place;
 import com.bannergress.backend.entities.PlaceInformation;
 import com.bannergress.backend.enums.PlaceType;
 import com.bannergress.backend.services.GeocodingService;
+import com.google.common.collect.ImmutableSet;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.Set;
 
 /**
  * Reverse Geocoding that divides the world in Northern/Southern Hemisphere, and
@@ -17,11 +18,10 @@ import java.util.Optional;
 @Profile("!googlemaps")
 public class HemisphereGeocodingServiceImpl implements GeocodingService {
     @Override
-    public Optional<Place> getPlaceHierarchy(double latitude, double longitude) {
+    public Set<Place> getPlaces(double latitude, double longitude) {
         Place country = getCountry(latitude, longitude);
         Place belowCountry = getAdministrativeArea(latitude, longitude);
-        belowCountry.setParentPlace(country);
-        return Optional.of(belowCountry);
+        return ImmutableSet.of(country, belowCountry);
     }
 
     @Override
