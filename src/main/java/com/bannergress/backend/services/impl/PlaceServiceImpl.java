@@ -1,5 +1,6 @@
 package com.bannergress.backend.services.impl;
 
+import com.bannergress.backend.entities.Banner;
 import com.bannergress.backend.entities.Place;
 import com.bannergress.backend.entities.PlaceCoordinate;
 import com.bannergress.backend.entities.PlaceInformation;
@@ -8,8 +9,7 @@ import com.bannergress.backend.enums.PlaceType;
 import com.bannergress.backend.services.GeocodingService;
 import com.bannergress.backend.services.PlaceService;
 import com.bannergress.backend.utils.SlugGenerator;
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Multiset;
+import com.google.common.collect.*;
 import org.hibernate.Session;
 import org.locationtech.jts.geom.Point;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,10 +20,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -48,24 +45,16 @@ public class PlaceServiceImpl implements PlaceService {
     @Override
     public List<Place> findUsedPlaces(final Optional<String> parentPlaceSlug, final Optional<String> queryString,
                                       final Optional<PlaceType> type, PlaceSortOrder orderBy, Direction orderDirection,
-                                      int offset, Optional<Integer> limit, boolean collapsePlaces) {
+                                      int offset, Optional<Integer> limit) {
         String baseFragment = "SELECT DISTINCT p FROM Banner b JOIN b.startPlaces p"
-            + (queryString.isPresent() ? " JOIN p.information i" : "") + " WHERE true = true";
-        String parentPlaceFragment = parentPlaceSlug.isPresent() ? " AND p.parentPlace.slug = :parentPlaceSlug" : "";
+            + (queryString.isPresent() ? " JOIN p.information i" : "")
+            + (parentPlaceSlug.isPresent() ? " JOIN p.parentPlaces pp" : "") + " WHERE true = true";
+        String parentPlaceFragment = parentPlaceSlug.isPresent() ? " AND pp.slug = :parentPlaceSlug" : "";
         String typeFragment = type.isPresent() ? " AND p.type = :type" : "";
         String queryStringFragment = queryString.isPresent() ? " AND LOWER(i.longName) LIKE :queryString" : "";
-        String orderByFragment;
-        switch (orderBy) {
-            case numberOfBanners:
-                orderByFragment = " ORDER BY p.numberOfBanners " + orderDirection.toString() + ", p.id "
-                    + orderDirection.toString();
-                break;
-            default:
-                throw new AssertionError();
-        }
 
-        TypedQuery<Place> query = entityManager.createQuery(
-            baseFragment + parentPlaceFragment + typeFragment + queryStringFragment + orderByFragment, Place.class);
+        TypedQuery<Place> query = entityManager
+            .createQuery(baseFragment + parentPlaceFragment + typeFragment + queryStringFragment, Place.class);
         if (type.isPresent()) {
             query.setParameter("type", type.get());
         }
@@ -77,28 +66,28 @@ public class PlaceServiceImpl implements PlaceService {
             // In the future, it might also filter on other aspects, like short name.
             query.setParameter("queryString", "%" + queryString.get().toLowerCase() + "%");
         }
-        if (collapsePlaces) {
-            List<Place> resultUncollapsed = query.getResultList();
-            Multiset<String> numberOfBannersInChildren = HashMultiset.create();
-            for (Place place : resultUncollapsed) {
-                if (place.getParentPlace() != null) {
-                    // Only use ID of parent place since we don't want to accidentally load it
-                    numberOfBannersInChildren.add(place.getParentPlace().getId(), place.getNumberOfBanners());
-                }
-            }
-            return preloadPlaceInformation(resultUncollapsed.stream()
-                // Remove parents from which we already return all children
-                // (i.e. the combined number of banners of the children equals the number of banners of the parent)
-                .filter(place -> place.getNumberOfBanners() != numberOfBannersInChildren.count(place.getId()))
-                // Do paging ourselves
-                .skip(offset).limit(limit.isPresent() ? limit.get() : Integer.MAX_VALUE).collect(Collectors.toList()));
-        } else {
-            query.setFirstResult(offset);
-            if (limit.isPresent()) {
-                query.setMaxResults(limit.get());
-            }
-            return preloadPlaceInformation(query.getResultList());
+        Comparator<Place> comparator;
+        switch (orderBy) {
+            case numberOfBanners:
+                comparator = Comparator.comparing(Place::getNumberOfBanners);
+                break;
+            default:
+                throw new IllegalArgumentException(orderBy.toString());
         }
+        Comparator<Place> comparatorDirected = orderDirection == Direction.ASC ? comparator : comparator.reversed();
+        List<Place> resultUncollapsed = query.getResultList();
+        List<Place> resultCollapsed = resultUncollapsed.stream() //
+            .flatMap(this::collapseChildren) //
+            .distinct() //
+            .sorted(comparatorDirected) //
+            .skip(offset) //
+            .limit(limit.orElse(Integer.MAX_VALUE)) //
+            .collect(Collectors.toList());
+        return preloadPlaceInformation(resultCollapsed);
+    }
+
+    private Stream<Place> collapseChildren(Place place) {
+        return place.isCollapsed() ? place.getChildPlaces().stream().flatMap(this::collapseChildren) : Stream.of(place);
     }
 
     private List<Place> preloadPlaceInformation(List<Place> places) {
@@ -109,6 +98,16 @@ public class PlaceServiceImpl implements PlaceService {
             query.getResultList();
         }
         return places;
+    }
+
+    private void preloadRelatedPlaces(Collection<Place> places) {
+        if (!places.isEmpty()) {
+            TypedQuery<Place> query = entityManager.createQuery(
+                "SELECT p FROM Place p LEFT JOIN FETCH p.banners b LEFT JOIN FETCH b.startPlaces WHERE p IN :places",
+                Place.class);
+            query.setParameter("places", places);
+            query.getResultList();
+        }
     }
 
     @Override
@@ -136,22 +135,14 @@ public class PlaceServiceImpl implements PlaceService {
         query.setParameter("point", point);
         List<Place> results = query.getResultList();
         if (results.isEmpty()) {
-            Optional<Place> place = geocodingService.getPlaceHierarchy(getLatitude(point), getLongitude(point));
-            if (place.isPresent()) {
-                mergePlace(place.get(), point);
-            }
-            return place.stream().flatMap(this::expandPlaces).collect(Collectors.toList());
+            Set<Place> places = geocodingService.getPlaces(getLatitude(point), getLongitude(point));
+            return places.stream().map(p -> mergePlace(p, point)).collect(Collectors.toList());
         } else {
             return results;
         }
     }
 
     private Place mergePlace(Place place, Point point) {
-        Place parentPlace = place.getParentPlace();
-        if (parentPlace != null) {
-            parentPlace = mergePlace(parentPlace, point);
-        }
-        place.setParentPlace(parentPlace);
         Place existing = entityManager.find(Place.class, place.getId());
         if (existing == null) {
             place.setSlug(deriveSlug(place));
@@ -172,11 +163,62 @@ public class PlaceServiceImpl implements PlaceService {
             slug -> entityManager.unwrap(Session.class).bySimpleNaturalId(Place.class).loadOptional(slug).isEmpty());
     }
 
-    private Stream<Place> expandPlaces(Place place) {
-        if (place.getParentPlace() == null) {
-            return Stream.of(place);
+    @Override
+    public void updatePlaces(Collection<Place> places) {
+        updatePlaceHierarchy(places);
+        updatePlaceInformation(places);
+    }
+
+    @Override
+    public void updateAllPlaces() {
+        TypedQuery<Place> query = entityManager.createQuery("SELECT p FROM Place p", Place.class);
+        List<Place> places = query.getResultList();
+        updatePlaces(places);
+    }
+
+    private void updatePlaceHierarchy(Collection<Place> places) {
+        preloadRelatedPlaces(places);
+        for (Place place : places) {
+            SetMultimap<PlaceType, Place> parentCandidates = TreeMultimap.create(Comparator.reverseOrder(),
+                Comparator.comparing(Place::getId));
+            for (Banner banner : place.getBanners()) {
+                for (Place parentCandidate : banner.getStartPlaces()) {
+                    if (parentCandidate.getType().compareTo(place.getType()) < 0) {
+                        parentCandidates.put(parentCandidate.getType(), parentCandidate);
+                    }
+                }
+            }
+            Set<Place> oldParents = place.getParentPlaces();
+            Set<Place> newParents = parentCandidates.isEmpty() ? ImmutableSet.of()
+                : Multimaps.asMap(parentCandidates).values().iterator().next();
+            Set<Place> parentsToRemove = ImmutableSet.copyOf(Sets.difference(oldParents, newParents));
+            Set<Place> parentsToAdd = ImmutableSet.copyOf(Sets.difference(newParents, oldParents));
+            place.getParentPlaces().removeAll(parentsToRemove);
+            parentsToRemove.forEach(p -> p.getChildPlaces().remove(place));
+            place.getParentPlaces().addAll(parentsToAdd);
+            parentsToAdd.forEach(p -> p.getChildPlaces().add(place));
+        }
+    }
+
+    private void updatePlaceInformation(Collection<Place> places) {
+        places.stream() //
+            .sorted(Comparator.comparing(Place::getType).reversed()) //
+            .forEach(place -> {
+                place.setNumberOfBanners(place.getBanners().size());
+                place.setCollapsed(isCollapsed(place));
+            });
+    }
+
+    private boolean isCollapsed(Place place) {
+        if (place.getType() == PlaceType.country) {
+            return false;
+        } else if (place.getBanners().isEmpty()) {
+            return true;
         } else {
-            return Stream.concat(Stream.of(place), expandPlaces(place.getParentPlace()));
+            Set<Place> childPlaces = place.getChildPlaces().stream().flatMap(this::collapseChildren)
+                .collect(Collectors.toSet());
+            return childPlaces.size() == 1
+                && childPlaces.iterator().next().getBanners().containsAll(place.getBanners());
         }
     }
 }

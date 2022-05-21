@@ -4,14 +4,13 @@ import com.bannergress.backend.enums.PlaceType;
 import com.bannergress.backend.utils.PojoBuilder;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
 import org.hibernate.annotations.NaturalId;
+import org.hibernate.envers.NotAudited;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.IndexedEmbedded;
 
 import javax.persistence.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Represents a Google Maps Place.
@@ -82,9 +81,26 @@ public class Place {
     @Column(name = "boundary_max_longitude", nullable = false)
     private Double boundaryMaxLongitude;
 
-    @ManyToOne(optional = true)
-    @JoinColumn(name = "parent_place")
-    private Place parentPlace;
+    /**
+     * Parent places.
+     */
+    @ManyToMany
+    @JoinTable(name = "place_parenthood", joinColumns = {@JoinColumn(name = "child")}, inverseJoinColumns = {
+        @JoinColumn(name = "parent")})
+    @NotAudited
+    private Set<Place> parentPlaces = new HashSet<>();
+
+    /**
+     * Child places.
+     */
+    @ManyToMany(mappedBy = "parentPlaces")
+    private Set<Place> childPlaces = new HashSet<>();
+
+    /**
+     * Place is collapsed.
+     */
+    @Column(name = "collapsed", nullable = false)
+    private boolean collapsed;
 
     /**
      * Banners starting at the place.
@@ -172,19 +188,40 @@ public class Place {
         this.boundaryMaxLongitude = boundaryMaxLongitude;
     }
 
-    public Place getParentPlace() {
-        return parentPlace;
+    public Set<Place> getParentPlaces() {
+        return parentPlaces;
     }
 
-    public void setParentPlace(Place parentPlace) {
-        this.parentPlace = parentPlace;
+    public Set<Place> getChildPlaces() {
+        return childPlaces;
+    }
+
+    public boolean isCollapsed() {
+        return collapsed;
+    }
+
+    public void setCollapsed(boolean collapsed) {
+        this.collapsed = collapsed;
     }
 
     public Set<Banner> getBanners() {
         return banners;
     }
 
-    public void setBanners(Set<Banner> banners) {
-        this.banners = banners;
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof Place)) {
+            return false;
+        }
+        Place other = (Place) obj;
+        return Objects.equals(id, other.id);
     }
 }

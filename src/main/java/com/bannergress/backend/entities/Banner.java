@@ -375,26 +375,19 @@ public class Banner {
     }
 
     @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
+    public boolean equals(Object obj) {
+        if (this == obj) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (!(obj instanceof Banner)) {
             return false;
         }
-        final Banner banner = (Banner) o;
-        return Objects.equals(uuid, banner.uuid) && numberOfMissions == banner.numberOfMissions
-            && online == banner.online && Objects.equals(title, banner.title)
-            && Objects.equals(description, banner.description) && Objects.equals(missions, banner.missions)
-            && Objects.equals(startPoint, banner.startPoint) && Objects.equals(lengthMeters, banner.lengthMeters)
-            && Objects.equals(picture, banner.picture) && Objects.equals(startPlaces, banner.startPlaces)
-            && Objects.equals(created, banner.created) && type == banner.type
-            && Objects.equals(canonicalSlug, banner.canonicalSlug);
+        Banner other = (Banner) obj;
+        return Objects.equals(uuid, other.uuid);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(uuid, title, description, numberOfMissions, missions, startPoint, lengthMeters, online,
-            picture, startPlaces, created, type, canonicalSlug);
+        return Objects.hash(uuid);
     }
 }
