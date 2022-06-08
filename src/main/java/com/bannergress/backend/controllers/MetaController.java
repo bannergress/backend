@@ -6,6 +6,7 @@ import com.bannergress.backend.entities.PlaceInformation;
 import com.bannergress.backend.services.BannerService;
 import com.bannergress.backend.services.PlaceService;
 import com.bannergress.backend.utils.SiteUrls;
+import com.google.common.collect.ImmutableList;
 import com.google.common.escape.Escaper;
 import com.google.common.html.HtmlEscapers;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 /**
@@ -24,7 +26,7 @@ import java.util.Optional;
  */
 @RestController
 public class MetaController {
-    private static final String LANGUAGE = "en";
+    private static final List<Locale.LanguageRange>  LANGUAGE = ImmutableList.of(new Locale.LanguageRange("en"));
     private static final String OG_DESCRIPTION = "og:description";
     private static final String OG_IMAGE = "og:image";
     private static final String OG_SITE_NAME = "og:site_name";

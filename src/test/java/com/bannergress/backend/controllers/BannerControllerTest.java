@@ -7,6 +7,7 @@ import com.bannergress.backend.services.BannerSearchService;
 import com.bannergress.backend.services.BannerService;
 import com.bannergress.backend.services.impl.BannerSettingsServiceImpl;
 import com.bannergress.backend.services.impl.PlaceServiceImpl;
+import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.HttpStatus;
@@ -51,7 +52,7 @@ class BannerControllerTest {
         final ResponseEntity<List<BannerDto>> result = testController.list(place, Optional.empty(), Optional.empty(),
             Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), false, Optional.empty(),
             Optional.empty(), Optional.empty(), Optional.empty(), Direction.ASC, Optional.empty(), Optional.empty(), 0,
-            100, null);
+            100, null, ImmutableList.of());
 
         // VERIFY
         assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -85,7 +86,7 @@ class BannerControllerTest {
         // THEN
         final ResponseEntity<List<BannerDto>> result = testController.list(Optional.empty(), minLat, maxLat, minLong,
             maxLong, Optional.empty(), Optional.empty(), false, Optional.empty(), Optional.empty(), Optional.empty(),
-            Optional.empty(), Direction.ASC, Optional.empty(), Optional.empty(), 0, 100, null);
+            Optional.empty(), Direction.ASC, Optional.empty(), Optional.empty(), 0, 100, null, ImmutableList.of());
 
         // VERIFY
         assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -105,7 +106,7 @@ class BannerControllerTest {
         when(bannerService.findBySlugWithDetails(slug)).thenReturn(Optional.of(banner));
 
         // THEN
-        final var response = testController.get(slug, null);
+        final var response = testController.get(slug, null, ImmutableList.of());
 
         // VERIFY
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -126,7 +127,7 @@ class BannerControllerTest {
         when(bannerService.findBySlugWithDetails(slug)).thenReturn(Optional.empty());
 
         // THEN
-        final var response = testController.get(slug, null);
+        final var response = testController.get(slug, null, ImmutableList.of());
 
         // VERIFY
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
@@ -142,7 +143,7 @@ class BannerControllerTest {
         when(bannerService.findBySlugWithDetails(savedBanner.getCanonicalSlug())).thenReturn(Optional.of(savedBanner));
 
         // THEN
-        final var response = testController.post(banner, null);
+        final var response = testController.post(banner, null, ImmutableList.of());
 
         // VERIFY
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
