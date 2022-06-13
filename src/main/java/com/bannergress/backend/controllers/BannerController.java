@@ -108,7 +108,7 @@ public class BannerController {
                                                 @RequestParam @Parameter(description = "Longitude of the proximity reference point. Required for orderBy=proximityStartPoint.") final Optional<@Min(-180) @Max(180) Double> proximityLongitude,
                                                 @RequestParam(defaultValue = "0") @Parameter(description = "0-based offset for searching.") @Min(0) final int offset,
                                                 @RequestParam(defaultValue = "20") @Parameter(description = "Maximum number of results.") @Min(1) @Max(100) final int limit,
-                                                Principal principal) {
+                                                Principal principal, List<Locale.LanguageRange> languagePriorityList) {
         boolean isAuthenticated = principal != null;
         if ((author.isPresent() || listTypes.isPresent()) && !isAuthenticated) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -132,7 +132,8 @@ public class BannerController {
             maxLongitude, query, isAuthenticated, missionId, onlyOfficialMissions, author, listTypes,
             Optional.ofNullable(principal).map(Principal::getName), online, orderBy, orderDirection, proximityLatitude,
             proximityLongitude, offset, limit);
-        List<BannerDto> bannerDtos = banners.stream().map(this::toSummary).collect(Collectors.toUnmodifiableList());
+        List<BannerDto> bannerDtos = banners.stream().map(banner -> toSummary(banner, languagePriorityList))
+            .collect(Collectors.toUnmodifiableList());
         amendUserSettings(principal, bannerDtos);
         return ResponseEntity.ok(bannerDtos);
     }
@@ -144,9 +145,10 @@ public class BannerController {
      * @return
      */
     @GetMapping("/bnrs/{id}")
-    public ResponseEntity<BannerDto> get(@PathVariable final String id, Principal principal) {
+    public ResponseEntity<BannerDto> get(@PathVariable final String id, Principal principal,
+                                         List<Locale.LanguageRange> languagePriorityList) {
         final Optional<Banner> banner = bannerService.findBySlugWithDetails(id);
-        Optional<BannerDto> optionalBannerDto = banner.map(this::toDetails);
+        Optional<BannerDto> optionalBannerDto = banner.map(b -> toDetails(b, languagePriorityList));
         optionalBannerDto.ifPresent(bannerDto -> {
             amendUserSettings(principal, List.of(bannerDto));
             amendOwner(principal, bannerDto);
@@ -157,17 +159,19 @@ public class BannerController {
     @RolesAllowed(Roles.CREATE_BANNER)
     @PostMapping("/bnrs")
     @Hidden
-    public ResponseEntity<BannerDto> post(@Valid @RequestBody BannerDto banner, Principal principal)
+    public ResponseEntity<BannerDto> post(@Valid @RequestBody BannerDto banner, Principal principal,
+                                          List<Locale.LanguageRange> languagePriorityList)
         throws MissionAlreadyUsedException {
         String id = bannerService.create(banner);
-        return get(id, principal);
+        return get(id, principal, languagePriorityList);
     }
 
     @RolesAllowed(Roles.CREATE_BANNER)
     @PostMapping("/bnrs/preview")
     @Hidden
-    public BannerDto preview(@Valid @RequestBody BannerDto banner) throws MissionAlreadyUsedException {
-        return toDetails(bannerService.generatePreview(banner));
+    public BannerDto preview(@Valid @RequestBody BannerDto banner, List<Locale.LanguageRange> languagePriorityList)
+        throws MissionAlreadyUsedException {
+        return toDetails(bannerService.generatePreview(banner), languagePriorityList);
     }
 
     /**
@@ -183,7 +187,8 @@ public class BannerController {
     @PutMapping("/bnrs/{id}")
     @Hidden
     public ResponseEntity<BannerDto> put(@PathVariable final String id, @Valid @RequestBody BannerDto banner,
-                                         Principal principal, HttpServletRequest request)
+                                         Principal principal, HttpServletRequest request,
+                                         List<Locale.LanguageRange> languagePriorityList)
         throws MissionAlreadyUsedException {
         if (bannerService.isMistakeEdit(id, banner)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
@@ -192,7 +197,7 @@ public class BannerController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
         bannerService.update(id, banner);
-        return get(id, principal);
+        return get(id, principal, languagePriorityList);
     }
 
     public boolean hasOwner(String id, Principal principal) {
@@ -254,7 +259,7 @@ public class BannerController {
         bannerSettingsService.addBannerToList(principal.getName(), id, settings.listType);
     }
 
-    private BannerDto toSummary(Banner banner) {
+    private BannerDto toSummary(Banner banner, List<Locale.LanguageRange> languagePriorityList) {
         BannerDto dto = new BannerDto();
         dto.id = banner.getCanonicalSlug();
         dto.title = banner.getTitle();
@@ -267,7 +272,7 @@ public class BannerController {
         dto.picture = banner.getPicture() == null ? null : ("/bnrs/pictures/" + banner.getPicture().getHash());
         dto.width = banner.getWidth();
         Optional<PlaceInformation> placeInformation = placeService
-            .getMostAccuratePlaceInformation(banner.getStartPlaces(), "en");
+            .getMostAccuratePlaceInformation(banner.getStartPlaces(), languagePriorityList);
         if (placeInformation.isPresent()) {
             dto.startPlaceId = placeInformation.get().getPlace().getSlug();
             dto.formattedAddress = placeInformation.get().getFormattedAddress();
@@ -275,8 +280,8 @@ public class BannerController {
         return dto;
     }
 
-    private BannerDto toDetails(Banner banner) {
-        BannerDto dto = toSummary(banner);
+    private BannerDto toDetails(Banner banner, List<Locale.LanguageRange> languagePriorityList) {
+        BannerDto dto = toSummary(banner, languagePriorityList);
         dto.missions = Maps.transformValues(banner.getMissionsAndPlaceholders(), this::toMissionOrPlaceholder);
         dto.type = banner.getType();
         dto.description = banner.getDescription();

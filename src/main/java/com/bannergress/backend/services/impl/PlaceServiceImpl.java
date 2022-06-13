@@ -33,6 +33,8 @@ import static com.bannergress.backend.utils.Spatial.getLongitude;
 @Service
 @Transactional
 public class PlaceServiceImpl implements PlaceService {
+    private static final String DEFAULT_LANGUAGE = "en";
+
     @Autowired
     private EntityManager entityManager;
 
@@ -116,16 +118,26 @@ public class PlaceServiceImpl implements PlaceService {
     }
 
     @Override
-    public PlaceInformation getPlaceInformation(Place place, String languageCode) {
-        // languageCode is ignored for now, we always fetch the first (english) translation
-        return place.getInformation().get(0);
+    public PlaceInformation getPlaceInformation(Place place, List<Locale.LanguageRange> languagePriorityList) {
+        List<String> availableLanguages = place.getInformation().stream().map(PlaceInformation::getLanguageCode)
+            .collect(Collectors.toList());
+        String language = Locale.lookupTag(languagePriorityList, availableLanguages);
+        return place.getInformation().stream().sorted(Comparator.comparing(p -> {
+            if (p.getLanguageCode().equals(language)) {
+                return 1;
+            } else if (p.getLanguageCode().equals(DEFAULT_LANGUAGE)) {
+                return 2;
+            } else {
+                return 3;
+            }
+        })).findFirst().orElseThrow();
     }
 
     @Override
     public Optional<PlaceInformation> getMostAccuratePlaceInformation(Collection<Place> places,
-                                                                      String languagePreference) {
+                                                                      List<Locale.LanguageRange> languagePriorityList) {
         return places.stream().sorted(Comparator.comparing(Place::getType).reversed()).findFirst()
-            .map(place -> getPlaceInformation(place, languagePreference));
+            .map(place -> getPlaceInformation(place, languagePriorityList));
     }
 
     @Override

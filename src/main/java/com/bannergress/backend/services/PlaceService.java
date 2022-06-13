@@ -8,6 +8,8 @@ import org.locationtech.jts.geom.Point;
 import org.springframework.data.domain.Sort.Direction;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 /**
@@ -41,11 +43,11 @@ public interface PlaceService {
     /**
      * Gets localized information about a place.
      *
-     * @param place              Place.
-     * @param languagePreference Language preference, as specified by the Accept-Language header.
+     * @param place            Place.
+     * @param languagePriority Language priority list.
      * @return Place information.
      */
-    PlaceInformation getPlaceInformation(Place place, String languagePreference);
+    PlaceInformation getPlaceInformation(Place place, List<Locale.LanguageRange> languagePriorityList);
 
     /**
      * Retrieves all places a coordinate belongs to.
@@ -58,11 +60,12 @@ public interface PlaceService {
     /**
      * Gets localized information about the most specific place.
      *
-     * @param places             Places.
-     * @param languagePreference Language preference, as specified by the Accept-Language header.
+     * @param places           Places.
+     * @param languagePriority Language priority list.
      * @return Place information, if the list of places is not empty.
      */
-    Optional<PlaceInformation> getMostAccuratePlaceInformation(Collection<Place> places, String languagePreference);
+    Optional<PlaceInformation> getMostAccuratePlaceInformation(Collection<Place> places,
+                                                               List<Locale.LanguageRange> languagePriorityList);
 
     /**
      * Updates information for a set of places.

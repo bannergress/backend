@@ -16,6 +16,7 @@ import javax.annotation.security.RolesAllowed;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -47,10 +48,11 @@ public class PlaceController {
                                @RequestParam(defaultValue = "numberOfBanners") final PlaceSortOrder orderBy,
                                @RequestParam(defaultValue = "DESC") final Direction orderDirection,
                                @RequestParam(defaultValue = "0") final int offset,
-                               @RequestParam final Optional<Integer> limit) {
+                               @RequestParam final Optional<Integer> limit,
+                               List<Locale.LanguageRange> languagePriorityList) {
         Collection<Place> usedPlaces = placeService.findUsedPlaces(parentPlaceId, query, type, orderBy, orderDirection,
             offset, limit);
-        return usedPlaces.stream().map(this::toSummary).collect(Collectors.toList());
+        return usedPlaces.stream().map(place -> toSummary(place, languagePriorityList)).collect(Collectors.toList());
     }
 
     /**
@@ -60,8 +62,9 @@ public class PlaceController {
      * @return Place.
      */
     @GetMapping("/places/{id}")
-    public ResponseEntity<PlaceDto> get(@PathVariable final String id) {
-        return ResponseEntity.of(placeService.findPlaceBySlug(id).map(this::toDetails));
+    public ResponseEntity<PlaceDto> get(@PathVariable final String id,
+                                        List<Locale.LanguageRange> languagePriorityList) {
+        return ResponseEntity.of(placeService.findPlaceBySlug(id).map(place -> toDetails(place, languagePriorityList)));
     }
 
     @RolesAllowed(Roles.MANAGE_PLACES)
@@ -71,10 +74,10 @@ public class PlaceController {
         placeService.updateAllPlaces();
     }
 
-    private PlaceDto toDetails(Place place) {
-        PlaceDto placeDto = toSummary(place);
+    private PlaceDto toDetails(Place place, List<Locale.LanguageRange> languagePriorityList) {
+        PlaceDto placeDto = toSummary(place, languagePriorityList);
         collapseParents(place).findFirst().ifPresent(parentPlace -> {
-            placeDto.parentPlace = toDetails(parentPlace);
+            placeDto.parentPlace = toDetails(parentPlace, languagePriorityList);
         });
         return placeDto;
     }
@@ -83,8 +86,8 @@ public class PlaceController {
         return place.getParentPlaces().stream().flatMap(p -> p.isCollapsed() ? collapseParents(p) : Stream.of(p));
     }
 
-    private PlaceDto toSummary(Place place) {
-        PlaceInformation information = placeService.getPlaceInformation(place, "en");
+    private PlaceDto toSummary(Place place, List<Locale.LanguageRange> languagePriorityList) {
+        PlaceInformation information = placeService.getPlaceInformation(place, languagePriorityList);
         PlaceDto placeDto = new PlaceDto();
         placeDto.id = place.getSlug();
         placeDto.numberOfBanners = place.getNumberOfBanners();
