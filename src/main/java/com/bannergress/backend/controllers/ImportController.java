@@ -17,6 +17,7 @@ import javax.validation.Valid;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -53,8 +54,9 @@ public class ImportController {
 
     @RolesAllowed(Roles.IMPORT_DATA)
     @PostMapping("/import/getMissionsList")
-    public void importGetMissionsList(@RequestBody @Valid CreatorGetMissionsList data) {
-        creatorImportService.importGetMissionsList(data);
+    public void importGetMissionsList(@RequestBody @Valid CreatorGetMissionsList data,
+                                      @RequestParam Optional<String> author) {
+        creatorImportService.importGetMissionsList(data, author);
     }
 
     private Map<String, MissionStatusDto> toStatusMap(Collection<Mission> imported) {

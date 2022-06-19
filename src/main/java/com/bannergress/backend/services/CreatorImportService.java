@@ -5,6 +5,8 @@ import com.bannergress.backend.dto.CreatorGetMissionsList;
 
 import javax.validation.Valid;
 
+import java.util.Optional;
+
 /**
  * Service for imports from mission creator.
  */
@@ -19,7 +21,8 @@ public interface CreatorImportService {
     /**
      * Imports a a list of user missions from creator-based data.
      *
-     * @param data Creator-based data.
+     * @param data   Creator-based data.
+     * @param author Author.
      */
-    void importGetMissionsList(@Valid CreatorGetMissionsList data);
+    void importGetMissionsList(@Valid CreatorGetMissionsList data, Optional<String> author);
 }

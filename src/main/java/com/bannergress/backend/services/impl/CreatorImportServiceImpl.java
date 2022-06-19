@@ -48,7 +48,7 @@ public class CreatorImportServiceImpl extends BaseImportServiceImpl implements C
     }
 
     @Override
-    public void importGetMissionsList(@Valid CreatorGetMissionsList data) {
+    public void importGetMissionsList(@Valid CreatorGetMissionsList data, Optional<String> optionalAuthor) {
         withRecalculation(tracker -> {
             for (List<CreatorMission> list : data.missionLists) {
                 for (CreatorMission creatorMission : list) {
@@ -58,6 +58,7 @@ public class CreatorImportServiceImpl extends BaseImportServiceImpl implements C
                         Mission mission = importMission(creatorMission.mission_guid, creatorMission, List.of(),
                             tracker);
                         setMissionStatus(mission, toMissionStatus(creatorMission.state), tracker);
+                        optionalAuthor.ifPresent(author -> setMissionAuthor(mission, author, null));
                         entityManager.persist(mission);
                     }
                 }
