@@ -17,6 +17,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -39,7 +40,8 @@ public class DatabaseBannerSearchServiceImpl extends BaseBannerSearchServiceImpl
                              Optional<String> author, Optional<Collection<BannerListType>> listTypes,
                              Optional<String> userId, Optional<Boolean> online, Optional<BannerSortOrder> orderBy,
                              Direction orderDirection, Optional<Double> proximityLatitude,
-                             Optional<Double> proximityLongitude, int offset, int limit) {
+                             Optional<Double> proximityLongitude, Optional<Instant> minEventTimestamp,
+                             Optional<Instant> maxEventTimestamp, int offset, int limit) {
         List<Specification<Banner>> specifications = new ArrayList<>();
         if (placeSlug.isPresent()) {
             specifications.add(BannerSpecifications.hasStartPlaceSlug(placeSlug.get()));
@@ -82,6 +84,12 @@ public class DatabaseBannerSearchServiceImpl extends BaseBannerSearchServiceImpl
         }
         if (online.isPresent()) {
             specifications.add(BannerSpecifications.hasOnline(online.get()));
+        }
+        if (minEventTimestamp.isPresent()) {
+            specifications.add(BannerSpecifications.eventEndsAfter(minEventTimestamp.get()));
+        }
+        if (maxEventTimestamp.isPresent()) {
+            specifications.add(BannerSpecifications.eventStartsBeforeOrAt(minEventTimestamp.get()));
         }
 
         Sort sort;

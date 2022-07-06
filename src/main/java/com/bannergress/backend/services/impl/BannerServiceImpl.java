@@ -12,12 +12,10 @@ import com.bannergress.backend.repositories.BannerRepository;
 import com.bannergress.backend.repositories.BannerSpecifications;
 import com.bannergress.backend.repositories.MissionRepository;
 import com.bannergress.backend.repositories.MissionSpecifications;
-import com.bannergress.backend.services.BannerPictureService;
-import com.bannergress.backend.services.BannerService;
-import com.bannergress.backend.services.MissionService;
-import com.bannergress.backend.services.PlaceService;
+import com.bannergress.backend.services.*;
 import com.bannergress.backend.utils.DistanceCalculation;
 import com.bannergress.backend.utils.SlugGenerator;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -29,6 +27,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -52,6 +51,9 @@ public class BannerServiceImpl implements BannerService {
 
     @Autowired
     private BannerPictureService pictureService;
+
+    @Autowired
+    private TimezoneService timezoneService;
 
     @Autowired
     private SlugGenerator slugGenerator;
@@ -115,6 +117,8 @@ public class BannerServiceImpl implements BannerService {
         banner.getPlaceholders().addAll(placeHolderMissions(bannerDto).keySet());
         banner.setWarning(bannerDto.warning);
         banner.setPlannedOfflineDate(bannerDto.plannedOfflineDate);
+        banner.setEventStartDate(bannerDto.eventStartDate);
+        banner.setEventEndDate(bannerDto.eventEndDate);
         calculateData(banner);
         pictureService.refresh(banner);
         return banner;
@@ -158,6 +162,8 @@ public class BannerServiceImpl implements BannerService {
         banner.getPlaceholders().addAll(placeHolderMissions(bannerDto).keySet());
         banner.setWarning(bannerDto.warning);
         banner.setPlannedOfflineDate(bannerDto.plannedOfflineDate);
+        banner.setEventStartDate(bannerDto.eventStartDate);
+        banner.setEventEndDate(bannerDto.eventEndDate);
         calculateSlug(banner);
         calculateData(banner);
         pictureService.refresh(banner);
@@ -210,6 +216,15 @@ public class BannerServiceImpl implements BannerService {
             Collection<Place> startPlaces = placesService.getPlaces(startPoint);
             banner.getStartPlaces().clear();
             banner.getStartPlaces().addAll(startPlaces);
+        }
+        if (banner.getEventStartDate() == null && banner.getEventEndDate() == null) {
+            banner.setEventStartTimestamp(null);
+            banner.setEventEndTimestamp(null);
+        } else {
+            Preconditions.checkArgument(!banner.getEventStartDate().isAfter(banner.getEventEndDate()));
+            ZoneId zone = timezoneService.getZone(startPoint);
+            banner.setEventStartTimestamp(banner.getEventStartDate().atStartOfDay(zone).toInstant());
+            banner.setEventEndTimestamp(banner.getEventEndDate().plusDays(1).atStartOfDay(zone).toInstant());
         }
         banner.setLengthMeters(DistanceCalculation.calculateLengthMeters(banner.getMissions().values()));
     }

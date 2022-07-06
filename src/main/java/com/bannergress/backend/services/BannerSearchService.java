@@ -5,6 +5,7 @@ import com.bannergress.backend.enums.BannerListType;
 import com.bannergress.backend.enums.BannerSortOrder;
 import org.springframework.data.domain.Sort.Direction;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -42,7 +43,8 @@ public interface BannerSearchService {
                       boolean queryAuthor, Optional<String> missionId, boolean onlyOfficialMissions,
                       Optional<String> author, Optional<Collection<BannerListType>> listTypes, Optional<String> userId,
                       Optional<Boolean> online, Optional<BannerSortOrder> orderBy, Direction orderDirection,
-                      Optional<Double> proximityLatitude, Optional<Double> proximityLongitude, int offset, int limit);
+                      Optional<Double> proximityLatitude, Optional<Double> proximityLongitude,
+                      Optional<Instant> minEventTimestamp, Optional<Instant> maxEventTimestamp, int offset, int limit);
 
     /** Updates the search index. */
     void updateIndex();

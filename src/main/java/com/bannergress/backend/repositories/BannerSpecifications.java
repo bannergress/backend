@@ -11,6 +11,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.criteria.*;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.EnumSet;
 
@@ -121,6 +122,14 @@ public class BannerSpecifications {
             return cb.and(cb.equal(settings.get(BannerSettings_.user).get(User_.id), userId),
                 settings.get(BannerSettings_.listType).in(listTypes));
         };
+    }
+
+    public static Specification<Banner> eventEndsAfter(Instant instant) {
+        return (banner, cq, cb) -> cb.greaterThan(banner.get(Banner_.eventEndTimestamp), instant);
+    }
+
+    public static Specification<Banner> eventStartsBeforeOrAt(Instant instant) {
+        return (banner, cq, cb) -> cb.lessThanOrEqualTo(banner.get(Banner_.eventStartTimestamp), instant);
     }
 
     public static Specification<Banner> sortByProximity(Point point, Direction direction) {

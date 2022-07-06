@@ -208,6 +208,34 @@ public class Banner {
     @Column(name = "planned_offline_date", nullable = true)
     private LocalDate plannedOfflineDate;
 
+    /**
+     * Start date for the corresponding event (inclusive).
+     */
+    @Column(name = "event_start_date", nullable = true)
+    private LocalDate eventStartDate;
+
+    /**
+     * End date for the corresponding event (inclusive).
+     */
+    @Column(name = "event_end_date", nullable = true)
+    private LocalDate eventEndDate;
+
+    /**
+     * Start timestamp for the corresponding event (inclusive).
+     */
+    @Column(name = "event_start_timestamp", nullable = true)
+    @NotAudited
+    @GenericField(searchable = Searchable.YES, sortable = Sortable.NO)
+    private Instant eventStartTimestamp;
+
+    /**
+     * End timestamp for the corresponding event (exclusive).
+     */
+    @Column(name = "event_end_timestamp", nullable = true)
+    @NotAudited
+    @GenericField(searchable = Searchable.YES, sortable = Sortable.NO)
+    private Instant eventEndTimestamp;
+
     public UUID getUuid() {
         return uuid;
     }
@@ -372,6 +400,38 @@ public class Banner {
 
     public String getWarning() {
         return warning;
+    }
+
+    public void setEventStartDate(LocalDate eventStartDate) {
+        this.eventStartDate = eventStartDate;
+    }
+
+    public LocalDate getEventStartDate() {
+        return eventStartDate;
+    }
+
+    public void setEventEndDate(LocalDate eventEndDate) {
+        this.eventEndDate = eventEndDate;
+    }
+
+    public LocalDate getEventEndDate() {
+        return eventEndDate;
+    }
+
+    public void setEventStartTimestamp(Instant eventStartTimestamp) {
+        this.eventStartTimestamp = eventStartTimestamp;
+    }
+
+    public Instant getEventStartTimestamp() {
+        return eventStartTimestamp;
+    }
+
+    public void setEventEndTimestamp(Instant eventEndTimestamp) {
+        this.eventEndTimestamp = eventEndTimestamp;
+    }
+
+    public Instant getEventEndTimestamp() {
+        return eventEndTimestamp;
     }
 
     @Override

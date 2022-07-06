@@ -134,6 +134,16 @@ public class BannerDto {
      */
     public LocalDate plannedOfflineDate;
 
+    /**
+     * Start date for the corresponding event (inclusive).
+     */
+    public LocalDate eventStartDate;
+
+    /**
+     * End date for the corresponding event (inclusive).
+     */
+    public LocalDate eventEndDate;
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) {

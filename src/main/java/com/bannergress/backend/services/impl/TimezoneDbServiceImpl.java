@@ -61,7 +61,7 @@ public class TimezoneDbServiceImpl implements TimezoneService {
             .get() //
             .uri(builder -> {
                 return builder //
-                    .path("/v2.1/get-time-zone")//
+                    .path("/v2.1/get-time-zone") //
                     .queryParam("key", apiKey) //
                     .queryParam("format", "json") //
                     .queryParam("fields", "zoneName") //
@@ -85,11 +85,11 @@ public class TimezoneDbServiceImpl implements TimezoneService {
     /** API response. */
     @JsonIgnoreProperties(ignoreUnknown = true)
     private static class ApiResponse {
-        ApiResponseStatus status;
+        public ApiResponseStatus status;
 
-        String message;
+        public String message;
 
-        String zoneName;
+        public String zoneName;
     }
 
     /** API response status. */
