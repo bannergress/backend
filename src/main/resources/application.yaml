@@ -8,8 +8,6 @@
 spring:
   main:
     banner-mode: OFF
-  datasource:
-    platform: postgresql
   jpa:
     hibernate:
       ddl-auto: none
@@ -22,6 +20,9 @@ spring:
       cache:
         cachecontrol:
           no-store: false
+  sql:
+    init:
+      platform: postgresql
 
 keycloak:
   bearer-only: true
