@@ -125,7 +125,7 @@ public class BannerServiceImpl implements BannerService {
     }
 
     private Map<Integer, Mission> actualMissionReferences(BannerDto bannerDto) {
-        return Maps.transformValues(actualMissions(bannerDto), missionDto -> missionRepository.getById(missionDto.id));
+        return Maps.transformValues(actualMissions(bannerDto), missionDto -> missionRepository.getReferenceById(missionDto.id));
     }
 
     private static Collection<String> missionIds(BannerDto bannerDto) {
