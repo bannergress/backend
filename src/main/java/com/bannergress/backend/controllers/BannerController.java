@@ -38,6 +38,7 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
 import java.security.Principal;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
@@ -106,6 +107,8 @@ public class BannerController {
                                                 @RequestParam(defaultValue = "ASC") @Parameter(description = "Order direction.") final Direction orderDirection,
                                                 @RequestParam @Parameter(description = "Latitude of the proximity reference point. Required for orderBy=proximityStartPoint.") final Optional<@Min(-90) @Max(90) Double> proximityLatitude,
                                                 @RequestParam @Parameter(description = "Longitude of the proximity reference point. Required for orderBy=proximityStartPoint.") final Optional<@Min(-180) @Max(180) Double> proximityLongitude,
+                                                @RequestParam @Parameter(description = "Only list events which end after this ISO 8601 UTC timestamp.") Optional<Instant> minEventTimestamp,
+                                                @RequestParam @Parameter(description = "Only list events which start before this ISO 8601 UTC timestamp.") Optional<Instant> maxEventTimestamp,
                                                 @RequestParam(defaultValue = "0") @Parameter(description = "0-based offset for searching.") @Min(0) final int offset,
                                                 @RequestParam(defaultValue = "20") @Parameter(description = "Maximum number of results.") @Min(1) @Max(100) final int limit,
                                                 Principal principal, List<Locale.LanguageRange> languagePriorityList) {
@@ -131,7 +134,7 @@ public class BannerController {
         final Collection<Banner> banners = bannerSearchService.find(placeId, minLatitude, maxLatitude, minLongitude,
             maxLongitude, query, isAuthenticated, missionId, onlyOfficialMissions, author, listTypes,
             Optional.ofNullable(principal).map(Principal::getName), online, orderBy, orderDirection, proximityLatitude,
-            proximityLongitude, offset, limit);
+            proximityLongitude, minEventTimestamp, maxEventTimestamp, offset, limit);
         List<BannerDto> bannerDtos = banners.stream().map(banner -> toSummary(banner, languagePriorityList))
             .collect(Collectors.toUnmodifiableList());
         amendUserSettings(principal, bannerDtos);
@@ -193,7 +196,8 @@ public class BannerController {
         if (bannerService.isMistakeEdit(id, banner)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         } else if (!request.isUserInRole(Roles.MANAGE_BANNERS)
-            && bannerService.isProbablyMaliciousEdit(id, banner, getAgent(principal).get())) {
+            && (bannerService.isProbablyMaliciousEdit(id, banner, getAgent(principal).get())
+                || banner.eventStartDate != null || banner.eventEndDate != null)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
         bannerService.update(id, banner);
@@ -287,6 +291,8 @@ public class BannerController {
         dto.description = banner.getDescription();
         dto.warning = banner.getWarning();
         dto.plannedOfflineDate = banner.getPlannedOfflineDate();
+        dto.eventStartDate = banner.getEventStartDate();
+        dto.eventEndDate = banner.getEventEndDate();
         return dto;
     }
 

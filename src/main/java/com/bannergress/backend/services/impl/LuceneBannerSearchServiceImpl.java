@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
@@ -50,6 +51,8 @@ public class LuceneBannerSearchServiceImpl extends BaseBannerSearchServiceImpl {
     private static final String FIELD_SETTINGS_USER_ID = "settings.user.id";
     private static final String FIELD_SETTINGS_LIST_TYPE = "settings.listType";
     private static final String FIELD_SETTINGS_LIST_ADDED = "settings.listAdded";
+    private static final String FIELD_EVENT_START_TIMESTAMP = "eventStartTimestamp";
+    private static final String FIELD_EVENT_END_TIMESTAMP = "eventEndTimestamp";
 
     @Autowired
     private EntityManager entityManager;
@@ -61,7 +64,8 @@ public class LuceneBannerSearchServiceImpl extends BaseBannerSearchServiceImpl {
                              Optional<String> author, Optional<Collection<BannerListType>> listTypes,
                              Optional<String> userId, Optional<Boolean> online, Optional<BannerSortOrder> orderBy,
                              Direction orderDirection, Optional<Double> proximityLatitude,
-                             Optional<Double> proximityLongitude, int offset, int limit) {
+                             Optional<Double> proximityLongitude, Optional<Instant> minEventTimestamp,
+                             Optional<Instant> maxEventTimestamp, int offset, int limit) {
         SearchSession searchSession = Search.session(entityManager);
         List<Banner> result = searchSession.search(Banner.class).where(factory -> factory.bool(b -> {
             b.filter(factory.matchAll());
@@ -103,6 +107,12 @@ public class LuceneBannerSearchServiceImpl extends BaseBannerSearchServiceImpl {
             }
             if (online.isPresent()) {
                 b.filter(factory.match().field(FIELD_ONLINE).matching(online.get()));
+            }
+            if (minEventTimestamp.isPresent()) {
+                b.filter(factory.range().field(FIELD_EVENT_END_TIMESTAMP).greaterThan(minEventTimestamp.get()));
+            }
+            if (maxEventTimestamp.isPresent()) {
+                b.filter(factory.range().field(FIELD_EVENT_START_TIMESTAMP).atLeast(maxEventTimestamp.get()));
             }
         })).sort(factory -> factory.composite(b -> {
             if (orderBy.isPresent()) {
