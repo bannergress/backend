@@ -112,7 +112,7 @@ public class LuceneBannerSearchServiceImpl extends BaseBannerSearchServiceImpl {
                 b.filter(factory.range().field(FIELD_EVENT_END_TIMESTAMP).greaterThan(minEventTimestamp.get()));
             }
             if (maxEventTimestamp.isPresent()) {
-                b.filter(factory.range().field(FIELD_EVENT_START_TIMESTAMP).atLeast(maxEventTimestamp.get()));
+                b.filter(factory.range().field(FIELD_EVENT_START_TIMESTAMP).atMost(maxEventTimestamp.get()));
             }
         })).sort(factory -> factory.composite(b -> {
             if (orderBy.isPresent()) {
