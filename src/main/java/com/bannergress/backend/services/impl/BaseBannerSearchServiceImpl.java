@@ -4,8 +4,8 @@ import com.bannergress.backend.entities.Banner;
 import com.bannergress.backend.repositories.BannerRepository;
 import com.bannergress.backend.repositories.BannerSpecifications;
 import com.bannergress.backend.services.BannerSearchService;
-import com.google.common.collect.ImmutableList;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.List;
 
@@ -13,15 +13,8 @@ import java.util.List;
  * Base class for banner search implementations.
  */
 abstract class BaseBannerSearchServiceImpl implements BannerSearchService {
-    protected static final List<String> OFFICIAL_MISSION_AUTHORS = ImmutableList.of( //
-        "MissionbyNIA", //
-        "MissionsbyNIA", //
-        "MissionDaysNia", //
-        "MissionsNIA", //
-        "MDNIA2", //
-        "MDNIA", //
-        "MDNIA2020" //
-    );
+    @Value("${niantic.officialMissionAuthors:MissionbyNIA,MissionsbyNIA,MissionDaysNia,MissionsNIA,MDNIA2,MDNIA,MDNIA2020}")
+    protected List<String> OFFICIAL_MISSION_AUTHORS;
 
     @Autowired
     protected BannerRepository bannerRepository;
