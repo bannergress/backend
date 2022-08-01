@@ -18,6 +18,14 @@ public interface BannerService {
     List<String> findAllSlugs();
 
     /**
+     * Finds a banner by its slug.
+     *
+     * @param id Slug.
+     * @return Banner.
+     */
+    Optional<Banner> findBySlug(String slug);
+
+    /**
      * Finds a banner by its slug, including details down to mission level.
      *
      * @param id Slug.

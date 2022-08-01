@@ -28,4 +28,14 @@ public interface Roles {
      * Role which allows to manage places.
      */
     String MANAGE_PLACES = "manage-places";
+
+    /**
+     * Role which allows to create a comment.
+     */
+    String CREATE_COMMENT = "create-comment";
+
+    /**
+     * Role which allows to manage comments.
+     */
+    String MANAGE_COMMENTS = "manage-comments";
 }

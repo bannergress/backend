@@ -312,6 +312,10 @@ public class BannerController {
         dto.plannedOfflineDate = banner.getPlannedOfflineDate();
         dto.eventStartDate = banner.getEventStartDate();
         dto.eventEndDate = banner.getEventEndDate();
+        dto.averageRatingRoundTheClock = banner.getAverageRatingRoundTheClock();
+        dto.averageRatingOverall = banner.getAverageRatingOverall();
+        dto.averageRatingAccessibility = banner.getAverageRatingAccessibility();
+        dto.averageRatingPassphrases = banner.getAverageRatingPassphrases();
         return dto;
     }
 

@@ -2,11 +2,9 @@ package com.bannergress.backend.services.impl;
 
 import com.bannergress.backend.dto.BannerDto;
 import com.bannergress.backend.dto.MissionDto;
-import com.bannergress.backend.entities.Banner;
-import com.bannergress.backend.entities.Mission;
-import com.bannergress.backend.entities.MissionStep;
-import com.bannergress.backend.entities.Place;
+import com.bannergress.backend.entities.*;
 import com.bannergress.backend.enums.MissionStatus;
+import com.bannergress.backend.enums.RoundTheClockType;
 import com.bannergress.backend.exceptions.MissionAlreadyUsedException;
 import com.bannergress.backend.repositories.BannerRepository;
 import com.bannergress.backend.repositories.BannerSpecifications;
@@ -29,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
@@ -68,6 +67,11 @@ public class BannerServiceImpl implements BannerService {
             missionRepository
                 .findAll(MissionSpecifications.isInMissions(missions).and(MissionSpecifications.fetchDetails()));
         }
+    }
+
+    @Override
+    public Optional<Banner> findBySlug(String slug) {
+        return bannerRepository.findOne(BannerSpecifications.hasSlug(slug));
     }
 
     @Override
@@ -227,6 +231,21 @@ public class BannerServiceImpl implements BannerService {
             banner.setEventEndTimestamp(banner.getEventEndDate().plusDays(1).atStartOfDay(zone).toInstant());
         }
         banner.setLengthMeters(DistanceCalculation.calculateLengthMeters(banner.getMissions().values()));
+        banner.setAverageRatingRoundTheClock(
+            getAverageRating(banner, comment -> comment.getRatingRoundTheClock() == null ? null
+                : comment.getRatingRoundTheClock() == RoundTheClockType.unrestricted ? 1 : 0));
+        banner.setAverageRatingOverall(getAverageRating(banner, Comment::getRatingOverall));
+        banner.setAverageRatingAccessibility(getAverageRating(banner, Comment::getRatingAccessibility));
+        banner.setAverageRatingPassphrases(getAverageRating(banner, Comment::getRatingPassphrases));
+    }
+
+    private Float getAverageRating(Banner banner, Function<Comment, Integer> ratingFunction) {
+        OptionalDouble result = banner.getComments().stream() //
+            .map(ratingFunction) //
+            .filter(r -> r != null) //
+            .mapToInt(r -> r) //
+            .average();
+        return result.isEmpty() ? null : (float) result.getAsDouble();
     }
 
     @Override
