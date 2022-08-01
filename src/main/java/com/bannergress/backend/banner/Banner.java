@@ -1,5 +1,6 @@
 package com.bannergress.backend.banner;
 
+import com.bannergress.backend.banner.comment.Comment;
 import com.bannergress.backend.banner.picture.BannerPicture;
 import com.bannergress.backend.banner.settings.BannerSettings;
 import com.bannergress.backend.mission.Mission;
@@ -197,6 +198,12 @@ public class Banner {
     private List<BannerSettings> settings;
 
     /**
+     * List of comments for the banner.
+     */
+    @OneToMany(mappedBy = "banner", cascade = CascadeType.ALL)
+    private Set<Comment> comments = new HashSet<>();
+
+    /**
      * Warning text.
      */
     @Column(name = "warning", nullable = true)
@@ -235,6 +242,30 @@ public class Banner {
     @NotAudited
     @GenericField(searchable = Searchable.YES, sortable = Sortable.NO)
     private Instant eventEndTimestamp;
+
+    /** Always (24/7) accessible. */
+    @Column(name = "round_the_clock")
+    private Boolean roundTheClock;
+
+    /** Average of always (24/7) accessible. Range between 0 (all false) and 1 (all true). */
+    @Column(name = "average_rating_round_the_clock")
+    @NotAudited
+    private Float averageRatingRoundTheClock;
+
+    /** Average overall rating (1 to 5 stars). */
+    @Column(name = "average_rating_overall")
+    @NotAudited
+    private Float averageRatingOverall;
+
+    /** Average accessibility rating (1 to 5 stars). */
+    @Column(name = "average_rating_accessibility")
+    @NotAudited
+    private Float averageRatingAccessibility;
+
+    /** Average passphrase rating (1 to 5 stars). */
+    @Column(name = "average_rating_passphrases")
+    @NotAudited
+    private Float averageRatingPassphrases;
 
     public UUID getUuid() {
         return uuid;
@@ -432,6 +463,54 @@ public class Banner {
 
     public Instant getEventEndTimestamp() {
         return eventEndTimestamp;
+    }
+
+    public Set<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(Set<Comment> comments) {
+        this.comments = comments;
+    }
+
+    public Boolean getRoundTheClock() {
+        return roundTheClock;
+    }
+
+    public void setRoundTheClock(Boolean roundTheClock) {
+        this.roundTheClock = roundTheClock;
+    }
+
+    public Float getAverageRatingRoundTheClock() {
+        return averageRatingRoundTheClock;
+    }
+
+    public void setAverageRatingRoundTheClock(Float averageRatingRoundTheClock) {
+        this.averageRatingRoundTheClock = averageRatingRoundTheClock;
+    }
+
+    public Float getAverageRatingOverall() {
+        return averageRatingOverall;
+    }
+
+    public void setAverageRatingOverall(Float averageRatingOverall) {
+        this.averageRatingOverall = averageRatingOverall;
+    }
+
+    public Float getAverageRatingAccessibility() {
+        return averageRatingAccessibility;
+    }
+
+    public void setAverageRatingAccessibility(Float averageRatingAccessibility) {
+        this.averageRatingAccessibility = averageRatingAccessibility;
+    }
+
+    public Float getAverageRatingPassphrases() {
+        return averageRatingPassphrases;
+    }
+
+    public void setAverageRatingPassphrases(Float averageRatingPassphrases) {
+        this.averageRatingPassphrases = averageRatingPassphrases;
     }
 
     @Override

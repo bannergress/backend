@@ -147,6 +147,21 @@ public class BannerDto {
      */
     public UUID uuid;
 
+    /** Always (24/7) accessible. */
+    public Boolean roundTheClock;
+
+    /** Average of always (24/7) accessible. Range between 0 (all false) and 1 (all true). */
+    public Float averageRatingRoundTheClock;
+
+    /** Average overall rating (1 to 5 stars). */
+    public Float averageRatingOverall;
+
+    /** Average accessibility rating (1 to 5 stars). */
+    public Float averageRatingAccessibility;
+
+    /** Average passphrase rating (1 to 5 stars). */
+    public Float averageRatingPassphrases;
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) {

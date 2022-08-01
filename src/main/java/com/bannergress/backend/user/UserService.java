@@ -7,6 +7,13 @@ import java.util.UUID;
  */
 public interface UserService {
     /**
+     * Gets the current user, and creates it if necessary.
+     *
+     * @return User.
+     */
+    public User getOrCreateCurrentUser();
+
+    /**
      * Gets a user for a user ID, and creates it if necessary.
      *
      * @param userId User ID.
