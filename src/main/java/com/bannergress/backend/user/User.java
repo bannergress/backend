@@ -10,6 +10,7 @@ import org.hibernate.search.engine.backend.types.Sortable;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -68,5 +69,22 @@ public class User {
 
     public void setVerificationToken(UUID verificationToken) {
         this.verificationToken = verificationToken;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof User)) {
+            return false;
+        }
+        User other = (User) obj;
+        return Objects.equals(id, other.id);
     }
 }

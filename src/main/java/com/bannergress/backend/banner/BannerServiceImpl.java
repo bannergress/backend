@@ -1,5 +1,7 @@
 package com.bannergress.backend.banner;
 
+import com.bannergress.backend.banner.comment.Comment;
+import com.bannergress.backend.banner.comment.RoundTheClockType;
 import com.bannergress.backend.banner.picture.BannerPictureService;
 import com.bannergress.backend.banner.timezone.TimezoneService;
 import com.bannergress.backend.mission.*;
@@ -22,6 +24,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -61,6 +66,11 @@ public class BannerServiceImpl implements BannerService {
             missionRepository
                 .findAll(MissionSpecifications.isInMissions(missions).and(MissionSpecifications.fetchDetails()));
         }
+    }
+
+    @Override
+    public Optional<Banner> findBySlug(String slug) {
+        return bannerRepository.findOne(BannerSpecifications.hasSlug(slug));
     }
 
     @Override
@@ -221,6 +231,24 @@ public class BannerServiceImpl implements BannerService {
             banner.setEventEndTimestamp(banner.getEventEndDate().plusDays(1).atStartOfDay(zone).toInstant());
         }
         banner.setLengthMeters(DistanceCalculation.calculateLengthMeters(banner.getMissions().values()));
+        banner.setAverageRatingRoundTheClock(
+            getAverageRating(banner, comment -> switch (comment.getRatingRoundTheClock()) {
+                case null -> null;
+                case unrestricted -> 1;
+                case restricted -> 0;
+            }));
+        banner.setAverageRatingOverall(getAverageRating(banner, Comment::getRatingOverall));
+        banner.setAverageRatingAccessibility(getAverageRating(banner, Comment::getRatingAccessibility));
+        banner.setAverageRatingPassphrases(getAverageRating(banner, Comment::getRatingPassphrases));
+    }
+
+    private Float getAverageRating(Banner banner, Function<Comment, Integer> ratingFunction) {
+        var ratingsByAgent = banner.getComments().stream() //
+            .sorted(Comparator.comparing(Comment::getCreated))
+            .filter(c -> ratingFunction.apply(c) != null) //
+            .collect(Collectors.toMap(Comment::getUser, ratingFunction, (a, b) -> b));
+        return ratingsByAgent.isEmpty() ? null
+            : (float) ratingsByAgent.values().stream().mapToInt(x -> x).average().getAsDouble();
     }
 
     @Override
