@@ -13,7 +13,7 @@ import java.util.List;
  * Base class for banner search implementations.
  */
 abstract class BaseBannerSearchServiceImpl implements BannerSearchService {
-    @Value("${niantic.officialMissionAuthors:MissionbyNIA,MissionsbyNIA,MissionDaysNia,MissionsNIA,MDNIA2,MDNIA,MDNIA2020}")
+    @Value("${niantic.officialMissionAuthors:MissionbyNIA,MissionsbyNIA,MissionDaysNia,MissionsNIA,MDNIA2,MDNIA,MDNIA2020,MissionsByNIA22}")
     protected List<String> OFFICIAL_MISSION_AUTHORS;
 
     @Autowired
