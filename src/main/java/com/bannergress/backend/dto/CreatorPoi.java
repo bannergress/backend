@@ -1,5 +1,6 @@
 package com.bannergress.backend.dto;
 
+import com.bannergress.backend.dto.serialization.CreatorEmbeddedUrlDeserializer;
 import com.bannergress.backend.dto.serialization.CreatorPOITypeDeserializer;
 import com.bannergress.backend.enums.POIType;
 import com.bannergress.backend.validation.NianticId;
@@ -16,6 +17,7 @@ public class CreatorPoi {
     public String guid;
 
     @NotNull
+    @JsonDeserialize(using = CreatorEmbeddedUrlDeserializer.class)
     public URL imageUrl;
 
     @NotNull
