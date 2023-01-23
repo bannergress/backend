@@ -2,13 +2,12 @@ package com.bannergress.backend.controllers;
 
 import com.bannergress.backend.dto.BannerDto;
 import com.bannergress.backend.dto.BannerSettingsDto;
+import com.bannergress.backend.dto.Gpx;
 import com.bannergress.backend.dto.MissionDto;
-import com.bannergress.backend.entities.Banner;
-import com.bannergress.backend.entities.BannerSettings;
-import com.bannergress.backend.entities.Mission;
-import com.bannergress.backend.entities.PlaceInformation;
+import com.bannergress.backend.entities.*;
 import com.bannergress.backend.enums.BannerListType;
 import com.bannergress.backend.enums.BannerSortOrder;
+import com.bannergress.backend.enums.POIType;
 import com.bannergress.backend.exceptions.MissionAlreadyUsedException;
 import com.bannergress.backend.security.Roles;
 import com.bannergress.backend.services.BannerSearchService;
@@ -24,6 +23,8 @@ import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -37,12 +38,15 @@ import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.bannergress.backend.utils.Spatial.getLatitude;
 import static com.bannergress.backend.utils.Spatial.getLongitude;
@@ -157,6 +161,25 @@ public class BannerController {
             amendOwner(principal, bannerDto);
         });
         return ResponseEntity.of(optionalBannerDto);
+    }
+
+    /**
+     * Gets a banner with a specified ID as GPX file.
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping(value = "/bnrs/{id}/gpx", produces = Gpx.MIMETYPE)
+    public ResponseEntity<Gpx> getGpx(@PathVariable final String id) {
+        return bannerService.findBySlugWithDetails(id) //
+            .map(banner -> {
+                Gpx gpx = toGpx(banner);
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentDisposition(ContentDisposition.attachment()
+                    .filename(banner.getCanonicalSlug() + Gpx.SUFFIX, StandardCharsets.UTF_8).build());
+                return ResponseEntity.ok().headers(headers).body(gpx);
+            }) //
+            .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @RolesAllowed(Roles.CREATE_BANNER)
@@ -317,5 +340,49 @@ public class BannerController {
         if (principal != null) {
             bannerDto.owner = hasOwner(bannerDto.id, principal);
         }
+    }
+
+    private Gpx toGpx(Banner banner) {
+        Gpx result = new Gpx();
+        result.metadata = new Gpx.Metadata();
+        result.metadata.name = banner.getTitle();
+        result.rte = new Gpx.Route();
+        result.rte.name = banner.getTitle();
+        result.rte.rtept = streamPoisWithoutConsecutiveDuplicates(banner) //
+            .map(poi -> {
+                Gpx.Waypoint waypoint = new Gpx.Waypoint();
+                waypoint.name = poi.getTitle();
+                waypoint.lat = getLatitude(poi.getPoint());
+                waypoint.lon = getLongitude(poi.getPoint());
+                return waypoint;
+            }) //
+            .collect(Collectors.toList());
+        return result;
+    }
+
+    private Stream<POI> streamPoisWithoutConsecutiveDuplicates(Banner banner) {
+        return streamPois(banner) //
+            .sequential() // Stateful filter requires sequential stream
+            .filter(new Predicate<POI>() {
+                private String previousId;
+
+                @Override
+                public boolean test(POI poi) {
+                    if (!poi.getId().equals(previousId)) {
+                        previousId = poi.getId();
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            });
+    }
+
+    private Stream<POI> streamPois(Banner banner) {
+        return banner.getMissions().values().stream() //
+            .flatMap(mission -> mission.getSteps().stream()) //
+            .filter(step -> step.getPoi() != null) //
+            .map(MissionStep::getPoi) //
+            .filter(poi -> poi.getType() != POIType.unavailable);
     }
 }
