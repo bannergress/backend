@@ -30,9 +30,9 @@ class TestDistanceCalculation {
         mission2.getSteps().add(new MissionStepBuilder().withPoi(augsburg).build());
         mission2.getSteps().add(new MissionStepBuilder().withPoi(nuremberg).build());
         mission2.getSteps().add(new MissionStepBuilder().withPoi(hamburg).build());
-        assertThat(DistanceCalculation.calculateLengthMeters(List.of(mission2))).isCloseTo(582_720, Offset.offset(10));
+        assertThat(DistanceCalculation.calculateLengthMeters(List.of(mission2))).isCloseTo(583_035, Offset.offset(10));
 
-        assertThat(DistanceCalculation.calculateLengthMeters(List.of(mission1, mission2))).isCloseTo(834_240,
+        assertThat(DistanceCalculation.calculateLengthMeters(List.of(mission1, mission2))).isCloseTo(834_885,
             Offset.offset(10));
     }
 }

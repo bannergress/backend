@@ -10,6 +10,9 @@ group 'com.bannergress'
 sourceCompatibility = JavaVersion.VERSION_11
 
 repositories {
+  maven {
+    url 'https://repo.osgeo.org/repository/geotools-releases/'
+  }
 	mavenCentral()
 }
 
@@ -37,6 +40,7 @@ dependencies {
   implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml'
   implementation "org.keycloak:keycloak-admin-client:${keycloak_version}"
   implementation "org.springdoc:springdoc-openapi-ui:${springdoc_version}"
+  implementation 'org.geotools:gt-referencing:28.1'
 
   annotationProcessor 'org.hibernate:hibernate-jpamodelgen'
   annotationProcessor "net.karneim:pojobuilder:$pojobuilder_version"
