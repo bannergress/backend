@@ -2,6 +2,8 @@ package com.bannergress.backend.utils;
 
 import com.bannergress.backend.entities.Mission;
 import com.bannergress.backend.entities.MissionStep;
+import org.geotools.referencing.GeodeticCalculator;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.locationtech.jts.geom.Point;
 
 import java.util.Collection;
@@ -38,17 +40,10 @@ public final class DistanceCalculation {
         return (int) Math.round(distance);
     }
 
-    private static Double getDistance(Double lat1, Double lon1, Double lat2, Double lon2) {
-        final int radius_meters = 6_371_000;
-        Double latDistance = toRad(lat2 - lat1);
-        Double lonDistance = toRad(lon2 - lon1);
-        Double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
-            + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
-        Double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return radius_meters * c;
-    }
-
-    private static Double toRad(Double value) {
-        return value * Math.PI / 180;
+    private static double getDistance(double lat1, double lon1, double lat2, double lon2) {
+        GeodeticCalculator gc = new GeodeticCalculator(DefaultGeographicCRS.WGS84);
+        gc.setStartingGeographicPoint(lon1, lat1);
+        gc.setDestinationGeographicPoint(lon2, lat2);
+        return gc.getOrthodromicDistance();
     }
 }
