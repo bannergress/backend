@@ -26,8 +26,6 @@ import java.util.Optional;
 @Service
 @Transactional
 public class CreatorImportServiceImpl extends BaseImportServiceImpl implements CreatorImportService {
-    private static final String ERROR_MISSION_NOT_FOUND = "Mission Not Found";
-
     @Override
     public void importGetMissionForProfile(@Valid CreatorGetMissionForProfile data) {
         withRecalculation(tracker -> {
@@ -37,7 +35,7 @@ public class CreatorImportServiceImpl extends BaseImportServiceImpl implements C
                 setMissionStatus(mission, MissionStatus.published, tracker);
                 entityManager.persist(mission);
             } else {
-                if (ERROR_MISSION_NOT_FOUND.equals(data.response.mat_error.title)) {
+                if (CreatorGetMissionForProfile.ErrorTitle.missionNotFound == data.response.mat_error.title) {
                     Mission mission = entityManager.find(Mission.class, id);
                     if (mission != null) {
                         setMissionStatus(mission, MissionStatus.disabled, tracker);
