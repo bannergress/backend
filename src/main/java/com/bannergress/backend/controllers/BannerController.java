@@ -18,8 +18,6 @@ import com.bannergress.backend.validation.NianticId;
 import com.google.common.collect.Maps;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Parameter;
-import org.keycloak.KeycloakPrincipal;
-import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort.Direction;
@@ -28,6 +26,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -232,11 +231,9 @@ public class BannerController {
     }
 
     private Optional<String> getAgent(Principal principal) {
-        if (principal instanceof KeycloakAuthenticationToken) {
-            return getAgent((Principal) ((KeycloakAuthenticationToken) principal).getPrincipal());
-        } else if (principal instanceof KeycloakPrincipal) {
-            return Optional.ofNullable((String) ((KeycloakPrincipal<?>) principal).getKeycloakSecurityContext()
-                .getToken().getOtherClaims().get(AGENT_TOKEN_ATTRIBUTE));
+        if (principal instanceof JwtAuthenticationToken) {
+            JwtAuthenticationToken token = (JwtAuthenticationToken) principal;
+            return Optional.ofNullable((String) token.getTokenAttributes().get(AGENT_TOKEN_ATTRIBUTE));
         } else {
             return Optional.empty();
         }
