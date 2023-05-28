@@ -4,6 +4,7 @@ import com.bannergress.backend.dto.CreatorGetMissionForProfile;
 import com.bannergress.backend.enums.MissionType;
 import com.bannergress.backend.enums.Objective;
 import com.bannergress.backend.enums.POIType;
+import com.fasterxml.jackson.core.JacksonException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
@@ -12,6 +13,7 @@ import org.springframework.boot.test.json.JacksonTester;
 import java.net.URL;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @JsonTest
 public class TestCreatorGetMissionForProfileDeserializer {
@@ -49,5 +51,19 @@ public class TestCreatorGetMissionForProfileDeserializer {
         assertThat(parsed.response.pois.get(4).imageUrl).isEqualTo(new URL(
             "http://lh6.ggpht.com/k4KqyAU3zW6LsOC7wWKnN7NzofQsbkN-N1dG8QK6jQNiJsQDv4W0o3GwY6RvjixMIfdsm96GkhG6r7lC_QKQ_Q"));
         assertThat(parsed.response.pois.get(4).type).isEqualTo(POIType.fieldTripWaypoint);
+    }
+
+    @Test
+    public void testDeserializationMissionNotFound() throws Exception {
+        String data = "{\"request\":{\"mission_guid\":\"eec45a5fab474d62989a888f79069362.1c\"},\"response\":{\"mat_error\":{\"description\":\"guid: eec45a5fab474d62989a888f79069362.1c\",\"title\":\"Mission Not Found\"}}}";
+        CreatorGetMissionForProfile parsed = json.parseObject(data);
+        assertThat(parsed.request.mission_guid).isEqualTo("eec45a5fab474d62989a888f79069362.1c");
+        assertThat(parsed.response.mat_error.title).isEqualTo(CreatorGetMissionForProfile.ErrorTitle.missionNotFound);
+    }
+
+    @Test
+    public void testDeserializationUnauthorized() throws Exception {
+        String data = "{\"request\":{\"mission_guid\":\"eec45a5fab474d62989a888f79069362.1c\"},\"response\":{\"mat_error\":{\"description\":\"Unable to verify authenticity. Please try again.\",\"title\":\"Authentication Error\"}}}";
+        assertThatThrownBy(() -> json.parseObject(data)).isInstanceOf(JacksonException.class);
     }
 }
