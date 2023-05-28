@@ -9,11 +9,10 @@ import com.bannergress.backend.services.AgentService;
 import com.bannergress.backend.services.BannerPictureService;
 import com.bannergress.backend.services.BannerService;
 import com.bannergress.backend.utils.Spatial;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import org.locationtech.jts.geom.Point;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
 
 import java.net.URL;
 import java.time.Instant;

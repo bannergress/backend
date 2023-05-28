@@ -10,13 +10,12 @@ import com.bannergress.backend.repositories.MissionSpecifications;
 import com.bannergress.backend.services.MissionService;
 import com.bannergress.backend.utils.OffsetBasedPageRequest;
 import com.google.common.collect.ImmutableList;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-
-import javax.transaction.Transactional;
 
 import java.util.Collection;
 import java.util.List;

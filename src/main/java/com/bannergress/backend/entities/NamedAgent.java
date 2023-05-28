@@ -2,12 +2,11 @@ package com.bannergress.backend.entities;
 
 import com.bannergress.backend.enums.Faction;
 import com.bannergress.backend.utils.PojoBuilder;
+import jakarta.persistence.*;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
 import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
-
-import javax.persistence.*;
 
 import java.util.Set;
 

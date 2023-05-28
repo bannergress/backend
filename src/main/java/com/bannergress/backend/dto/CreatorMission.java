@@ -7,10 +7,9 @@ import com.bannergress.backend.enums.MissionType;
 import com.bannergress.backend.enums.Objective;
 import com.bannergress.backend.validation.NianticId;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 import java.net.URL;
 import java.util.List;

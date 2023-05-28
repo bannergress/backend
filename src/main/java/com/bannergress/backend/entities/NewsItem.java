@@ -1,12 +1,11 @@
 package com.bannergress.backend.entities;
 
 import com.bannergress.backend.utils.PojoBuilder;
+import jakarta.persistence.*;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
 import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
-
-import javax.persistence.*;
 
 import java.time.Instant;
 import java.util.UUID;

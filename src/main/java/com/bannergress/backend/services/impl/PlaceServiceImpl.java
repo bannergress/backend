@@ -10,15 +10,14 @@ import com.bannergress.backend.services.GeocodingService;
 import com.bannergress.backend.services.PlaceService;
 import com.bannergress.backend.utils.SlugGenerator;
 import com.google.common.collect.*;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
+import jakarta.transaction.Transactional;
 import org.hibernate.Session;
 import org.locationtech.jts.geom.Point;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
-
-import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
-import javax.transaction.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;

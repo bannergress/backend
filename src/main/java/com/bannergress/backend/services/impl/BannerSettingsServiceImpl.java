@@ -6,10 +6,9 @@ import com.bannergress.backend.repositories.BannerRepository;
 import com.bannergress.backend.repositories.BannerSettingsRepository;
 import com.bannergress.backend.services.BannerSettingsService;
 import com.bannergress.backend.services.UserService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import javax.transaction.Transactional;
 
 import java.time.Instant;
 import java.util.Collection;

@@ -3,13 +3,12 @@ package com.bannergress.backend.repositories;
 import com.bannergress.backend.entities.*;
 import com.bannergress.backend.enums.BannerListType;
 import com.google.common.base.Preconditions;
+import jakarta.persistence.criteria.*;
 import org.hibernate.spatial.predicate.JTSSpatialPredicates;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.jpa.domain.Specification;
-
-import javax.persistence.criteria.*;
 
 import java.time.Instant;
 import java.util.Collection;

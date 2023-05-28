@@ -5,10 +5,9 @@ import com.bannergress.backend.enums.MissionType;
 import com.bannergress.backend.utils.PojoBuilder;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
-
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 
 import java.net.URL;
 import java.time.Instant;

@@ -2,8 +2,7 @@ package com.bannergress.backend.services;
 
 import com.bannergress.backend.dto.CreatorGetMissionForProfile;
 import com.bannergress.backend.dto.CreatorGetMissionsList;
-
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import java.util.Optional;
 

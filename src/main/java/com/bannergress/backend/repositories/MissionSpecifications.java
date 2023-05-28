@@ -4,9 +4,8 @@ import com.bannergress.backend.entities.Mission;
 import com.bannergress.backend.entities.MissionStep_;
 import com.bannergress.backend.entities.Mission_;
 import com.bannergress.backend.entities.NamedAgent_;
+import jakarta.persistence.criteria.JoinType;
 import org.springframework.data.jpa.domain.Specification;
-
-import javax.persistence.criteria.JoinType;
 
 import java.util.Collection;
 

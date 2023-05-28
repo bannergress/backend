@@ -3,8 +3,7 @@ package com.bannergress.backend.services;
 import com.bannergress.backend.dto.IntelMissionDetails;
 import com.bannergress.backend.dto.IntelMissionSummary;
 import com.bannergress.backend.entities.Mission;
-
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import java.util.Collection;
 import java.util.List;

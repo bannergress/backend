@@ -1,9 +1,8 @@
 package com.bannergress.backend.dto;
 
 import com.bannergress.backend.utils.PojoBuilder;
+import jakarta.validation.constraints.NotNull;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
-
-import javax.validation.constraints.NotNull;
 
 import java.time.Instant;
 import java.util.UUID;

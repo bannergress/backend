@@ -1,9 +1,8 @@
 package com.bannergress.backend.entities;
 
 import com.bannergress.backend.utils.PojoBuilder;
+import jakarta.persistence.*;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
-
-import javax.persistence.*;
 
 import java.time.Instant;
 import java.util.List;

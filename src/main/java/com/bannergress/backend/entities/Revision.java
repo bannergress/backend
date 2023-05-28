@@ -1,11 +1,10 @@
 package com.bannergress.backend.entities;
 
 import com.bannergress.backend.security.CustomRevisionListener;
+import jakarta.persistence.*;
 import org.hibernate.envers.RevisionEntity;
 import org.hibernate.envers.RevisionNumber;
 import org.hibernate.envers.RevisionTimestamp;
-
-import javax.persistence.*;
 
 import java.time.Instant;
 import java.util.Date;

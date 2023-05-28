@@ -1,13 +1,12 @@
 package com.bannergress.backend.entities;
 
 import com.bannergress.backend.utils.PojoBuilder;
+import jakarta.persistence.*;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.search.engine.backend.types.Searchable;
 import org.hibernate.search.engine.backend.types.Sortable;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
-
-import javax.persistence.*;
 
 import java.util.List;
 import java.util.UUID;

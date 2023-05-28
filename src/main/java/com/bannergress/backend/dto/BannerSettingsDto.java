@@ -1,8 +1,7 @@
 package com.bannergress.backend.dto;
 
 import com.bannergress.backend.enums.BannerListType;
-
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 public class BannerSettingsDto {
     @NotNull
