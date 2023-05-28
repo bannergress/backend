@@ -1,8 +1,9 @@
 package com.bannergress.backend.dto;
 
-import com.bannergress.backend.dto.serialization.IntelMissionSummaryDeserializer;
 import com.bannergress.backend.validation.NianticId;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonFormat.Shape;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -14,7 +15,8 @@ import java.net.URL;
 /**
  * Representation of a mission summary from the Ingress intel API.
  */
-@JsonDeserialize(using = IntelMissionSummaryDeserializer.class)
+@JsonFormat(shape = Shape.ARRAY)
+@JsonPropertyOrder({"id", "title", "picture", "ratingE6", "averageDurationMilliseconds"})
 public class IntelMissionSummary {
     @NianticId
     @NotNull
