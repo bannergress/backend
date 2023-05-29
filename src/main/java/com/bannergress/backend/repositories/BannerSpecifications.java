@@ -4,7 +4,8 @@ import com.bannergress.backend.entities.*;
 import com.bannergress.backend.enums.BannerListType;
 import com.google.common.base.Preconditions;
 import jakarta.persistence.criteria.*;
-import org.hibernate.spatial.predicate.JTSSpatialPredicates;
+import org.hibernate.query.criteria.HibernateCriteriaBuilder;
+import org.hibernate.spatial.criteria.JTSSpatialCriteriaBuilder;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
 import org.springframework.data.domain.Sort.Direction;
@@ -81,7 +82,8 @@ public class BannerSpecifications {
     }
 
     public static Specification<Banner> startPointIntersects(Geometry geometry) {
-        return (banner, cq, cb) -> JTSSpatialPredicates.intersects(cb, banner.get(Banner_.startPoint), geometry);
+        return (banner, cq, cb) -> ((HibernateCriteriaBuilder) cb).unwrap(JTSSpatialCriteriaBuilder.class)
+            .intersects(banner.get(Banner_.startPoint), geometry);
     }
 
     public static Specification<Banner> isInUserList(Collection<BannerListType> listTypes, String userId) {
