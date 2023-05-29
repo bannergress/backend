@@ -15,6 +15,7 @@ spring:
       hibernate.globally_quoted_identifiers: true
       hibernate.dialect: org.hibernate.spatial.dialect.postgis.PostgisPG95Dialect
       hibernate.search.backend.directory.root: searchindex/
+      hibernate.id.db_structure_naming_strategy: single
   web:
     resources:
       cache:
