@@ -8,15 +8,17 @@ import com.bannergress.backend.dto.PoiDtoBuilder;
 import com.bannergress.backend.enums.BannerType;
 import com.bannergress.backend.enums.Objective;
 import com.bannergress.backend.enums.POIType;
-
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.Collections;
 
 import static com.bannergress.backend.testutils.builder.BuilderMethods.a;
 import static com.bannergress.backend.testutils.builder.BuilderMethods.listWith;
 import static com.bannergress.backend.testutils.builder.BuilderMethods.oneOf;
-import static com.bannergress.backend.testutils.builder.JavatypeBuilder.*;
+import static com.bannergress.backend.testutils.builder.JavatypeBuilder.$Double;
+import static com.bannergress.backend.testutils.builder.JavatypeBuilder.$Int;
+import static com.bannergress.backend.testutils.builder.JavatypeBuilder.$String;
+import static com.bannergress.backend.testutils.builder.JavatypeBuilder.$URL;
 
 public class DtoBuilder {
 

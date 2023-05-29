@@ -1,10 +1,9 @@
 package com.bannergress.backend.entities;
 
 import com.bannergress.backend.utils.PojoBuilder;
+import jakarta.persistence.*;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
 import org.locationtech.jts.geom.Point;
-
-import javax.persistence.*;
 
 import java.util.UUID;
 

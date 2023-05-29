@@ -1,8 +1,7 @@
 package com.bannergress.backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
@@ -32,7 +31,7 @@ public class CreatorGetMissionForProfile {
     public static class Error {
         public ErrorTitle title;
     }
-    
+
     public enum ErrorTitle {
         @JsonProperty("Mission Not Found")
         missionNotFound

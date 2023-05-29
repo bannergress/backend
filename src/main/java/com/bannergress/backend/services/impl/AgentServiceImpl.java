@@ -3,11 +3,10 @@ package com.bannergress.backend.services.impl;
 import com.bannergress.backend.entities.NamedAgent;
 import com.bannergress.backend.enums.Faction;
 import com.bannergress.backend.services.AgentService;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
 
 /**
  * Default implementation of {@link AgentService}.

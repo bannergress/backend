@@ -1,6 +1,6 @@
 package com.bannergress.backend.dto;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 

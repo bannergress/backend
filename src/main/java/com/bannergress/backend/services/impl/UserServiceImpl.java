@@ -6,10 +6,9 @@ import com.bannergress.backend.repositories.UserRepository;
 import com.bannergress.backend.services.UserMappingService;
 import com.bannergress.backend.services.UserService;
 import com.bannergress.backend.services.VerificationService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import javax.transaction.Transactional;
 
 import java.util.Optional;
 import java.util.UUID;

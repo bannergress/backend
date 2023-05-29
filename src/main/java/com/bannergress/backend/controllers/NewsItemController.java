@@ -4,14 +4,13 @@ import com.bannergress.backend.dto.NewsItemDto;
 import com.bannergress.backend.entities.NewsItem;
 import com.bannergress.backend.repositories.NewsItemRepository;
 import com.bannergress.backend.security.Roles;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.validation.Valid;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-
-import javax.annotation.security.RolesAllowed;
-import javax.validation.Valid;
 
 import java.time.Instant;
 import java.util.Collection;

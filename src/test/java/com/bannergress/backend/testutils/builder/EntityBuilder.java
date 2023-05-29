@@ -2,8 +2,7 @@ package com.bannergress.backend.testutils.builder;
 
 import com.bannergress.backend.entities.*;
 import com.bannergress.backend.enums.*;
-
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 

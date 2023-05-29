@@ -3,6 +3,7 @@ package com.bannergress.backend.entities;
 import com.bannergress.backend.enums.MissionStatus;
 import com.bannergress.backend.enums.MissionType;
 import com.bannergress.backend.utils.PojoBuilder;
+import jakarta.persistence.*;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.envers.AuditTable;
@@ -11,8 +12,6 @@ import org.hibernate.envers.NotAudited;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.IndexedEmbedded;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
-
-import javax.persistence.*;
 
 import java.net.URL;
 import java.time.Instant;

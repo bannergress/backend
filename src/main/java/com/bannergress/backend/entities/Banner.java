@@ -5,6 +5,7 @@ import com.bannergress.backend.utils.PointBridge;
 import com.bannergress.backend.utils.PojoBuilder;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Maps;
+import jakarta.persistence.*;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.SortNatural;
@@ -21,8 +22,6 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericFie
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.IndexedEmbedded;
 import org.locationtech.jts.geom.Point;
-
-import javax.persistence.*;
 
 import java.time.Instant;
 import java.time.LocalDate;

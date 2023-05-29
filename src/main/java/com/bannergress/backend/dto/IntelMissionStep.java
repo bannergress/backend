@@ -3,9 +3,8 @@ package com.bannergress.backend.dto;
 import com.bannergress.backend.enums.Objective;
 import com.bannergress.backend.enums.POIType;
 import com.bannergress.backend.validation.NianticId;
-
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 
 import java.net.URL;
 

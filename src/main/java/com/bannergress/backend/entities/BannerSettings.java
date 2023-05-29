@@ -1,13 +1,12 @@
 package com.bannergress.backend.entities;
 
 import com.bannergress.backend.enums.BannerListType;
+import jakarta.persistence.*;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.search.engine.backend.types.Searchable;
 import org.hibernate.search.engine.backend.types.Sortable;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.IndexedEmbedded;
-
-import javax.persistence.*;
 
 import java.time.Instant;
 import java.util.UUID;

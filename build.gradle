@@ -1,5 +1,5 @@
 plugins {
-	id 'org.springframework.boot' version '2.7.2'
+	id 'org.springframework.boot' version '3.1.0'
 }
 
 apply plugin: 'java'
@@ -7,7 +7,7 @@ apply plugin: 'io.spring.dependency-management'
 apply plugin: 'checkstyle'
 
 group 'com.bannergress'
-sourceCompatibility = JavaVersion.VERSION_11
+sourceCompatibility = JavaVersion.VERSION_17
 
 repositories {
   maven {
@@ -22,9 +22,9 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
-	implementation "org.hibernate:hibernate-envers"
-  implementation 'org.hibernate:hibernate-spatial'
-  implementation "org.hibernate.search:hibernate-search-mapper-orm:${hibernate_search_version}"
+	implementation 'org.hibernate.orm:hibernate-envers'
+  implementation 'org.hibernate.orm:hibernate-spatial'
+  implementation "org.hibernate.search:hibernate-search-mapper-orm-orm6:${hibernate_search_version}"
   implementation "org.hibernate.search:hibernate-search-backend-lucene:${hibernate_search_version}"
   implementation 'org.flywaydb:flyway-core'
 	implementation "com.google.guava:guava:${guava_version}"
@@ -34,8 +34,14 @@ dependencies {
   implementation "org.keycloak:keycloak-admin-client:${keycloak_version}"
   implementation "org.springdoc:springdoc-openapi-ui:${springdoc_version}"
   implementation 'org.geotools:gt-referencing:29.1'
+  implementation('org.hibernate.common:hibernate-commons-annotations') {
+    version {
+      // Needed, because otherwise Eclipse / STS has two versions of the library on the classpath
+      strictly '6.0.6.Final'
+    }
+  }
 
-  annotationProcessor 'org.hibernate:hibernate-jpamodelgen'
+  annotationProcessor 'org.hibernate.orm:hibernate-jpamodelgen'
   annotationProcessor "net.karneim:pojobuilder:$pojobuilder_version"
 
   compileOnly "net.karneim:pojobuilder:$pojobuilder_version:annotations"

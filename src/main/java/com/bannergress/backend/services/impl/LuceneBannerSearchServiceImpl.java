@@ -4,6 +4,7 @@ import com.bannergress.backend.entities.Banner;
 import com.bannergress.backend.enums.BannerListType;
 import com.bannergress.backend.enums.BannerSortOrder;
 import com.bannergress.backend.services.BannerSearchService;
+import jakarta.persistence.EntityManager;
 import org.hibernate.search.engine.search.common.BooleanOperator;
 import org.hibernate.search.engine.search.predicate.dsl.PredicateFinalStep;
 import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
@@ -16,8 +17,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.persistence.EntityManager;
 
 import java.time.Instant;
 import java.util.Collection;

@@ -8,11 +8,10 @@ import com.bannergress.backend.enums.PlaceType;
 import com.bannergress.backend.security.Roles;
 import com.bannergress.backend.services.PlaceService;
 import io.swagger.v3.oas.annotations.Hidden;
+import jakarta.annotation.security.RolesAllowed;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import javax.annotation.security.RolesAllowed;
 
 import java.util.Collection;
 import java.util.List;

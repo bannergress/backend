@@ -2,12 +2,11 @@ package com.bannergress.backend.entities;
 
 import com.bannergress.backend.enums.POIType;
 import com.bannergress.backend.utils.PojoBuilder;
+import jakarta.persistence.*;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
 import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
 import org.locationtech.jts.geom.Point;
-
-import javax.persistence.*;
 
 import java.net.URL;
 
