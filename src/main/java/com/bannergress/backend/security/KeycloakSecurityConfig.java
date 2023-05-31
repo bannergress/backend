@@ -18,7 +18,8 @@ public class KeycloakSecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http //
             .csrf(CsrfConfigurer::disable) //
-            .oauth2ResourceServer(oauth2 -> oauth2.jwt().jwtAuthenticationConverter(jwtAuthenticationConverter())) //
+            .oauth2ResourceServer(
+                oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))) //
             .authorizeHttpRequests(auth -> auth.anyRequest().permitAll()) //
             .build();
     }
