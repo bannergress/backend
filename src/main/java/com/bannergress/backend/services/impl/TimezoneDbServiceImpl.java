@@ -5,7 +5,6 @@ import com.bannergress.backend.utils.Spatial;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.util.concurrent.RateLimiter;
 import org.locationtech.jts.geom.Point;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -26,7 +25,6 @@ public class TimezoneDbServiceImpl implements TimezoneService {
 
     private final RateLimiter rateLimiter;
 
-    @Autowired
     public TimezoneDbServiceImpl(@Value("${timezonedb.api-key}") String apiKey,
         @Value("${timezonedb.base-url:https://api.timezonedb.com}") String baseUrl,
         @Value("${timezonedb.requests-per-second:1}") double requestsPerSecond) {
