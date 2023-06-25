@@ -66,4 +66,12 @@ public class TestIntelMissionDetailsDeserializer {
         assertThat(details.steps.get(1).hidden).isTrue();
         assertThat(details.steps.get(1).objective).isNull();
     }
+
+    @Test
+    public void testDeserializationWithNullPortalPicture() throws Exception {
+        String data = "[\"3b22b6ec2b9445a4a49f48437c47077b.1c\",\"Донецк\",\"9из 46. Герб Украины. Название следующей вы узнаете  на последнем портале.\",\"Doomka\",\"E\",0,454036,1,1,[[false,\"05b240ed6f3f48debf9f1590a09d3585.12\",\"М. Gorky\",1,1,[\"p\",\"N\",46489951,30739562,1,0,0,null,\"М. Gorky\",[],false,false,null,1687074629721]],[false,\"533c84ca150345e0b0b942a77a5be3ab.11\",\"Воронцовский Дворец\",1,1,[\"p\",\"N\",46489949,30738770,1,0,0,null,\"Воронцовский Дворец\",[],false,false,null,1687074629721]],[false,\"8e7c7fbc7aa8455f89cf6e8673254e69.12\",\"Lion near the Vorontsov Palace\",1,1,[\"p\",\"N\",46490260,30738472,1,0,0,null,\"Lion near the Vorontsov Palace\",[],false,false,null,1687074629721]],[false,\"024fd530ba1f45f7985e1cf58f127355.11\",\"Colonnade\",1,1,[\"p\",\"N\",46490717,30738470,1,0,0,null,\"Colonnade\",[],false,false,null,1687074629721]],[false,\"03b39cf063be4a9683df47d191b8a933.12\",\"Тёщин Мост\",1,1,[\"p\",\"N\",46490481,30737960,1,0,0,null,\"Тёщин Мост\",[],false,false,null,1687074629721]],[false,\"d890bc1a2c8d40739500a4bdd9f06758.16\",\"Ретро Авто\",1,1,[\"p\",\"N\",46490258,30737203,1,0,0,null,\"Ретро Авто\",[],false,false,null,1687074629721]],[false,\"5443962f4895441aaac3031eec0450c3.16\",\"Фонтан, старая Одесса\",1,1,[\"p\",\"N\",46490637,30737050,1,0,0,null,\"Фонтан, старая Одесса\",[],false,false,null,1687074629721]],[false,\"925c5630a9ad41bba61965edebfa9386.12\",\"Griffon, Old Odessa\",1,1,[\"p\",\"N\",46490231,30736709,1,0,0,null,\"Griffon, Old Odessa\",[],false,false,null,1687074629721]],[false,\"50f206c6ad944c32b5068d34c59051b9.16\",\"Graffiti on Prymors'ka Street\",1,8,[\"p\",\"N\",46490711,30736506,1,0,0,null,\"Graffiti on Prymors'ka Street\",[],false,false,null,1687074629721]],[false,\"68a9074307b84fcea263796e5b5b6d2f.12\",\"Чугунный Мостик\",1,8,[\"p\",\"N\",46490428,30736234,1,0,0,null,\"Чугунный Мостик\",[],false,false,null,1687074629721]]],\"https://lh6.ggpht.com/hRn-6HmXcAKjvcYGL-0URyvyqOJ-MmUvrUzlVf1kQTZms_tBbBecBFO5gPIc_nUNxQySIj327OqrWg2X3OQB\"]";
+        ObjectMapper mapper = new ObjectMapper();
+        IntelMissionDetails details = mapper.readValue(data, IntelMissionDetails.class);
+        assertThat(details.steps.get(0).picture).isNull();
+    }
 }
