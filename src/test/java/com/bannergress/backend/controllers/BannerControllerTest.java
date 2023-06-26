@@ -2,12 +2,14 @@ package com.bannergress.backend.controllers;
 
 import com.bannergress.backend.dto.BannerDto;
 import com.bannergress.backend.entities.Banner;
+import com.bannergress.backend.enums.BannerDtoAttribute;
 import com.bannergress.backend.exceptions.MissionAlreadyUsedException;
 import com.bannergress.backend.services.BannerSearchService;
 import com.bannergress.backend.services.BannerService;
 import com.bannergress.backend.services.impl.BannerSettingsServiceImpl;
 import com.bannergress.backend.services.impl.PlaceServiceImpl;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.HttpStatus;
@@ -52,7 +54,9 @@ class BannerControllerTest {
         final ResponseEntity<List<BannerDto>> result = testController.list(place, Optional.empty(), Optional.empty(),
             Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), false, Optional.empty(),
             Optional.empty(), Optional.empty(), Optional.empty(), Direction.ASC, Optional.empty(), Optional.empty(),
-            Optional.empty(), Optional.empty(), 0, 100, null, ImmutableList.of());
+            Optional.empty(), Optional.empty(), Optional.of(ImmutableSet.of(BannerDtoAttribute.id,
+                BannerDtoAttribute.numberOfMissions, BannerDtoAttribute.lengthMeters)),
+            0, 100, null, ImmutableList.of());
 
         // VERIFY
         assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -84,10 +88,12 @@ class BannerControllerTest {
                 .thenReturn(List.of(banner));
 
         // THEN
-        final ResponseEntity<List<BannerDto>> result = testController.list(Optional.empty(), minLat, maxLat, minLong,
-            maxLong, Optional.empty(), Optional.empty(), false, Optional.empty(), Optional.empty(), Optional.empty(),
-            Optional.empty(), Direction.ASC, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), 0,
-            100, null, ImmutableList.of());
+        final ResponseEntity<List<BannerDto>> result = testController.list(
+            Optional.empty(), minLat, maxLat, minLong, maxLong, Optional.empty(), Optional.empty(), false,
+            Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Direction.ASC, Optional.empty(),
+            Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(ImmutableSet.of(BannerDtoAttribute.id,
+                BannerDtoAttribute.numberOfMissions, BannerDtoAttribute.lengthMeters)),
+            0, 100, null, ImmutableList.of());
 
         // VERIFY
         assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -107,7 +113,10 @@ class BannerControllerTest {
         when(bannerService.findBySlugWithDetails(slug)).thenReturn(Optional.of(banner));
 
         // THEN
-        final var response = testController.get(slug, null, ImmutableList.of());
+        final var response = testController.get(slug,
+            Optional.of(ImmutableSet.of(BannerDtoAttribute.id, BannerDtoAttribute.numberOfMissions,
+                BannerDtoAttribute.lengthMeters, BannerDtoAttribute.type, BannerDtoAttribute.missions)),
+            null, ImmutableList.of());
 
         // VERIFY
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -128,7 +137,7 @@ class BannerControllerTest {
         when(bannerService.findBySlugWithDetails(slug)).thenReturn(Optional.empty());
 
         // THEN
-        final var response = testController.get(slug, null, ImmutableList.of());
+        final var response = testController.get(slug, Optional.of(ImmutableSet.of()), null, ImmutableList.of());
 
         // VERIFY
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);

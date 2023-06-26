@@ -5,6 +5,7 @@ import com.bannergress.backend.dto.BannerSettingsDto;
 import com.bannergress.backend.dto.Gpx;
 import com.bannergress.backend.dto.MissionDto;
 import com.bannergress.backend.entities.*;
+import com.bannergress.backend.enums.BannerDtoAttribute;
 import com.bannergress.backend.enums.BannerListType;
 import com.bannergress.backend.enums.BannerSortOrder;
 import com.bannergress.backend.enums.POIType;
@@ -15,6 +16,9 @@ import com.bannergress.backend.services.BannerService;
 import com.bannergress.backend.services.BannerSettingsService;
 import com.bannergress.backend.services.PlaceService;
 import com.bannergress.backend.validation.NianticId;
+import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -42,7 +46,9 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -58,6 +64,36 @@ public class BannerController {
     private static final String AGENT_TOKEN_ATTRIBUTE = "agent";
 
     private static final Logger logger = LoggerFactory.getLogger(BannerController.class);
+
+    /** Default set of attributes to return for list queries. */
+    private static final Set<BannerDtoAttribute> DEFAULT_LIST_ATTRIBUTES = ImmutableSet.of( //
+        BannerDtoAttribute.id, //
+        BannerDtoAttribute.title, //
+        BannerDtoAttribute.numberOfMissions, //
+        BannerDtoAttribute.numberOfSubmittedMissions, //
+        BannerDtoAttribute.numberOfDisabledMissions, //
+        BannerDtoAttribute.lengthMeters, //
+        BannerDtoAttribute.startLatitude, //
+        BannerDtoAttribute.startLongitude, //
+        BannerDtoAttribute.picture, //
+        BannerDtoAttribute.width, //
+        BannerDtoAttribute.startPlaceId, //
+        BannerDtoAttribute.formattedAddress, //
+        BannerDtoAttribute.listType //
+    );
+
+    /** Default set of attributes to return for single result queries. */
+    private static final Set<BannerDtoAttribute> DEFAULT_GET_ATTRIBUTES = ImmutableSet.<BannerDtoAttribute>builder() //
+        .addAll(DEFAULT_LIST_ATTRIBUTES) //
+        .add(BannerDtoAttribute.missions) //
+        .add(BannerDtoAttribute.type) //
+        .add(BannerDtoAttribute.description) //
+        .add(BannerDtoAttribute.warning) //
+        .add(BannerDtoAttribute.plannedOfflineDate) //
+        .add(BannerDtoAttribute.eventStartDate) //
+        .add(BannerDtoAttribute.eventEndDate) //
+        .add(BannerDtoAttribute.owner) //
+        .build();
 
     private final BannerService bannerService;
 
@@ -111,6 +147,7 @@ public class BannerController {
                                                 @RequestParam @Parameter(description = "Longitude of the proximity reference point. Required for orderBy=proximityStartPoint.") final Optional<@Min(-180) @Max(180) Double> proximityLongitude,
                                                 @RequestParam @Parameter(description = "Only list events which end after this ISO 8601 UTC timestamp.") Optional<Instant> minEventTimestamp,
                                                 @RequestParam @Parameter(description = "Only list events which start before this ISO 8601 UTC timestamp.") Optional<Instant> maxEventTimestamp,
+                                                @RequestParam @Parameter(description = "Include these attributes in the output.") Optional<Set<BannerDtoAttribute>> attributes,
                                                 @RequestParam(defaultValue = "0") @Parameter(description = "0-based offset for searching.") @Min(0) final int offset,
                                                 @RequestParam(defaultValue = "20") @Parameter(description = "Maximum number of results.") @Min(1) @Max(100) final int limit,
                                                 Principal principal, List<Locale.LanguageRange> languagePriorityList) {
@@ -137,9 +174,9 @@ public class BannerController {
             maxLongitude, query, isAuthenticated, missionId, onlyOfficialMissions, author, listTypes,
             Optional.ofNullable(principal).map(Principal::getName), online, orderBy, orderDirection, proximityLatitude,
             proximityLongitude, minEventTimestamp, maxEventTimestamp, offset, limit);
-        List<BannerDto> bannerDtos = banners.stream().map(banner -> toSummary(banner, languagePriorityList))
+        List<BannerDto> bannerDtos = banners.stream()
+            .map(banner -> toDto(banner, languagePriorityList, attributes.orElse(DEFAULT_LIST_ATTRIBUTES), principal, getListTypeFunction(principal, banners)))
             .collect(Collectors.toUnmodifiableList());
-        amendUserSettings(principal, bannerDtos);
         return ResponseEntity.ok(bannerDtos);
     }
 
@@ -150,14 +187,14 @@ public class BannerController {
      * @return
      */
     @GetMapping("/bnrs/{id}")
-    public ResponseEntity<BannerDto> get(@PathVariable final String id, Principal principal,
+    public ResponseEntity<BannerDto> get(@PathVariable final String id,
+                                         @RequestParam Optional<Set<BannerDtoAttribute>> attributes,
+                                         Principal principal,
                                          List<Locale.LanguageRange> languagePriorityList) {
         final Optional<Banner> banner = bannerService.findBySlugWithDetails(id);
-        Optional<BannerDto> optionalBannerDto = banner.map(b -> toDetails(b, languagePriorityList));
-        optionalBannerDto.ifPresent(bannerDto -> {
-            amendUserSettings(principal, List.of(bannerDto));
-            amendOwner(principal, bannerDto);
-        });
+        Optional<BannerDto> optionalBannerDto = banner
+            .map(b -> toDto(b, languagePriorityList, attributes.orElse(DEFAULT_GET_ATTRIBUTES), principal,
+                getListTypeFunction(principal, ImmutableList.of(b))));
         return ResponseEntity.of(optionalBannerDto);
     }
 
@@ -187,7 +224,7 @@ public class BannerController {
                                           List<Locale.LanguageRange> languagePriorityList)
         throws MissionAlreadyUsedException {
         String id = bannerService.create(banner);
-        return get(id, principal, languagePriorityList);
+        return get(id, Optional.of(DEFAULT_GET_ATTRIBUTES), principal, languagePriorityList);
     }
 
     @RolesAllowed(Roles.CREATE_BANNER)
@@ -195,7 +232,8 @@ public class BannerController {
     @Hidden
     public BannerDto preview(@Valid @RequestBody BannerDto banner, List<Locale.LanguageRange> languagePriorityList)
         throws MissionAlreadyUsedException {
-        return toDetails(bannerService.generatePreview(banner), languagePriorityList);
+        return toDto(bannerService.generatePreview(banner), languagePriorityList, DEFAULT_GET_ATTRIBUTES, null,
+            x -> Optional.empty());
     }
 
     /**
@@ -222,7 +260,7 @@ public class BannerController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
         bannerService.update(id, banner);
-        return get(id, principal, languagePriorityList);
+        return get(id, Optional.of(DEFAULT_GET_ATTRIBUTES), principal, languagePriorityList);
     }
 
     public boolean hasOwner(String id, Principal principal) {
@@ -282,36 +320,84 @@ public class BannerController {
         bannerSettingsService.addBannerToList(principal.getName(), id, settings.listType);
     }
 
-    private BannerDto toSummary(Banner banner, List<Locale.LanguageRange> languagePriorityList) {
+    private BannerDto toDto(Banner banner, List<Locale.LanguageRange> languagePriorityList,
+                            Collection<BannerDtoAttribute> attributes, Principal principal,
+                            Function<String, Optional<BannerListType>> listTypeFunction) {
+        Supplier<Optional<PlaceInformation>> placeInformationSupplier = Suppliers
+            .memoize(() -> placeService.getMostAccuratePlaceInformation(banner.getStartPlaces(), languagePriorityList));
         BannerDto dto = new BannerDto();
-        dto.id = banner.getCanonicalSlug();
-        dto.title = banner.getTitle();
-        dto.numberOfMissions = banner.getNumberOfMissions();
-        dto.numberOfSubmittedMissions = banner.getNumberOfSubmittedMissions();
-        dto.numberOfDisabledMissions = banner.getNumberOfDisabledMissions();
-        dto.lengthMeters = banner.getLengthMeters();
-        dto.startLatitude = getLatitude(banner.getStartPoint());
-        dto.startLongitude = getLongitude(banner.getStartPoint());
-        dto.picture = banner.getPicture() == null ? null : ("/bnrs/pictures/" + banner.getPicture().getHash());
-        dto.width = banner.getWidth();
-        Optional<PlaceInformation> placeInformation = placeService
-            .getMostAccuratePlaceInformation(banner.getStartPlaces(), languagePriorityList);
-        if (placeInformation.isPresent()) {
-            dto.startPlaceId = placeInformation.get().getPlace().getSlug();
-            dto.formattedAddress = placeInformation.get().getFormattedAddress();
+        for (BannerDtoAttribute attribute : attributes) {
+            switch (attribute) {
+                case description:
+                    dto.description = banner.getDescription();
+                    break;
+                case eventEndDate:
+                    dto.eventEndDate = banner.getEventEndDate();
+                    break;
+                case eventStartDate:
+                    dto.eventStartDate = banner.getEventStartDate();
+                    break;
+                case formattedAddress:
+                    dto.formattedAddress = placeInformationSupplier.get().map(PlaceInformation::getFormattedAddress)
+                        .orElse(null);
+                    break;
+                case id:
+                    dto.id = banner.getCanonicalSlug();
+                    break;
+                case lengthMeters:
+                    dto.lengthMeters = banner.getLengthMeters();
+                    break;
+                case listType:
+                    BannerListType listType = listTypeFunction.apply(banner.getCanonicalSlug()).orElse(BannerListType.none);
+                    dto.listType = listType == BannerListType.none ? null : listType;
+                    break;
+                case missions:
+                    dto.missions = Maps.transformValues(banner.getMissionsAndPlaceholders(), this::toMissionOrPlaceholder);
+                    break;
+                case numberOfDisabledMissions:
+                    dto.numberOfDisabledMissions = banner.getNumberOfDisabledMissions();
+                    break;
+                case numberOfMissions:
+                    dto.numberOfMissions = banner.getNumberOfMissions();
+                    break;
+                case numberOfSubmittedMissions:
+                    dto.numberOfSubmittedMissions = banner.getNumberOfSubmittedMissions();
+                    break;
+                case owner:
+                    dto.owner = hasOwner(dto.id, principal);
+                    break;
+                case picture:
+                    dto.picture = banner.getPicture() == null ? null
+                        : ("/bnrs/pictures/" + banner.getPicture().getHash());
+                    break;
+                case plannedOfflineDate:
+                    dto.plannedOfflineDate = banner.getPlannedOfflineDate();
+                    break;
+                case startLatitude:
+                    dto.startLatitude = getLatitude(banner.getStartPoint());
+                    break;
+                case startLongitude:
+                    dto.startLongitude = getLongitude(banner.getStartPoint());
+                    break;
+                case startPlaceId:
+                    dto.startPlaceId = placeInformationSupplier.get().map(p -> p.getPlace().getSlug()).orElse(null);
+                    break;
+                case title:
+                    dto.title = banner.getTitle();
+                    break;
+                case type:
+                    dto.type = banner.getType();
+                    break;
+                case warning:
+                    dto.warning = banner.getWarning();
+                    break;
+                case width:
+                    dto.width = banner.getWidth();
+                    break;
+                default:
+                    throw new IllegalArgumentException(attribute.toString());
+            }
         }
-        return dto;
-    }
-
-    private BannerDto toDetails(Banner banner, List<Locale.LanguageRange> languagePriorityList) {
-        BannerDto dto = toSummary(banner, languagePriorityList);
-        dto.missions = Maps.transformValues(banner.getMissionsAndPlaceholders(), this::toMissionOrPlaceholder);
-        dto.type = banner.getType();
-        dto.description = banner.getDescription();
-        dto.warning = banner.getWarning();
-        dto.plannedOfflineDate = banner.getPlannedOfflineDate();
-        dto.eventStartDate = banner.getEventStartDate();
-        dto.eventEndDate = banner.getEventEndDate();
         return dto;
     }
 
@@ -319,22 +405,16 @@ public class BannerController {
         return input.map(MissionController::toDetails).orElse(new MissionDto());
     }
 
-    private void amendUserSettings(Principal principal, Collection<BannerDto> bannerDtos) {
-        if (principal != null) {
-            List<BannerSettings> bannerSettings = bannerSettingsService.getBannerSettings(principal.getName(),
-                bannerDtos.stream().map(b -> b.id).collect(Collectors.toList()));
-            Map<String, BannerListType> bannerListTypes = bannerSettings.stream()
-                .collect(Collectors.toMap(s -> s.getBanner().getCanonicalSlug(), s -> s.getListType()));
-            for (BannerDto bannerDto : bannerDtos) {
-                BannerListType listType = bannerListTypes.get(bannerDto.id);
-                bannerDto.listType = listType == BannerListType.none ? null : listType;
-            }
-        }
-    }
-
-    private void amendOwner(Principal principal, BannerDto bannerDto) {
-        if (principal != null) {
-            bannerDto.owner = hasOwner(bannerDto.id, principal);
+    private Function<String, Optional<BannerListType>> getListTypeFunction(Principal principal,
+                                                                           Collection<Banner> banners) {
+        if (principal == null) {
+            return canonicalSlug -> Optional.empty();
+        } else {
+            Supplier<List<BannerSettings>> bannerSettingsSupplier = () -> bannerSettingsService.getBannerSettings(
+                principal.getName(), banners.stream().map(Banner::getCanonicalSlug).collect(Collectors.toList()));
+            return canonicalSlug -> bannerSettingsSupplier.get().stream()
+                .filter(settings -> settings.getBanner().getCanonicalSlug().equals(canonicalSlug)).findFirst()
+                .map(BannerSettings::getListType);
         }
     }
 
