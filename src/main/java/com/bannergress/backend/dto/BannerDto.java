@@ -48,21 +48,21 @@ public class BannerDto {
      */
     @Min(1)
     @Max(3000)
-    public int numberOfMissions;
+    public Integer numberOfMissions;
 
     /**
      * Number of submitted missions.
      */
     @Min(0)
     @Max(3000)
-    public int numberOfSubmittedMissions;
+    public Integer numberOfSubmittedMissions;
 
     /**
      * Number of disabled missions.
      */
     @Min(0)
     @Max(3000)
-    public int numberOfDisabledMissions;
+    public Integer numberOfDisabledMissions;
 
     /**
      * Map between the zero-based mission position and the mission. The mission
