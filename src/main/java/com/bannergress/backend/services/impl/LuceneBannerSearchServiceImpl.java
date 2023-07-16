@@ -8,6 +8,7 @@ import jakarta.persistence.EntityManager;
 import org.hibernate.search.engine.search.common.BooleanOperator;
 import org.hibernate.search.engine.search.predicate.dsl.PredicateFinalStep;
 import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
+import org.hibernate.search.engine.search.predicate.dsl.SimpleBooleanPredicateClausesStep;
 import org.hibernate.search.engine.search.predicate.dsl.SimpleQueryStringPredicateFieldMoreStep;
 import org.hibernate.search.engine.search.sort.dsl.SortOrder;
 import org.hibernate.search.mapper.orm.Search;
@@ -66,13 +67,13 @@ public class LuceneBannerSearchServiceImpl extends BaseBannerSearchServiceImpl {
                              Optional<Double> proximityLongitude, Optional<Instant> minEventTimestamp,
                              Optional<Instant> maxEventTimestamp, int offset, int limit) {
         SearchSession searchSession = Search.session(entityManager);
-        List<Banner> result = searchSession.search(Banner.class).where(factory -> factory.bool(b -> {
-            b.filter(factory.matchAll());
+        List<Banner> result = searchSession.search(Banner.class).where((factory, predicate) -> {
+            predicate.add(factory.matchAll());
             if (placeSlug.isPresent()) {
-                b.filter(factory.match().field(FIELD_START_PLACES_SLUG).matching(placeSlug.get()));
+                predicate.add(factory.match().field(FIELD_START_PLACES_SLUG).matching(placeSlug.get()));
             }
             if (minLatitude.isPresent()) {
-                b.filter(factory.spatial().within().field(FIELD_START_POINT).boundingBox(maxLatitude.get(),
+                predicate.add(factory.spatial().within().field(FIELD_START_POINT).boundingBox(maxLatitude.get(),
                     minLongitude.get(), minLatitude.get(), maxLongitude.get()));
             }
             if (search.isPresent()) {
@@ -86,34 +87,34 @@ public class LuceneBannerSearchServiceImpl extends BaseBannerSearchServiceImpl {
                 if (queryAuthor) {
                     step = step.field(FIELD_MISSIONS_AUTHOR_NAME);
                 }
-                b.must(step.matching(search.get()).defaultOperator(BooleanOperator.AND));
+                predicate.add(step.matching(search.get()).defaultOperator(BooleanOperator.AND));
             }
             if (missionId.isPresent()) {
-                b.filter(factory.match().field(FIELD_MISSIONS_ID).matching(missionId.get()));
+                predicate.add(factory.match().field(FIELD_MISSIONS_ID).matching(missionId.get()));
             }
             if (onlyOfficialMissions) {
-                b.filter(factory.bool(b2 -> {
-                    for (String officialMissionAuthor : OFFICIAL_MISSION_AUTHORS) {
-                        b2.should(factory.match().field(FIELD_MISSIONS_AUTHOR_NAME).matching(officialMissionAuthor));
-                    }
-                }));
+                SimpleBooleanPredicateClausesStep<?> orPredicate = factory.or();
+                for (String officialMissionAuthor : OFFICIAL_MISSION_AUTHORS) {
+                    orPredicate.add(factory.match().field(FIELD_MISSIONS_AUTHOR_NAME).matching(officialMissionAuthor));
+                }
+                predicate.add(orPredicate);
             }
             if (author.isPresent()) {
-                b.filter(factory.match().field(FIELD_MISSIONS_AUTHOR_NAME).matching(author.get()));
+                predicate.add(factory.match().field(FIELD_MISSIONS_AUTHOR_NAME).matching(author.get()));
             }
             if (listTypes.isPresent()) {
-                b.filter(createListTypePredicate(factory, listTypes.get(), userId.get()));
+                predicate.add(createListTypePredicate(factory, listTypes.get(), userId.get()));
             }
             if (online.isPresent()) {
-                b.filter(factory.match().field(FIELD_ONLINE).matching(online.get()));
+                predicate.add(factory.match().field(FIELD_ONLINE).matching(online.get()));
             }
             if (minEventTimestamp.isPresent()) {
-                b.filter(factory.range().field(FIELD_EVENT_END_TIMESTAMP).greaterThan(minEventTimestamp.get()));
+                predicate.add(factory.range().field(FIELD_EVENT_END_TIMESTAMP).greaterThan(minEventTimestamp.get()));
             }
             if (maxEventTimestamp.isPresent()) {
-                b.filter(factory.range().field(FIELD_EVENT_START_TIMESTAMP).atMost(maxEventTimestamp.get()));
+                predicate.add(factory.range().field(FIELD_EVENT_START_TIMESTAMP).atMost(maxEventTimestamp.get()));
             }
-        })).sort(factory -> factory.composite(b -> {
+        }).sort(factory -> factory.composite(b -> {
             if (orderBy.isPresent()) {
                 SortOrder direction = orderDirection == Direction.ASC ? SortOrder.ASC : SortOrder.DESC;
                 switch (orderBy.get()) {
@@ -168,15 +169,17 @@ public class LuceneBannerSearchServiceImpl extends BaseBannerSearchServiceImpl {
         } else if (listTypes.contains(BannerListType.none)) {
             // Banners without settings default to BannerListType.none.
             // Therefore, we need to check that no user settings with the remaining types exist.
-            return factory.matchAll().except(createListTypePredicate(factory, otherListTypes, userId));
+            return factory.not(createListTypePredicate(factory, otherListTypes, userId));
         } else {
-            return factory.nested().objectField(FIELD_SETTINGS).nest(f -> f.bool(f2 -> {
-                f2.minimumShouldMatchNumber(1);
-                f2.filter(f.match().field(FIELD_SETTINGS_USER_ID).matching(userId));
-                for (BannerListType listType : listTypes) {
-                    f2.should(f.match().field(FIELD_SETTINGS_LIST_TYPE).matching(listType));
-                }
-            }));
+            return factory.nested(FIELD_SETTINGS) //
+                .add(f -> f.match().field(FIELD_SETTINGS_USER_ID).matching(userId)) //
+                .add(f -> {
+                    SimpleBooleanPredicateClausesStep<?> predicate = f.or();
+                    for (BannerListType listType : listTypes) {
+                        predicate.add(f.match().field(FIELD_SETTINGS_LIST_TYPE).matching(listType));
+                    }
+                    return predicate;
+                });
         }
     }
 
