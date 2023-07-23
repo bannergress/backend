@@ -2,6 +2,7 @@ package com.bannergress.backend.utils;
 
 import com.bannergress.backend.entities.Mission;
 import com.bannergress.backend.entities.MissionStep;
+import com.bannergress.backend.enums.POIType;
 import org.geotools.referencing.GeodeticCalculator;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.locationtech.jts.geom.Point;
@@ -25,7 +26,7 @@ public final class DistanceCalculation {
 
         for (Mission mission : missions) {
             for (MissionStep step : mission.getSteps()) {
-                if (step.getPoi() != null) {
+                if (step.getPoi() != null && step.getPoi().getType() != POIType.unavailable) {
                     Point point = step.getPoi().getPoint();
                     if (point != null) {
                         if (prevPoint != null) {

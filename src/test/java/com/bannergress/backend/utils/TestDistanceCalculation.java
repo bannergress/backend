@@ -4,6 +4,7 @@ import com.bannergress.backend.entities.Mission;
 import com.bannergress.backend.entities.MissionStepBuilder;
 import com.bannergress.backend.entities.POI;
 import com.bannergress.backend.entities.POIBuilder;
+import com.bannergress.backend.enums.POIType;
 import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.Test;
 
@@ -34,5 +35,18 @@ class TestDistanceCalculation {
 
         assertThat(DistanceCalculation.calculateLengthMeters(List.of(mission1, mission2))).isCloseTo(834_885,
             Offset.offset(10));
+    }
+
+    @Test
+    void testUnavailablePortal() {
+        Spatial spatial = new Spatial();
+
+        Mission mission1 = new Mission();
+        POI frankfurt = new POIBuilder().withPoint(spatial.createPoint(50.110556, 8.682222)).build();
+        POI bielefeld = new POIBuilder().withPoint(spatial.createPoint(52.02182, 8.53509)).withType(POIType.unavailable)
+            .build();
+        mission1.getSteps().add(new MissionStepBuilder().withPoi(frankfurt).build());
+        mission1.getSteps().add(new MissionStepBuilder().withPoi(bielefeld).build());
+        assertThat(DistanceCalculation.calculateLengthMeters(List.of(mission1))).isEqualTo(0);
     }
 }
