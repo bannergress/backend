@@ -31,7 +31,8 @@ public class IntelMissionStepDeserializer extends JsonDeserializer<IntelMissionS
                     case portal:
                         result.latitudeE6 = ctxt.readTreeAsValue(poiNode.get(2), int.class);
                         result.longitudeE6 = ctxt.readTreeAsValue(poiNode.get(3), int.class);
-                        result.picture = ctxt.readTreeAsValue(poiNode.get(7), URL.class);
+                        JsonNode pictureNode = poiNode.get(7);
+                        result.picture = pictureNode.isNull() ? null : ctxt.readTreeAsValue(pictureNode, URL.class);
                         break;
                     case fieldTripWaypoint:
                         result.latitudeE6 = ctxt.readTreeAsValue(poiNode.get(1), int.class);
