@@ -82,8 +82,8 @@ public class BannerController {
         BannerDtoAttribute.listType //
     );
 
-    /** Default set of attributes to return for single result queries. */
-    private static final Set<BannerDtoAttribute> DEFAULT_GET_ATTRIBUTES = ImmutableSet.<BannerDtoAttribute>builder() //
+    /** Set of attributes to return for preview queries. */
+    private static final Set<BannerDtoAttribute> DEFAULT_PREVIEW_ATTRIBUTES = ImmutableSet.<BannerDtoAttribute>builder() //
         .addAll(DEFAULT_LIST_ATTRIBUTES) //
         .add(BannerDtoAttribute.missions) //
         .add(BannerDtoAttribute.type) //
@@ -92,6 +92,11 @@ public class BannerController {
         .add(BannerDtoAttribute.plannedOfflineDate) //
         .add(BannerDtoAttribute.eventStartDate) //
         .add(BannerDtoAttribute.eventEndDate) //
+        .build();
+    
+    /** Default set of attributes to return for single result queries. */
+    private static final Set<BannerDtoAttribute> DEFAULT_GET_ATTRIBUTES = ImmutableSet.<BannerDtoAttribute>builder() //
+        .addAll(DEFAULT_PREVIEW_ATTRIBUTES) //
         .add(BannerDtoAttribute.owner) //
         .build();
 
@@ -232,7 +237,7 @@ public class BannerController {
     @Hidden
     public BannerDto preview(@Valid @RequestBody BannerDto banner, List<Locale.LanguageRange> languagePriorityList)
         throws MissionAlreadyUsedException {
-        return toDto(bannerService.generatePreview(banner), languagePriorityList, DEFAULT_GET_ATTRIBUTES, null,
+        return toDto(bannerService.generatePreview(banner), languagePriorityList, DEFAULT_PREVIEW_ATTRIBUTES, null,
             x -> Optional.empty());
     }
 
