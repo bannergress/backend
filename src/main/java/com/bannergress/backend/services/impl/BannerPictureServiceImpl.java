@@ -109,11 +109,21 @@ public class BannerPictureServiceImpl implements BannerPictureService {
             hasher.putInt(position);
         }
         // The following lines break hash compatibility for banners with at least one disabled mission.
-        // Can be removed again when the IMPLEMENTATION_VERION increases.
+        // Can be removed again when the IMPLEMENTATION_VERSION increases.
         if (banner.getNumberOfDisabledMissions() > 0) {
             hasher.putUnencodedChars("EXTRA_DISABLED");
         }
+        // The following lines break hash compatibility for banners with all missions disabled or submitted,
+        // and at least one mission submitted.
+        // Can be removed again when the IMPLEMENTATION_VERSION increases.
+        if (isOnlyDisabledOrSubmitted(banner) && banner.getNumberOfSubmittedMissions() > 0) {
+            hasher.putUnencodedChars("EXTRA_ALL_DISABLED_OR_SUBMITTED");
+        }
         return hasher.hash().toString();
+    }
+
+    private boolean isOnlyDisabledOrSubmitted(Banner banner) {
+        return banner.getNumberOfDisabledMissions() + banner.getNumberOfSubmittedMissions() == banner.getNumberOfMissions();
     }
 
     private static final BufferedImage maskImageOnline = loadImage("/mask-100-online.png");
@@ -130,7 +140,7 @@ public class BannerPictureServiceImpl implements BannerPictureService {
 
     protected byte[] createPicture(Banner banner) {
         final int numberColumns = banner.getWidth();
-        boolean allDisabled = banner.getNumberOfDisabledMissions() == banner.getNumberOfMissions();
+        boolean onlyDisabledOrSubmitted = isOnlyDisabledOrSubmitted(banner);
         SortedMap<Integer, Optional<Mission>> missionsAndPlaceholders = banner.getMissionsAndPlaceholders();
         final int numberRows = missionsAndPlaceholders.lastKey() / numberColumns + 1;
         final int TILESIZE = 100;
@@ -166,9 +176,8 @@ public class BannerPictureServiceImpl implements BannerPictureService {
                             x2 - MISSION_PADDING, y2 - MISSION_PADDING, 0, 0, missionImage.getWidth(),
                             missionImage.getHeight(), null);
                     });
-                    MissionStatus drawStatus = allDisabled ? MissionStatus.published
-                        : entry.getValue().map(Mission::getStatus).orElse(MissionStatus.submitted);
-                    drawOverlay(graphics, x1, y1, x2, y2, drawStatus);
+                    MissionStatus drawStatus = entry.getValue().map(Mission::getStatus).orElse(MissionStatus.submitted);
+                    drawOverlay(graphics, x1, y1, x2, y2, drawStatus, onlyDisabledOrSubmitted);
                 }
             })).get();
         } catch (InterruptedException | ExecutionException e) {
@@ -192,17 +201,18 @@ public class BannerPictureServiceImpl implements BannerPictureService {
         }
     }
 
-    private void drawOverlay(Graphics2D graphics, int x1, int y1, int x2, int y2, MissionStatus status) {
-        BufferedImage maskImage = getMaskImage(status);
+    private void drawOverlay(Graphics2D graphics, int x1, int y1, int x2, int y2, MissionStatus status,
+                             boolean onlyDisabledOrSubmitted) {
+        BufferedImage maskImage = getMaskImage(status, onlyDisabledOrSubmitted);
         graphics.drawImage(maskImage, x1, y1, x2, y2, 0, 0, maskImage.getWidth(), maskImage.getHeight(), null);
     }
 
-    private BufferedImage getMaskImage(MissionStatus status) {
+    private BufferedImage getMaskImage(MissionStatus status, boolean onlyDisabledOrSubmitted) {
         switch (status) {
             case published:
                 return maskImageOnline;
             case disabled:
-                return maskImageOffline;
+                return onlyDisabledOrSubmitted ? maskImageOnline : maskImageOffline;
             case submitted:
                 return maskImagePlaceholder;
             default:
