@@ -48,7 +48,7 @@ public class MissionController {
                                             @RequestParam(defaultValue = "ASC") final Direction orderDirection,
                                             @RequestParam(defaultValue = "0") final int offset,
                                             @RequestParam(defaultValue = "20") @Max(100) final int limit) {
-        Collection<Mission> unusedMissions = missionService.findUnusedMissions(query, orderBy, orderDirection, offset,
+        Collection<Mission> unusedMissions = missionService.findUnusedMissions(query.trim(), orderBy, orderDirection, offset,
             limit);
         return Collections2.transform(unusedMissions, MissionController::toSummaryForUnused);
     }
