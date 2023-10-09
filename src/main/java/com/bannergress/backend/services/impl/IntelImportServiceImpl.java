@@ -35,7 +35,8 @@ public class IntelImportServiceImpl extends BaseImportServiceImpl implements Int
             for (int i = 0; i < steps.size(); i++) {
                 importMissionStep(steps.get(i), mission.getSteps().get(i), tracker);
             }
-            setMissionStatus(mission, setMissionOnline ? MissionStatus.published : null, tracker);
+            setMissionStatus(mission, setMissionOnline ? MissionStatus.published
+                : mission.getStatus() == MissionStatus.submitted ? MissionStatus.disabled : null, tracker);
             entityManager.persist(mission);
             return mission;
         });
