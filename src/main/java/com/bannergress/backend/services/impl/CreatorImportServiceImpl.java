@@ -45,46 +45,45 @@ public class CreatorImportServiceImpl extends BaseImportServiceImpl implements C
     }
 
     @Override
-    public void importGetMissionsList(@Valid CreatorGetMissionsList data, Optional<String> optionalAuthor) {
+    public void importGetMissionsList(@Valid CreatorGetMissionsList data) {
         withRecalculation(tracker -> {
             for (List<CreatorMission> list : data.missionLists) {
                 for (CreatorMission creatorMission : list) {
-                    if (!Strings.isNullOrEmpty(creatorMission.mission_guid)
-                        && (creatorMission.state == CreatorMissionStatus.PUBLISHED
-                            || creatorMission.state == CreatorMissionStatus.DISABLED)) {
-                        Mission mission = importMission(creatorMission.mission_guid, creatorMission, List.of(),
-                            tracker);
-                        setMissionStatus(mission, toMissionStatus(creatorMission.state), tracker);
-                        optionalAuthor.ifPresent(author -> setMissionAuthor(mission, author, null));
-                        entityManager.persist(mission);
+                    if (!Strings.isNullOrEmpty(creatorMission.mission_guid)) {
+                        if (creatorMission.state == CreatorMissionStatus.PUBLISHED) {
+                            // Published version can always be imported
+                            Mission mission = importMission(creatorMission.mission_guid, creatorMission, List.of(),
+                                tracker);
+                            setMissionStatus(mission, MissionStatus.published, tracker);
+                        } else if (list.size() == 1) {
+                            // All other versions can only be imported if there is no second (published) item
+                            Mission mission = entityManager.find(Mission.class, creatorMission.mission_guid);
+                            if (mission == null) {
+                                mission = importMission(creatorMission.mission_guid, creatorMission, List.of(),
+                                    tracker);
+                                mission.setStatus(MissionStatus.submitted);
+                                entityManager.persist(mission);
+                            } else if (mission.getStatus() == MissionStatus.published) {
+                                setMissionStatus(mission, MissionStatus.disabled, tracker);
+                            }
+                        }
                     }
                 }
             }
         });
     }
 
-    private static MissionStatus toMissionStatus(CreatorMissionStatus creatorStatus) {
-        switch (creatorStatus) {
-            case SUBMITTED:
-                return MissionStatus.submitted;
-            case PUBLISHED:
-                return MissionStatus.published;
-            case DISABLED:
-                return MissionStatus.disabled;
-            default:
-                throw new IllegalArgumentException(creatorStatus.toString());
-        }
-    }
-
     private Mission importMission(String id, CreatorMission creatorMission, List<CreatorPoi> creatorPois,
                                   RecalculationTracker tracker) {
         Mission mission = importMissionById(id);
         setMissionAuthor(mission, creatorMission.definition.author_nickname, null);
-        setMissionAverageDurationMilliseconds(mission, creatorMission.stats.median_completion_time);
         setMissionDescription(mission, creatorMission.definition.description);
-        setMissionNumberCompleted(mission, creatorMission.stats.num_completed);
+        if (creatorMission.stats != null) {
+            setMissionAverageDurationMilliseconds(mission, creatorMission.stats.median_completion_time);
+            setMissionNumberCompleted(mission, creatorMission.stats.num_completed);
+            setMissionRating(mission, creatorMission.stats.rating / 100d);
+        }
         setMissionPicture(mission, creatorMission.definition.logo_url, tracker);
-        setMissionRating(mission, creatorMission.stats.rating / 100d);
         setMissionTitle(mission, creatorMission.definition.name);
         setMissionType(mission, creatorMission.definition.mission_type);
         if (creatorMission.definition.waypoints != null) {
