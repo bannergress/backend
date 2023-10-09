@@ -93,7 +93,7 @@ public class BannerController {
         .add(BannerDtoAttribute.eventStartDate) //
         .add(BannerDtoAttribute.eventEndDate) //
         .build();
-    
+
     /** Default set of attributes to return for single result queries. */
     private static final Set<BannerDtoAttribute> DEFAULT_GET_ATTRIBUTES = ImmutableSet.<BannerDtoAttribute>builder() //
         .addAll(DEFAULT_PREVIEW_ATTRIBUTES) //
