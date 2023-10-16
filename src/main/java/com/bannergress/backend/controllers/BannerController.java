@@ -393,6 +393,9 @@ public class BannerController {
                 case type:
                     dto.type = banner.getType();
                     break;
+                case uuid:
+                    dto.uuid = banner.getUuid();
+                    break;
                 case warning:
                     dto.warning = banner.getWarning();
                     break;
