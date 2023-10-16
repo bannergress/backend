@@ -72,7 +72,8 @@ public class BannerServiceImpl implements BannerService {
 
     @Override
     public Optional<Banner> findBySlugWithDetails(String slug) {
-        return bannerRepository.findOne(BannerSpecifications.hasSlug(slug).and(BannerSpecifications.fetchDetails()));
+        return bannerRepository.findAll(BannerSpecifications.hasSlug(slug).and(BannerSpecifications.fetchDetails()))
+            .stream().findAny();
     }
 
     @Override
