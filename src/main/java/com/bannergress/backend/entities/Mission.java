@@ -53,7 +53,7 @@ public class Mission {
     /**
      * Picture URL.
      */
-    @Column(name = "picture_url", nullable = false)
+    @Column(name = "picture_url", nullable = true)
     private URL picture;
 
     /**

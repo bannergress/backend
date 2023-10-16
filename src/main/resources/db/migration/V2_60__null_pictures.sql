@@ -1,0 +1,1 @@
+ALTER TABLE mission ALTER COLUMN picture_url DROP NOT NULL;
