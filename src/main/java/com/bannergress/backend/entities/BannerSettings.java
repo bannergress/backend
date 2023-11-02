@@ -1,8 +1,10 @@
 package com.bannergress.backend.entities;
 
 import com.bannergress.backend.enums.BannerListType;
+import io.hypersistence.utils.hibernate.type.basic.PostgreSQLEnumType;
 import jakarta.persistence.*;
 import org.hibernate.annotations.DynamicUpdate;
+import org.hibernate.annotations.Type;
 import org.hibernate.search.engine.backend.types.Searchable;
 import org.hibernate.search.engine.backend.types.Sortable;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
@@ -46,6 +48,7 @@ public class BannerSettings {
      */
     @Column(name = "list_type", nullable = false)
     @Enumerated(EnumType.STRING)
+    @Type(PostgreSQLEnumType.class)
     @GenericField(searchable = Searchable.YES, sortable = Sortable.NO)
     private BannerListType listType = BannerListType.none;
 

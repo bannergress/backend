@@ -3,9 +3,11 @@ package com.bannergress.backend.entities;
 import com.bannergress.backend.enums.MissionStatus;
 import com.bannergress.backend.enums.MissionType;
 import com.bannergress.backend.utils.PojoBuilder;
+import io.hypersistence.utils.hibernate.type.basic.PostgreSQLEnumType;
 import jakarta.persistence.*;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
 import org.hibernate.annotations.DynamicUpdate;
+import org.hibernate.annotations.Type;
 import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
@@ -90,6 +92,7 @@ public class Mission {
      */
     @Column(name = "type", nullable = true)
     @Enumerated(EnumType.STRING)
+    @Type(PostgreSQLEnumType.class)
     private MissionType type;
 
     /**
@@ -104,6 +107,7 @@ public class Mission {
      */
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
+    @Type(PostgreSQLEnumType.class)
     private MissionStatus status = MissionStatus.disabled;
 
     /**

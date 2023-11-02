@@ -2,8 +2,10 @@ package com.bannergress.backend.entities;
 
 import com.bannergress.backend.enums.Faction;
 import com.bannergress.backend.utils.PojoBuilder;
+import io.hypersistence.utils.hibernate.type.basic.PostgreSQLEnumType;
 import jakarta.persistence.*;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
+import org.hibernate.annotations.Type;
 import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
@@ -31,6 +33,7 @@ public class NamedAgent {
      */
     @Column(nullable = true)
     @Enumerated(EnumType.STRING)
+    @Type(PostgreSQLEnumType.class)
     private Faction faction;
 
     /**
