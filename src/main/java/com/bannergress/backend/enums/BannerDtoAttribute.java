@@ -60,6 +60,9 @@ public enum BannerDtoAttribute {
 
     /** {@link BannerDto#type}. */
     type,
+    
+    /** {@link BannerDto#uuid}. */
+    uuid,
 
     /** {@link BannerDto#warning}. */
     warning,

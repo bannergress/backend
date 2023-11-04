@@ -15,6 +15,7 @@ import net.karneim.pojobuilder.GeneratePojoBuilder;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 @JsonInclude(Include.NON_NULL)
 @GeneratePojoBuilder(withBuilderInterface = PojoBuilder.class)
@@ -142,6 +143,11 @@ public class BannerDto {
      * End date for the corresponding event (inclusive).
      */
     public LocalDate eventEndDate;
+
+    /**
+     * Banner UUID.
+     */
+    public UUID uuid;
 
     @Override
     public boolean equals(final Object o) {
