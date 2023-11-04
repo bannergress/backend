@@ -5,10 +5,12 @@ import com.bannergress.backend.utils.PointBridge;
 import com.bannergress.backend.utils.PojoBuilder;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Maps;
+import io.hypersistence.utils.hibernate.type.basic.PostgreSQLEnumType;
 import jakarta.persistence.*;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.SortNatural;
+import org.hibernate.annotations.Type;
 import org.hibernate.envers.AuditJoinTable;
 import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
@@ -185,6 +187,7 @@ public class Banner {
      */
     @Column(name = "type", nullable = false)
     @Enumerated(EnumType.STRING)
+    @Type(PostgreSQLEnumType.class)
     private BannerType type;
 
     /**
