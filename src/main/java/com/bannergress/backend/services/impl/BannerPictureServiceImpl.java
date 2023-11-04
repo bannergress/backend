@@ -35,6 +35,7 @@ import java.io.InputStream;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedMap;
 import java.util.concurrent.ExecutionException;
@@ -102,8 +103,12 @@ public class BannerPictureServiceImpl implements BannerPictureService {
         Hasher hasher = Hashing.murmur3_128().newHasher();
         hasher.putInt(IMPLEMENTATION_VERSION).putFloat(compressionQuality).putInt(banner.getWidth());
         for (Entry<Integer, Mission> entry : banner.getMissions().entrySet()) {
-            hasher.putInt(entry.getKey()).putUnencodedChars(entry.getValue().getPicture().toString())
-                .putBoolean(entry.getValue().getStatus() == MissionStatus.published);
+            hasher.putInt(entry.getKey());
+            Mission mission = entry.getValue();
+            if (mission.getPicture() != null) {
+                hasher.putUnencodedChars(mission.getPicture().toString());
+            }
+            hasher.putBoolean(mission.getStatus() == MissionStatus.published);
         }
         for (Integer position : banner.getPlaceholders()) {
             hasher.putInt(position);
@@ -157,14 +162,15 @@ public class BannerPictureServiceImpl implements BannerPictureService {
         // loads, draws and masks the individual mission images to the banner image.
         try {
             threadPool.submit(() -> missionsAndPlaceholders.entrySet().parallelStream().forEach(entry -> {
-                Optional<BufferedImage> optionalMissionImage = entry.getValue().map(mission -> {
-                    Request request = new Request.Builder().url(mission.getPicture()).build();
-                    try (Response response = client.newCall(request).execute()) {
-                        return ImageIO.read(response.body().byteStream());
-                    } catch (IOException ex) {
-                        throw new RuntimeException("failed to read image: " + mission.getPicture(), ex);
-                    }
-                });
+                Optional<BufferedImage> optionalMissionImage = entry.getValue().map(Mission::getPicture)
+                    .filter(Objects::nonNull).map(url -> {
+                        Request request = new Request.Builder().url(url).build();
+                        try (Response response = client.newCall(request).execute()) {
+                            return ImageIO.read(response.body().byteStream());
+                        } catch (IOException ex) {
+                            throw new RuntimeException("failed to read image: " + url, ex);
+                        }
+                    });
                 int missionPosition = numberColumns * numberRows - entry.getKey().intValue() - 1;
                 int x1 = OUTER_PADDING + (missionPosition % numberColumns) * TILESIZE;
                 int y1 = OUTER_PADDING + (missionPosition / numberColumns) * TILESIZE;
