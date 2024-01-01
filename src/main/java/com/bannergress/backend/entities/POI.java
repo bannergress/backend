@@ -2,12 +2,12 @@ package com.bannergress.backend.entities;
 
 import com.bannergress.backend.enums.POIType;
 import com.bannergress.backend.utils.PojoBuilder;
-import io.hypersistence.utils.hibernate.type.basic.PostgreSQLEnumType;
 import jakarta.persistence.*;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
+import org.hibernate.type.SqlTypes;
 import org.locationtech.jts.geom.Point;
 
 import java.net.URL;
@@ -52,7 +52,7 @@ public class POI {
      */
     @Column(name = "type", nullable = false)
     @Enumerated(EnumType.STRING)
-    @Type(PostgreSQLEnumType.class)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private POIType type;
 
     public String getId() {

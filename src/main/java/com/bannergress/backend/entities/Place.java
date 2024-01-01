@@ -2,14 +2,14 @@ package com.bannergress.backend.entities;
 
 import com.bannergress.backend.enums.PlaceType;
 import com.bannergress.backend.utils.PojoBuilder;
-import io.hypersistence.utils.hibernate.type.basic.PostgreSQLEnumType;
 import jakarta.persistence.*;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.NaturalId;
-import org.hibernate.annotations.Type;
 import org.hibernate.envers.NotAudited;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.IndexedEmbedded;
+import org.hibernate.type.SqlTypes;
 
 import java.util.*;
 
@@ -40,7 +40,7 @@ public class Place {
      */
     @Column(name = "type", nullable = false)
     @Enumerated(EnumType.STRING)
-    @Type(PostgreSQLEnumType.class)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private PlaceType type;
 
     @Column(name = "number_of_banners", nullable = false)
