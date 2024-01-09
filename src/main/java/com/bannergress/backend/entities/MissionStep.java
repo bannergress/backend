@@ -2,12 +2,12 @@ package com.bannergress.backend.entities;
 
 import com.bannergress.backend.enums.Objective;
 import com.bannergress.backend.utils.PojoBuilder;
-import io.hypersistence.utils.hibernate.type.basic.PostgreSQLEnumType;
 import jakarta.persistence.*;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
+import org.hibernate.type.SqlTypes;
 
 import java.util.UUID;
 
@@ -44,7 +44,7 @@ public class MissionStep {
      */
     @Column(name = "objective", nullable = true)
     @Enumerated(EnumType.STRING)
-    @Type(PostgreSQLEnumType.class)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private Objective objective;
 
     public UUID getUuid() {

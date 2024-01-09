@@ -3,17 +3,17 @@ package com.bannergress.backend.entities;
 import com.bannergress.backend.enums.MissionStatus;
 import com.bannergress.backend.enums.MissionType;
 import com.bannergress.backend.utils.PojoBuilder;
-import io.hypersistence.utils.hibernate.type.basic.PostgreSQLEnumType;
 import jakarta.persistence.*;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
 import org.hibernate.annotations.DynamicUpdate;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.IndexedEmbedded;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
+import org.hibernate.type.SqlTypes;
 
 import java.net.URL;
 import java.time.Instant;
@@ -92,7 +92,7 @@ public class Mission {
      */
     @Column(name = "type", nullable = true)
     @Enumerated(EnumType.STRING)
-    @Type(PostgreSQLEnumType.class)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private MissionType type;
 
     /**
@@ -107,7 +107,7 @@ public class Mission {
      */
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
-    @Type(PostgreSQLEnumType.class)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private MissionStatus status = MissionStatus.disabled;
 
     /**

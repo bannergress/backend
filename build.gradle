@@ -37,7 +37,6 @@ dependencies {
   implementation "org.keycloak:keycloak-admin-client:${keycloak_version}"
   implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
   implementation 'org.geotools:gt-referencing:30.1'
-  implementation 'io.hypersistence:hypersistence-utils-hibernate-62:3.6.1'
 
   annotationProcessor 'org.hibernate.orm:hibernate-jpamodelgen'
   annotationProcessor "net.karneim:pojobuilder:$pojobuilder_version"
