@@ -30,7 +30,7 @@ dependencies {
   implementation "org.hibernate.search:hibernate-search-mapper-orm:${hibernate_search_version}"
   implementation "org.hibernate.search:hibernate-search-backend-lucene:${hibernate_search_version}"
   implementation 'org.flywaydb:flyway-core'
-	implementation 'com.google.guava:guava:33.1.0-jre'
+	implementation 'com.google.guava:guava:33.2.0-jre'
 	implementation "com.google.maps:google-maps-services:${google_maps_services_version}"
   implementation "com.squareup.okhttp3:okhttp:${okhttp_version}"
   implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml'
