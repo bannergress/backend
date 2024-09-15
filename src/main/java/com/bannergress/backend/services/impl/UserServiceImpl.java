@@ -38,6 +38,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public boolean attemptVerification(String agentName, UUID token) {
+        Optional<User> optionalUser = repository.findOneByVerificationAgentIgnoreCaseAndVerificationToken(agentName,
+            token);
+        optionalUser.ifPresent(user -> {
+            userMappingService.setAgentName(user.getId(), agentName);
+            clearClaim(user.getId());
+        });
+        return optionalUser.isPresent();
+    }
+
+    @Override
     public void unlink(String userId) {
         userMappingService.setAgentName(userId, null);
     }

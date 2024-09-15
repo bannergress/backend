@@ -2,6 +2,8 @@ package com.bannergress.backend.services;
 
 import com.bannergress.backend.entities.User;
 
+import java.util.UUID;
+
 /**
  * Service for user-related tasks.
  */
@@ -21,6 +23,15 @@ public interface UserService {
      * @param agent  Agent name.
      */
     void claim(String userId, String agent);
+
+    /**
+     * Attempts to verify an agent name against a token.
+     * 
+     * @param agentName Agent name.
+     * @param token     Token.
+     * @return <code>true</code> if a verification was completed.
+     */
+    public boolean attemptVerification(String agentName, UUID token);
 
     /**
      * Unlinks a user from an agent name.

@@ -2,15 +2,19 @@ package com.bannergress.backend.controllers;
 
 import com.bannergress.backend.dto.UserDto;
 import com.bannergress.backend.entities.User;
+import com.bannergress.backend.security.Roles;
 import com.bannergress.backend.services.AgentService;
 import com.bannergress.backend.services.UserMappingService;
 import com.bannergress.backend.services.UserService;
+import jakarta.annotation.security.RolesAllowed;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.UUID;
 
 /**
  * REST endpoint for users.
@@ -27,6 +31,9 @@ public class UserController {
 
     @Autowired
     private AgentService agentService;
+    
+    @Value("${verification.template:%s}")
+    private String verificationTemplate;
 
     @GetMapping("/user")
     public UserDto get(Principal principal) {
@@ -35,6 +42,8 @@ public class UserController {
         UserDto result = new UserDto();
         result.verificationAgent = user.getVerificationAgent();
         result.verificationToken = user.getVerificationToken();
+        result.verificationMessage = user.getVerificationToken() == null ? null
+            : String.format(verificationTemplate, user.getVerificationToken());
         result.agent = userMappingService.getAgentName(userId)
             .map(agentName -> MissionController.toAgentSummary(agentService.importAgent(agentName, null))).orElse(null);
         return result;
@@ -52,6 +61,12 @@ public class UserController {
         String userId = principal.getName();
         userService.clearClaim(userId);
         return get(principal);
+    }
+
+    @PostMapping("/user/verify")
+    @RolesAllowed(Roles.VERIFY_USERS)
+    public void verify(@RequestParam String agent, @RequestParam UUID token) {
+        userService.attemptVerification(agent, token);
     }
 
     @PostMapping("/user/unlink")
