@@ -10,7 +10,10 @@ apply plugin: 'io.spring.dependency-management'
 apply plugin: 'checkstyle'
 
 group 'com.bannergress'
-sourceCompatibility = JavaVersion.VERSION_17
+
+java {
+  sourceCompatibility = JavaVersion.VERSION_17
+}
 
 repositories {
   maven {
