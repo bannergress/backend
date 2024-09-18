@@ -28,4 +28,9 @@ public interface Roles {
      * Role which allows to manage places.
      */
     String MANAGE_PLACES = "manage-places";
+
+    /**
+     * Role which allows to verify a user.
+     */
+    String VERIFY_USERS = "verify-users";
 }

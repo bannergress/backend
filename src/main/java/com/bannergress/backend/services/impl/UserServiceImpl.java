@@ -1,11 +1,9 @@
 package com.bannergress.backend.services.impl;
 
 import com.bannergress.backend.entities.User;
-import com.bannergress.backend.exceptions.VerificationStateException;
 import com.bannergress.backend.repositories.UserRepository;
 import com.bannergress.backend.services.UserMappingService;
 import com.bannergress.backend.services.UserService;
-import com.bannergress.backend.services.VerificationService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,9 +16,6 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
     @Autowired
     private UserRepository repository;
-
-    @Autowired
-    private VerificationService verificationService;
 
     @Autowired
     private UserMappingService userMappingService;
@@ -43,20 +38,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<String> verify(String userId) throws VerificationStateException {
-        User user = getOrCreate(userId);
-        if (user.getVerificationAgent() == null || user.getVerificationToken() == null) {
-            throw new VerificationStateException();
-        }
-        Optional<String> agentName = verificationService.verify(user.getVerificationAgent(),
-            user.getVerificationToken());
-        if (agentName.isPresent()) {
-            userMappingService.setAgentName(userId, agentName.get());
-            clearClaim(userId);
-        } else {
-            throw new VerificationStateException();
-        }
-        return agentName;
+    public boolean attemptVerification(String agentName, UUID token) {
+        Optional<User> optionalUser = repository.findOneByVerificationAgentIgnoreCaseAndVerificationToken(agentName,
+            token);
+        optionalUser.ifPresent(user -> {
+            userMappingService.setAgentName(user.getId(), agentName);
+            clearClaim(user.getId());
+        });
+        return optionalUser.isPresent();
     }
 
     @Override

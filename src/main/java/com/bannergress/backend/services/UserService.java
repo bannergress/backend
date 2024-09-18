@@ -1,9 +1,8 @@
 package com.bannergress.backend.services;
 
 import com.bannergress.backend.entities.User;
-import com.bannergress.backend.exceptions.VerificationStateException;
 
-import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Service for user-related tasks.
@@ -26,13 +25,13 @@ public interface UserService {
     void claim(String userId, String agent);
 
     /**
-     * Verifies a user.
-     *
-     * @param userId user to verify.
-     * @return If the verification was successful: agent name, corrected for case sensitivity.
-     * @throws VerificationStateException If the verification process hasn't been started.
+     * Attempts to verify an agent name against a token.
+     * 
+     * @param agentName Agent name.
+     * @param token     Token.
+     * @return <code>true</code> if a verification was completed.
      */
-    public Optional<String> verify(String userId) throws VerificationStateException;
+    public boolean attemptVerification(String agentName, UUID token);
 
     /**
      * Unlinks a user from an agent name.
