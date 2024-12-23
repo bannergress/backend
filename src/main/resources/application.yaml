@@ -29,6 +29,9 @@ springdoc:
   swagger-ui:
     supported-submit-methods: []
 
+server:
+  compression:
+    enabled: true
 
 ---
 # This settings get activated when the 'dev' spring profile is active

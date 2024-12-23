@@ -10,7 +10,9 @@ import org.springframework.web.filter.ShallowEtagHeaderFilter;
 @Configuration
 public class EtagConfiguration {
     @Bean
-    public ShallowEtagHeaderFilter shallowEtagHeaderFilter() {
-        return new ShallowEtagHeaderFilter();
+    ShallowEtagHeaderFilter shallowEtagHeaderFilter() {
+        ShallowEtagHeaderFilter result = new ShallowEtagHeaderFilter();
+        result.setWriteWeakETag(true);
+        return result;
     }
 }
