@@ -17,13 +17,13 @@ public class BannerPictureController {
     @Autowired
     private BannerPictureService bannerPictureService;
 
-    @GetMapping(value = "/bnrs/pictures/{hash}", produces = MediaType.IMAGE_JPEG_VALUE)
+    @GetMapping(value = "/bnrs/pictures/{hash}")
     public ResponseEntity<byte[]> getFile(@PathVariable String hash) {
         Optional<BannerPicture> bannerPicture = bannerPictureService.findByHash(hash);
         if (bannerPicture.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
-        return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG)
+        return ResponseEntity.ok().contentType(MediaType.parseMediaType(bannerPicture.get().getType().getMediaType()))
             .header(HttpHeaders.CACHE_CONTROL, "public, max-age=31536000, immutable")
             .body(bannerPicture.get().getPicture());
     }

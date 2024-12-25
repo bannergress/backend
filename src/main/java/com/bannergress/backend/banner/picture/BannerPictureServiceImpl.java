@@ -14,6 +14,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import javax.imageio.IIOImage;
@@ -79,10 +80,11 @@ public class BannerPictureServiceImpl implements BannerPictureService {
         BannerPicture newPicture = entityManager.find(BannerPicture.class, hash);
         if (newPicture == null) {
             // Create a new picture
-            byte[] picture = createPicture(banner);
+            Pair<byte[], PictureType> pictureResult = createPicture(banner);
             newPicture = new BannerPicture();
             newPicture.setHash(hash);
-            newPicture.setPicture(picture);
+            newPicture.setPicture(pictureResult.getFirst());
+            newPicture.setType(pictureResult.getSecond());
             entityManager.persist(newPicture);
         } else {
             // Reuse the existing picture, clear potential expiration
@@ -141,7 +143,7 @@ public class BannerPictureServiceImpl implements BannerPictureService {
         }
     }
 
-    protected byte[] createPicture(Banner banner) {
+    protected Pair<byte[], PictureType> createPicture(Banner banner) {
         final int numberColumns = banner.getWidth();
         boolean onlyDisabledOrSubmitted = isOnlyDisabledOrSubmitted(banner);
         SortedMap<Integer, Optional<Mission>> missionsAndPlaceholders = banner.getMissionsAndPlaceholders();
@@ -190,19 +192,38 @@ public class BannerPictureServiceImpl implements BannerPictureService {
             graphics.dispose();
         }
 
+        PictureType pictureType = selectPictureType(bannerImage);
         try (ByteArrayOutputStream stream = new ByteArrayOutputStream(24 * 1024 * numberRows);
             ImageOutputStream imageOutputStream = ImageIO.createImageOutputStream(stream)) {
-            ImageWriter imageWriter = ImageIO.getImageWritersByFormatName("jpg").next();
+            ImageWriter imageWriter = ImageIO.getImageWritersByMIMEType(pictureType.getMediaType()).next();
             ImageWriteParam imageWriteParam = imageWriter.getDefaultWriteParam();
-            imageWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-            imageWriteParam.setCompressionQuality(compressionQuality);
+            setWriteParameters(imageWriteParam, pictureType);
             imageWriter.setOutput(imageOutputStream);
             imageWriter.write(null, new IIOImage(bannerImage, null, null), imageWriteParam);
             imageWriter.dispose();
-            return stream.toByteArray();
+            imageOutputStream.flush();
+            return Pair.of(stream.toByteArray(), pictureType);
         } catch (IOException ex) {
             throw new RuntimeException("failed to generate banner with id " + banner.getUuid(), ex);
         }
+    }
+
+    private void setWriteParameters(ImageWriteParam imageWriteParam, PictureType pictureType) {
+        switch (pictureType) {
+            case jpeg:
+                imageWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+                imageWriteParam.setCompressionQuality(compressionQuality);
+                break;
+            case webp:
+                imageWriteParam.setCompressionType("Lossless");
+                imageWriteParam.setCompressionQuality(.5f);
+                break;
+        }
+    }
+
+    private PictureType selectPictureType(BufferedImage bannerImage) {
+        // WebP only supports width and height up to 16383
+        return bannerImage.getHeight() <= 16383 ? PictureType.webp : PictureType.jpeg;
     }
 
     private void drawOverlay(Graphics2D graphics, int x1, int y1, int x2, int y2, MissionStatus status,

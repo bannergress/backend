@@ -25,6 +25,9 @@ public class BannerPicture {
 
     @Column(name = "picture", nullable = false)
     private byte[] picture;
+    
+    @Column(name = "type", nullable = false)
+    private PictureType type;
 
     @Column(name = "expiration", nullable = true)
     private Instant expiration;
@@ -54,6 +57,14 @@ public class BannerPicture {
 
     public void setPicture(byte[] picture) {
         this.picture = picture;
+    }
+
+    public PictureType getType() {
+        return type;
+    }
+
+    public void setType(PictureType type) {
+        this.type = type;
     }
 
     public List<Banner> getBanners() {

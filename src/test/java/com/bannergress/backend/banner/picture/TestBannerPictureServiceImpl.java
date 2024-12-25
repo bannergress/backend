@@ -5,6 +5,7 @@ import com.bannergress.backend.mission.Mission;
 import com.bannergress.backend.mission.MissionStatus;
 import org.assertj.core.util.Sets;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.util.Pair;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -14,6 +15,8 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.SortedMap;
 import java.util.TreeMap;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class TestBannerPictureServiceImpl {
 
@@ -40,10 +43,11 @@ class TestBannerPictureServiceImpl {
         banner.getMissions().get(3).setStatus(MissionStatus.disabled);
         banner.setPlaceholders(Sets.newTreeSet(6, 11, 12, 17, 18, 19, 20, 21, 22, 23));
 
-        byte[] pngData = bannerPictureService.createPicture(banner);
-
-        try (OutputStream os = new FileOutputStream(new File("banner.jpg"))) {
-            os.write(pngData);
+        Pair<byte[], PictureType> pictureResult = bannerPictureService.createPicture(banner);
+        assertThat(pictureResult.getSecond()).isEqualTo(PictureType.webp);
+        
+        try (OutputStream os = new FileOutputStream(new File("banner.webp"))) {
+            os.write(pictureResult.getFirst());
         }
     }
 
