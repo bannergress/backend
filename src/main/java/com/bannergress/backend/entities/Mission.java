@@ -7,7 +7,6 @@ import jakarta.persistence.*;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
@@ -26,7 +25,6 @@ import java.util.List;
 @Entity
 @Table(name = "mission")
 @Audited
-@AuditTable("mission_audit")
 @GeneratePojoBuilder(withBuilderInterface = PojoBuilder.class)
 @DynamicUpdate
 public class Mission {

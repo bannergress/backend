@@ -10,8 +10,6 @@ import net.karneim.pojobuilder.GeneratePojoBuilder;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.SortNatural;
-import org.hibernate.envers.AuditJoinTable;
-import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 import org.hibernate.search.engine.backend.types.ObjectStructure;
@@ -35,7 +33,6 @@ import java.util.*;
 @Entity
 @Table(name = "banner")
 @Audited
-@AuditTable("banner_audit")
 @GeneratePojoBuilder(withBuilderInterface = PojoBuilder.class)
 @Indexed
 public class Banner {
@@ -115,7 +112,6 @@ public class Banner {
     @JoinTable(name = "banner_mission", joinColumns = {@JoinColumn(name = "banner")}, inverseJoinColumns = {
         @JoinColumn(name = "mission")})
     @MapKeyColumn(name = "position")
-    @AuditJoinTable(name = "banner_mission_audit")
     @SortNatural
     @IndexedEmbedded
     private SortedMap<Integer, Mission> missions = new TreeMap<>();
@@ -126,7 +122,6 @@ public class Banner {
     @ElementCollection
     @CollectionTable(name = "banner_placeholder", joinColumns = {@JoinColumn(name = "banner")})
     @Column(name = "position")
-    @AuditJoinTable(name = "banner_placeholder_audit")
     @SortNatural
     private SortedSet<Integer> placeholders = new TreeSet<>();
 

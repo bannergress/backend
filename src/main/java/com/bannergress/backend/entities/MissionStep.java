@@ -5,7 +5,6 @@ import com.bannergress.backend.utils.PojoBuilder;
 import jakarta.persistence.*;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
 import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
 import org.hibernate.type.SqlTypes;
 
@@ -17,7 +16,6 @@ import java.util.UUID;
 @Entity
 @Table(name = "mission_step")
 @Audited
-@AuditTable("mission_step_audit")
 @GeneratePojoBuilder(withBuilderInterface = PojoBuilder.class)
 public class MissionStep {
     /**
