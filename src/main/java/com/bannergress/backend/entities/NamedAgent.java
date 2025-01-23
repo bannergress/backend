@@ -5,7 +5,6 @@ import com.bannergress.backend.utils.PojoBuilder;
 import jakarta.persistence.*;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
 import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
 import org.hibernate.type.SqlTypes;
@@ -18,7 +17,6 @@ import java.util.Set;
 @Entity
 @Table(name = "named_agent")
 @Audited
-@AuditTable("named_agent_audit")
 @GeneratePojoBuilder(withBuilderInterface = PojoBuilder.class)
 public class NamedAgent {
     /**

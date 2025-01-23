@@ -3,7 +3,6 @@ package com.bannergress.backend.entities;
 import com.bannergress.backend.utils.PojoBuilder;
 import jakarta.persistence.*;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
-import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 
@@ -16,7 +15,6 @@ import java.util.UUID;
 @Entity
 @Table(name = "news")
 @Audited
-@AuditTable("news_audit")
 @GeneratePojoBuilder(withBuilderInterface = PojoBuilder.class)
 public class NewsItem {
     /**

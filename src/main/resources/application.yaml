@@ -16,6 +16,7 @@ spring:
       hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
       hibernate.search.backend.directory.root: searchindex/
       hibernate.id.db_structure_naming_strategy: single
+      org.hibernate.envers.audit_table_suffix: _audit
   sql:
     init:
       platform: postgresql
