@@ -1,13 +1,13 @@
 package com.bannergress.backend.testutils.builder;
 
 
-import com.bannergress.backend.dto.BannerDtoBuilder;
-import com.bannergress.backend.dto.MissionDtoBuilder;
-import com.bannergress.backend.dto.MissionStepDtoBuilder;
-import com.bannergress.backend.dto.PoiDtoBuilder;
-import com.bannergress.backend.enums.BannerType;
-import com.bannergress.backend.enums.Objective;
-import com.bannergress.backend.enums.POIType;
+import com.bannergress.backend.banner.BannerDtoBuilder;
+import com.bannergress.backend.banner.BannerType;
+import com.bannergress.backend.mission.MissionDtoBuilder;
+import com.bannergress.backend.mission.step.MissionStepDtoBuilder;
+import com.bannergress.backend.mission.step.Objective;
+import com.bannergress.backend.poi.POIType;
+import com.bannergress.backend.poi.PoiDtoBuilder;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.Collections;
