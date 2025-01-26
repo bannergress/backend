@@ -1,7 +1,21 @@
 package com.bannergress.backend.testutils.builder;
 
-import com.bannergress.backend.entities.*;
-import com.bannergress.backend.enums.*;
+import com.bannergress.backend.agent.Faction;
+import com.bannergress.backend.agent.NamedAgentBuilder;
+import com.bannergress.backend.banner.BannerBuilder;
+import com.bannergress.backend.banner.BannerType;
+import com.bannergress.backend.banner.picture.BannerPictureBuilder;
+import com.bannergress.backend.mission.MissionBuilder;
+import com.bannergress.backend.mission.MissionStatus;
+import com.bannergress.backend.mission.MissionType;
+import com.bannergress.backend.mission.step.MissionStepBuilder;
+import com.bannergress.backend.mission.step.Objective;
+import com.bannergress.backend.news.NewsItemBuilder;
+import com.bannergress.backend.place.PlaceBuilder;
+import com.bannergress.backend.place.PlaceInformationBuilder;
+import com.bannergress.backend.place.PlaceType;
+import com.bannergress.backend.poi.POIBuilder;
+import com.bannergress.backend.poi.POIType;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.List;

@@ -1,10 +1,12 @@
 package com.bannergress.backend.utils;
 
-import com.bannergress.backend.entities.Mission;
-import com.bannergress.backend.entities.MissionStepBuilder;
-import com.bannergress.backend.entities.POI;
-import com.bannergress.backend.entities.POIBuilder;
-import com.bannergress.backend.enums.POIType;
+import com.bannergress.backend.mission.Mission;
+import com.bannergress.backend.mission.step.MissionStepBuilder;
+import com.bannergress.backend.poi.POI;
+import com.bannergress.backend.poi.POIBuilder;
+import com.bannergress.backend.poi.POIType;
+import com.bannergress.backend.spatial.DistanceCalculation;
+import com.bannergress.backend.spatial.Spatial;
 import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.Test;
 
