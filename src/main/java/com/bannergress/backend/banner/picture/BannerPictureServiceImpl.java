@@ -129,9 +129,9 @@ public class BannerPictureServiceImpl implements BannerPictureService {
         return banner.getNumberOfDisabledMissions() + banner.getNumberOfSubmittedMissions() == banner.getNumberOfMissions();
     }
 
-    private static final BufferedImage maskImageOnline = loadImage("/mask-100-online.png");
-    private static final BufferedImage maskImageOffline = loadImage("/mask-100-offline.png");
-    private static final BufferedImage maskImagePlaceholder = loadImage("/mask-100-placeholder.png");
+    private static final BufferedImage maskImageOnline = loadImage("mask-100-online.png");
+    private static final BufferedImage maskImageOffline = loadImage("mask-100-offline.png");
+    private static final BufferedImage maskImagePlaceholder = loadImage("mask-100-placeholder.png");
 
     private static BufferedImage loadImage(String path) {
         try (InputStream stream = BannerPictureServiceImpl.class.getResourceAsStream(path)) {
