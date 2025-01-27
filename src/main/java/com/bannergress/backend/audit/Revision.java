@@ -6,7 +6,6 @@ import org.hibernate.envers.RevisionNumber;
 import org.hibernate.envers.RevisionTimestamp;
 
 import java.time.Instant;
-import java.util.Date;
 
 /**
  * Revision information.
@@ -27,9 +26,9 @@ public class Revision {
     /**
      * Revision creation time.
      */
-    @Column(name = "created", nullable = false, columnDefinition = "timestamp with time zone")
+    @Column(name = "created", nullable = false)
     @RevisionTimestamp
-    private Date created;
+    private Instant created;
 
     /**
      * User who created the revision.
@@ -46,11 +45,11 @@ public class Revision {
     }
 
     public Instant getCreated() {
-        return created == null ? null : created.toInstant();
+        return created;
     }
 
     public void setCreated(Instant created) {
-        this.created = created == null ? null : Date.from(created);
+        this.created = created;
     }
 
     public String getUserid() {
