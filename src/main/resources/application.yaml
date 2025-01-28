@@ -19,6 +19,9 @@ spring:
   sql:
     init:
       platform: postgresql
+  mvc:
+    problemdetails:
+      enabled: true
 
 keycloak:
   bearer-only: true

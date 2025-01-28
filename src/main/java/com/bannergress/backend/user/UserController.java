@@ -7,7 +7,6 @@ import jakarta.annotation.security.RolesAllowed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -17,7 +16,6 @@ import java.util.UUID;
  * REST endpoint for users.
  */
 @RestController
-@Validated
 @PreAuthorize("isAuthenticated()")
 public class UserController {
     @Autowired
