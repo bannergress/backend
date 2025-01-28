@@ -35,7 +35,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -58,7 +57,6 @@ import static com.bannergress.backend.spatial.Spatial.getLongitude;
  * REST endpoint for banners.
  */
 @RestController("bannerController")
-@Validated
 public class BannerController {
     private static final String AGENT_TOKEN_ATTRIBUTE = "agent";
 
