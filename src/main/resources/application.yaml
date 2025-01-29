@@ -19,9 +19,12 @@ spring:
   sql:
     init:
       platform: postgresql
-
-keycloak:
-  bearer-only: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          authority-prefix: ROLE_
+          authorities-claim-name: roles
 
 springdoc:
   paths-to-match:
@@ -38,8 +41,6 @@ server:
 
 spring:
   config.activate.on-profile: dev
-keycloak:
-  enabled: false
 
 logging:
   level:
