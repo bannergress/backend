@@ -27,7 +27,6 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	implementation 'org.hibernate.orm:hibernate-envers'
   implementation 'org.hibernate.orm:hibernate-spatial'
   implementation platform('org.hibernate.search:hibernate-search-bom:7.2.2.Final')
