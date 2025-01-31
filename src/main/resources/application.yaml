@@ -19,6 +19,16 @@ spring:
   sql:
     init:
       platform: postgresql
+      client:
+        registration:
+          keycloak:
+            provider: bannergress
+            client-id: ${keycloak.resource}
+            client-secret: ${keycloak.credentials.secret}
+            authorization-grant-type: client_credentials
+        provider:
+          bannergress:
+            issuer-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}
 
 keycloak:
   bearer-only: true
