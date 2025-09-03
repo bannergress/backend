@@ -39,7 +39,7 @@ dependencies {
 	implementation "com.google.maps:google-maps-services:${google_maps_services_version}"
   implementation "com.squareup.okhttp3:okhttp:${okhttp_version}"
   implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml'
-  implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.10'
+  implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.12'
   implementation 'org.geotools:gt-referencing:33.2'
 
   annotationProcessor 'org.hibernate.orm:hibernate-jpamodelgen'
