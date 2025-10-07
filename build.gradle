@@ -49,7 +49,7 @@ dependencies {
 
 	runtimeOnly 'org.postgresql:postgresql'
 	runtimeOnly 'org.flywaydb:flyway-database-postgresql'
-	runtimeOnly 'org.apache.lucene:lucene-backward-codecs:9.9.2'
+	runtimeOnly 'org.apache.lucene:lucene-backward-codecs:10.3.1'
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
