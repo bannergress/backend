@@ -3,13 +3,13 @@ plugins {
 	id 'com.palantir.git-version' version '4.0.0'
 }
 
-version gitVersion()
+version = gitVersion()
 
 apply plugin: 'java'
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'checkstyle'
 
-group 'com.bannergress'
+group = 'com.bannergress'
 
 java {
   sourceCompatibility = JavaVersion.VERSION_17
@@ -17,7 +17,7 @@ java {
 
 repositories {
   maven {
-    url 'https://repo.osgeo.org/repository/geotools-releases/'
+    url = 'https://repo.osgeo.org/repository/geotools-releases/'
   }
 	mavenCentral()
 }
@@ -60,7 +60,7 @@ tasks.withType(JavaCompile) {
 }
 
 checkstyle {
-	configFile file('config/checkstyle/simple-checkstyle.xml')
+	configFile = file('config/checkstyle/simple-checkstyle.xml')
 	sourceSets = [project.sourceSets.main, project.sourceSets.test]
 	maxErrors = 0
 	maxWarnings = 0
