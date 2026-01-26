@@ -2,18 +2,17 @@ package com.bannergress.backend.mission.intel;
 
 import com.bannergress.backend.mission.step.Objective;
 import com.bannergress.backend.poi.POIType;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.node.ArrayNode;
 
-import java.io.IOException;
 import java.net.URL;
 
-public class IntelMissionStepDeserializer extends JsonDeserializer<IntelMissionStep> {
+public class IntelMissionStepDeserializer extends ValueDeserializer<IntelMissionStep> {
     @Override
-    public IntelMissionStep deserialize(JsonParser parser, DeserializationContext ctxt) throws IOException {
+    public IntelMissionStep deserialize(JsonParser parser, DeserializationContext ctxt) {
         ArrayNode node = parser.readValueAsTree();
         IntelMissionStep result = new IntelMissionStep();
         result.hidden = ctxt.readTreeAsValue(node.get(0), boolean.class);
@@ -45,7 +44,7 @@ public class IntelMissionStepDeserializer extends JsonDeserializer<IntelMissionS
         return result;
     }
 
-    private Objective readObjective(DeserializationContext ctxt, JsonNode node) throws IOException {
+    private Objective readObjective(DeserializationContext ctxt, JsonNode node) {
         int value = ctxt.readTreeAsValue(node, int.class);
         switch (value) {
             case 1:
@@ -69,7 +68,7 @@ public class IntelMissionStepDeserializer extends JsonDeserializer<IntelMissionS
         }
     }
 
-    private POIType readPOIType(DeserializationContext ctxt, JsonNode node) throws IOException {
+    private POIType readPOIType(DeserializationContext ctxt, JsonNode node) {
         int value = ctxt.readTreeAsValue(node, int.class);
         switch (value) {
             case 1:

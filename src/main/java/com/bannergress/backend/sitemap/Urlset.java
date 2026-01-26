@@ -1,12 +1,12 @@
 package com.bannergress.backend.sitemap;
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import com.fasterxml.jackson.annotation.JsonRootName;
+import tools.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import tools.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 
 import java.util.List;
 
-@JacksonXmlRootElement(namespace = Urlset.NAMESPACE, localName = "urlset")
+@JsonRootName(namespace = Urlset.NAMESPACE, value = "urlset")
 public class Urlset {
     protected static final String NAMESPACE = "http://www.sitemaps.org/schemas/sitemap/0.9";
 

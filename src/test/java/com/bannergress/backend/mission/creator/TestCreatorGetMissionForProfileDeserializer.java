@@ -3,11 +3,11 @@ package com.bannergress.backend.mission.creator;
 import com.bannergress.backend.mission.MissionType;
 import com.bannergress.backend.mission.step.Objective;
 import com.bannergress.backend.poi.POIType;
-import com.fasterxml.jackson.core.JacksonException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
 import org.springframework.boot.test.json.JacksonTester;
+import tools.jackson.core.JacksonException;
 
 import java.net.URL;
 

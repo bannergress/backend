@@ -1,16 +1,14 @@
 package com.bannergress.backend.mission.intel;
 
 import com.bannergress.backend.mission.MissionType;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.ValueDeserializer;
 
-import java.io.IOException;
-
-public class IntelMissionTypeDeserializer extends JsonDeserializer<MissionType> {
+public class IntelMissionTypeDeserializer extends ValueDeserializer<MissionType> {
     @Override
-    public MissionType deserialize(JsonParser parser, DeserializationContext ctxt) throws IOException {
+    public MissionType deserialize(JsonParser parser, DeserializationContext ctxt) {
         if (parser.hasToken(JsonToken.VALUE_NUMBER_INT)) {
             int value = parser.getValueAsInt();
             switch (value) {

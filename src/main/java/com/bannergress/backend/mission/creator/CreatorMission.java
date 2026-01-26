@@ -3,10 +3,10 @@ package com.bannergress.backend.mission.creator;
 import com.bannergress.backend.mission.MissionType;
 import com.bannergress.backend.mission.step.Objective;
 import com.bannergress.backend.mission.validation.NianticId;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import tools.jackson.databind.annotation.JsonDeserialize;
 
 import java.net.URL;
 import java.util.List;
