@@ -36,6 +36,10 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}
+  http:
+    serviceclient:
+      timezonedb:
+        base-url: https://api.timezonedb.com
 
 keycloak:
   bearer-only: true
