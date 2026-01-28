@@ -22,7 +22,6 @@ import java.util.Locale;
  * Resolves arguments of type List<Locale.LanguageRange> as a priority list of languages.
  */
 public class LanguageRangeResolver implements HandlerMethodArgumentResolver, ParameterCustomizer {
-    @SuppressWarnings("serial")
     private static final TypeToken<List<Locale.LanguageRange>> LANGUAGE_RANGE_LIST_TYPE = new TypeToken<List<Locale.LanguageRange>>() {
     };
 

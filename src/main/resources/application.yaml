@@ -16,9 +16,13 @@ spring:
       hibernate.search.backend.directory.root: searchindex/
       hibernate.id.db_structure_naming_strategy: single
       org.hibernate.envers.audit_table_suffix: _audit
+      org.hibernate.envers.revision_field_name: rev
+      org.hibernate.envers.revision_type_field_name: revtype
   sql:
     init:
       platform: postgresql
+  security:
+    oauth2:
       client:
         registration:
           keycloak:
@@ -29,6 +33,9 @@ spring:
         provider:
           bannergress:
             issuer-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}
+      resourceserver:
+        jwt:
+          issuer-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}
 
 keycloak:
   bearer-only: true

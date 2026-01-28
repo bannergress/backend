@@ -75,7 +75,7 @@ public class LuceneBannerSearchServiceImpl extends BaseBannerSearchServiceImpl {
                     minLongitude.get(), minLatitude.get(), maxLongitude.get()));
             }
             if (search.isPresent()) {
-                SimpleQueryStringPredicateFieldMoreStep<?, ?> step = factory.simpleQueryString() //
+                SimpleQueryStringPredicateFieldMoreStep<?, ?, ?> step = factory.simpleQueryString() //
                     .field(FIELD_TITLE).boost(5) //
                     .field(FIELD_DESCRIPTION).boost(0.1f) //
                     .field(FIELD_MISSIONS_ID) //
@@ -91,7 +91,7 @@ public class LuceneBannerSearchServiceImpl extends BaseBannerSearchServiceImpl {
                 predicate.add(factory.match().field(FIELD_MISSIONS_ID).matching(missionId.get()));
             }
             if (onlyOfficialMissions) {
-                SimpleBooleanPredicateClausesStep<?> orPredicate = factory.or();
+                SimpleBooleanPredicateClausesStep<?, ?> orPredicate = factory.or();
                 for (String officialMissionAuthor : OFFICIAL_MISSION_AUTHORS) {
                     orPredicate.add(factory.match().field(FIELD_MISSIONS_AUTHOR_NAME).matching(officialMissionAuthor));
                 }
@@ -172,7 +172,7 @@ public class LuceneBannerSearchServiceImpl extends BaseBannerSearchServiceImpl {
             return factory.nested(FIELD_SETTINGS) //
                 .add(f -> f.match().field(FIELD_SETTINGS_USER_ID).matching(userId)) //
                 .add(f -> {
-                    SimpleBooleanPredicateClausesStep<?> predicate = f.or();
+                    SimpleBooleanPredicateClausesStep<?, ?> predicate = f.or();
                     for (BannerListType listType : listTypes) {
                         predicate.add(f.match().field(FIELD_SETTINGS_LIST_TYPE).matching(listType));
                     }

@@ -1,13 +1,13 @@
 package com.bannergress.backend.banner;
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import com.fasterxml.jackson.annotation.JsonRootName;
+import tools.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import tools.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 
 import java.util.List;
 
 /** Represents the subset of GPX used for exporting banners. */
-@JacksonXmlRootElement(localName = "gpx", namespace = Gpx.NAMESPACE)
+@JsonRootName(value = "gpx", namespace = Gpx.NAMESPACE)
 public class Gpx {
     /** XML namespace. */
     static final String NAMESPACE = "http://www.topografix.com/GPX/1/1";
