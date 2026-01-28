@@ -41,7 +41,7 @@ dependencies {
   implementation "com.squareup.okhttp3:okhttp:${okhttp_version}"
   implementation 'tools.jackson.dataformat:jackson-dataformat-xml'
   implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1'
-  implementation 'org.geotools:gt-referencing:33.2'
+  implementation 'org.geotools:gt-referencing:34.2'
 
   annotationProcessor 'org.hibernate.orm:hibernate-processor'
   annotationProcessor "net.karneim:pojobuilder:$pojobuilder_version"
