@@ -65,8 +65,8 @@ public class DatabaseBannerSearchServiceImpl extends BaseBannerSearchServiceImpl
             specifications.add(BannerSpecifications.hasMissionId(missionId.get()));
         }
         if (onlyOfficialMissions) {
-            specifications
-                .add(BannerSpecifications.hasMissionWith(MissionSpecifications.hasAuthors(OFFICIAL_MISSION_AUTHORS)));
+            specifications.add(BannerSpecifications
+                .hasMissionWith(MissionSpecifications.hasAuthors(nianticConfiguration.officialMissionAuthors())));
         }
         if (author.isPresent()) {
             specifications

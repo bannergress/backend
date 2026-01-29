@@ -50,6 +50,22 @@ server:
   compression:
     enabled: true
 
+niantic:
+  official-mission-authors:
+    - MissionsByNIA22
+    - MDNIA
+    - MDNIA03
+    - MDNIA2
+    - MDNIA2020
+    - MissionbyNIA
+    - MissionDaysNia
+    - MissionsbyNIA
+    - MissionsByNIA01
+    - MissionsByNIA02
+    - MissionsByNIA03
+    - MissionsByNIA22
+    - MissionsNIA
+
 ---
 # This settings get activated when the 'dev' spring profile is active
 
