@@ -92,7 +92,7 @@ public class LuceneBannerSearchServiceImpl extends BaseBannerSearchServiceImpl {
             }
             if (onlyOfficialMissions) {
                 SimpleBooleanPredicateClausesStep<?, ?> orPredicate = factory.or();
-                for (String officialMissionAuthor : OFFICIAL_MISSION_AUTHORS) {
+                for (String officialMissionAuthor : nianticConfiguration.officialMissionAuthors()) {
                     orPredicate.add(factory.match().field(FIELD_MISSIONS_AUTHOR_NAME).matching(officialMissionAuthor));
                 }
                 predicate.add(orPredicate);
