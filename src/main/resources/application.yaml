@@ -38,11 +38,10 @@ spring:
           issuer-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}
   http:
     serviceclient:
+      keycloak:
+        base-url: ${keycloak.auth-server-url}/admin/realms/${keycloak.realm}
       timezonedb:
         base-url: https://api.timezonedb.com
-
-keycloak:
-  bearer-only: true
 
 springdoc:
   paths-to-match:

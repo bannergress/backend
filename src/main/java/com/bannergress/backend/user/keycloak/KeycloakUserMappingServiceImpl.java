@@ -4,6 +4,7 @@ import com.bannergress.backend.user.UserMappingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
+import org.springframework.web.service.registry.ImportHttpServices;
 
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,7 @@ import java.util.Optional;
  */
 @Service
 @Profile("!dev")
+@ImportHttpServices(group = "keycloak", types = KeycloakApi.class)
 public class KeycloakUserMappingServiceImpl implements UserMappingService {
     private static final String AGENT_ATTRIBUTE = "agent";
 
