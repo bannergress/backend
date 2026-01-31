@@ -36,9 +36,10 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}
-
-keycloak:
-  bearer-only: true
+  http:
+    serviceclient:
+      keycloak:
+        base-url: ${keycloak.auth-server-url}/admin/realms/${keycloak.realm}
 
 springdoc:
   paths-to-match:
