@@ -36,9 +36,8 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}
-
-keycloak:
-  bearer-only: true
+          authority-prefix: ROLE_
+          authorities-claim-name: roles
 
 springdoc:
   paths-to-match:
@@ -55,8 +54,6 @@ server:
 
 spring:
   config.activate.on-profile: dev
-keycloak:
-  enabled: false
 
 logging:
   level:
