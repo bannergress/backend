@@ -11,16 +11,6 @@ import org.locationtech.jts.geom.Point;
 public class PointBridge implements ValueBridge<Point, GeoPoint> {
     @Override
     public GeoPoint toIndexedValue(Point value, ValueBridgeToIndexedValueContext context) {
-        return value == null ? null : new GeoPoint() {
-            @Override
-            public double longitude() {
-                return Spatial.getLongitude(value);
-            }
-
-            @Override
-            public double latitude() {
-                return Spatial.getLatitude(value);
-            }
-        };
+        return value == null ? null : GeoPoint.of(Spatial.getLatitude(value), Spatial.getLongitude(value));
     }
 }
