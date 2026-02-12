@@ -77,3 +77,6 @@ bootRun {
 	}
 }
 
+tasks.named("bootBuildImage") {
+	imageName.set("ghcr.io/bannergress/${project.name}:${project.version}")
+}
