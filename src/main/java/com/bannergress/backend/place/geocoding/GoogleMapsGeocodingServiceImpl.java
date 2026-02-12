@@ -7,7 +7,6 @@ import com.google.maps.GeoApiContext;
 import com.google.maps.GeocodingApi;
 import com.google.maps.model.*;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -18,8 +17,7 @@ import java.util.Set;
  * Geocoding using Google Maps API.
  */
 @Service
-@Profile("googlemaps")
-public class GoogleMapsGeocodingServiceImpl implements GeocodingService {
+class GoogleMapsGeocodingServiceImpl implements GeocodingService {
 
     private static final String DEFAULT_LANGUAGE = "en";
 

@@ -1,6 +1,5 @@
 package com.bannergress.backend.user;
 
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -12,8 +11,7 @@ import java.util.Optional;
  * Only suitable for development.
  */
 @Service
-@Profile("dev")
-public class MemoryUserMappingServiceImpl implements UserMappingService {
+class MemoryUserMappingServiceImpl implements UserMappingService {
     private final Map<String, String> mapping = new HashMap<>();
 
     @Override
