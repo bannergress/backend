@@ -5,7 +5,6 @@ import com.bannergress.backend.spatial.Spatial;
 import com.google.common.util.concurrent.RateLimiter;
 import org.locationtech.jts.geom.Point;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.service.registry.ImportHttpServices;
 
@@ -16,7 +15,6 @@ import java.time.ZoneId;
  * Service for resolving time zones using timezonedb.com.
  */
 @Service
-@Profile("timezonedb")
 @ImportHttpServices(group = "timezonedb", types = TimezoneDbApi.class)
 class TimezoneDbServiceImpl implements TimezoneService {
     private final String apiKey;

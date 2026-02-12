@@ -1,10 +1,3 @@
-#
-# !!! Don't ever put any credentials or urls in here !!!
-# For production place a application.yaml in the directory the artefact is started and it will be read by spring automatically.
-# For dev the dev profile is automatically activated, when the project is run with 'bootRun' or with the tests.
-# A template for such a yaml is a neighbor of this file.
-#
-
 spring:
   main:
     banner-mode: OFF
@@ -68,17 +61,3 @@ niantic:
     - MissionsByNIA03
     - MissionsByNIA22
     - MissionsNIA
-
----
-# This settings get activated when the 'dev' spring profile is active
-
-spring:
-  config.activate.on-profile: dev
-keycloak:
-  enabled: false
-
-logging:
-  level:
-    com.bannergress: DEBUG
-    org.hibernate.SQL: DEBUG # DEBUG for SQL queries
-    org.hibernate.type: INFO # TRACE for SQL parameters
