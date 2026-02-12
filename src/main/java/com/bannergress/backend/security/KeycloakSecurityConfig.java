@@ -2,7 +2,6 @@ package com.bannergress.backend.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,8 +15,7 @@ import org.springframework.security.web.header.writers.StaticHeadersWriter;
 /** Keycloak security configuration. */
 @Configuration
 @EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = true)
-@Profile("!dev")
-public class KeycloakSecurityConfig {
+class KeycloakSecurityConfig {
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http //

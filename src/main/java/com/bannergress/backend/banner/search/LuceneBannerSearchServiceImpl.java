@@ -12,7 +12,6 @@ import org.hibernate.search.engine.search.sort.dsl.SortOrder;
 import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,9 +26,8 @@ import java.util.Optional;
  * Lucene-based implementation of {@link BannerSearchService}.
  */
 @Service
-@Profile("lucenesearch")
 @Transactional
-public class LuceneBannerSearchServiceImpl extends BaseBannerSearchServiceImpl {
+class LuceneBannerSearchServiceImpl extends BaseBannerSearchServiceImpl {
     private static final String FIELD_UUID = "uuid";
     private static final String FIELD_TITLE = "title";
     private static final String FIELD_TITLE_SORT = "titleSort";
