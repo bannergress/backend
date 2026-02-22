@@ -3,7 +3,6 @@ package com.bannergress.backend.news;
 import com.bannergress.backend.security.Roles;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,16 +12,15 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * REST endpoint for news items.
  */
 @RestController
-public class NewsItemController {
+class NewsItemController {
     private final NewsItemRepository newsItemRepository;
 
-    public NewsItemController(final NewsItemRepository newsItemRepository) {
+    NewsItemController(final NewsItemRepository newsItemRepository) {
         this.newsItemRepository = newsItemRepository;
     }
 
@@ -32,9 +30,9 @@ public class NewsItemController {
      * @return News items.
      */
     @GetMapping("/news")
-    public Collection<NewsItemDto> list() {
+    Collection<NewsItemDto> list() {
         Collection<NewsItem> items = newsItemRepository.findAll();
-        return items.stream().map(NewsItemController::toDto).collect(Collectors.toUnmodifiableList());
+        return items.stream().map(NewsItemController::toDto).toList();
     }
 
     /**
@@ -44,7 +42,7 @@ public class NewsItemController {
      * @return News item.
      */
     @GetMapping("/news/{uuid}")
-    public ResponseEntity<NewsItemDto> get(@PathVariable final UUID uuid) {
+    ResponseEntity<NewsItemDto> get(@PathVariable final UUID uuid) {
         Optional<NewsItem> item = newsItemRepository.findById(uuid);
         return ResponseEntity.of(item.map(NewsItemController::toDto));
     }
@@ -57,9 +55,9 @@ public class NewsItemController {
      */
     @RolesAllowed(Roles.MANAGE_NEWS)
     @PostMapping("/news")
-    public NewsItemDto post(@Valid @RequestBody final NewsItemDto item) {
+    NewsItemDto post(@Valid @RequestBody final NewsItemDto item) {
         NewsItem newsItem = new NewsItem();
-        newsItem.setContent(item.content);
+        newsItem.setContent(item.content());
         newsItem.setCreated(Instant.now());
         newsItem = newsItemRepository.save(newsItem);
         return toDto(newsItem);
@@ -74,14 +72,12 @@ public class NewsItemController {
      */
     @RolesAllowed(Roles.MANAGE_NEWS)
     @PutMapping("/news/{uuid}")
-    public ResponseEntity<NewsItemDto> put(@PathVariable final UUID uuid, @Valid @RequestBody final NewsItemDto item) {
-        Optional<NewsItem> newsItem = newsItemRepository.findById(uuid);
-        if (newsItem.isEmpty()) {
-            return ResponseEntity.badRequest().build();
-        }
-        newsItem.get().setContent(item.content);
-        newsItem = Optional.of(newsItemRepository.save(newsItem.get()));
-        return ResponseEntity.of(newsItem.map(NewsItemController::toDto));
+    ResponseEntity<NewsItemDto> put(@PathVariable final UUID uuid, @Valid @RequestBody final NewsItemDto item) {
+        NewsItem newsItem = newsItemRepository.findById(uuid)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST));
+        newsItem.setContent(item.content());
+        newsItem = newsItemRepository.save(newsItem);
+        return ResponseEntity.ok(toDto(newsItem));
     }
 
     /**
@@ -91,19 +87,11 @@ public class NewsItemController {
      */
     @RolesAllowed(Roles.MANAGE_NEWS)
     @DeleteMapping("/news/{uuid}")
-    public void delete(@PathVariable final UUID uuid) {
-        try {
-            newsItemRepository.deleteById(uuid);
-        } catch (EmptyResultDataAccessException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
+    void delete(@PathVariable final UUID uuid) {
+        newsItemRepository.deleteById(uuid);
     }
 
     private static NewsItemDto toDto(final NewsItem newsItem) {
-        NewsItemDto result = new NewsItemDto();
-        result.uuid = newsItem.getUuid();
-        result.content = newsItem.getContent();
-        result.created = newsItem.getCreated();
-        return result;
+        return new NewsItemDto(newsItem.getUuid(), newsItem.getContent(), newsItem.getCreated());
     }
 }

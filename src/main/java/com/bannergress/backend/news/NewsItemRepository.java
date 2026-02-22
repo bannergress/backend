@@ -7,6 +7,6 @@ import java.util.UUID;
 /**
  * Repository for news items.
  */
-public interface NewsItemRepository extends JpaRepository<NewsItem, UUID> {
+interface NewsItemRepository extends JpaRepository<NewsItem, UUID> {
 
 }
