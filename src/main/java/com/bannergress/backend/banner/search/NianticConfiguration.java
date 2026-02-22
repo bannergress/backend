@@ -6,7 +6,7 @@ import java.util.Set;
 
 /**
  * Niantic-related configuration.
- * 
+ *
  * @param officialMissionAuthors Ingress accounts that are used by Niantic.
  */
 @ConfigurationProperties("niantic")

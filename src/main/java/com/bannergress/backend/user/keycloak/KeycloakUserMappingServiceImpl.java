@@ -33,7 +33,8 @@ class KeycloakUserMappingServiceImpl implements UserMappingService {
         Map<String, List<String>> attributes = userRepresentation.getAttributes();
         if (attributes == null || !attributes.containsKey(AGENT_ATTRIBUTE)) {
             return Optional.empty();
-        } else
+        } else {
             return Optional.ofNullable(attributes.get(AGENT_ATTRIBUTE).get(0));
+        }
     }
 }
