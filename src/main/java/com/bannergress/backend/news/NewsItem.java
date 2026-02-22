@@ -1,8 +1,6 @@
 package com.bannergress.backend.news;
 
-import com.bannergress.backend.utils.PojoBuilder;
 import jakarta.persistence.*;
-import net.karneim.pojobuilder.GeneratePojoBuilder;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 
@@ -15,8 +13,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "news")
 @Audited
-@GeneratePojoBuilder(withBuilderInterface = PojoBuilder.class)
-public class NewsItem {
+class NewsItem {
     /**
      * Internal UUID without further meaning.
      */

@@ -10,7 +10,6 @@ import com.bannergress.backend.mission.MissionStatus;
 import com.bannergress.backend.mission.MissionType;
 import com.bannergress.backend.mission.step.MissionStepBuilder;
 import com.bannergress.backend.mission.step.Objective;
-import com.bannergress.backend.news.NewsItemBuilder;
 import com.bannergress.backend.place.PlaceBuilder;
 import com.bannergress.backend.place.PlaceInformationBuilder;
 import com.bannergress.backend.place.PlaceType;
@@ -109,13 +108,5 @@ public class EntityBuilder {
             .withTitle(a($String("title")))
             .withPicture(a($URL()))
             .withType(oneOf(POIType.values()));
-    }
-
-    @NotNull
-    public static NewsItemBuilder $NewsItem() {
-        return new NewsItemBuilder()
-            .withUuid(a($UUID()))
-            .withContent(a($String("content")))
-            .withCreated(a($Instant()));
     }
 }
