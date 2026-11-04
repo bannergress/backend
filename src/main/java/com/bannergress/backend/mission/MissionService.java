@@ -1,6 +1,8 @@
 package com.bannergress.backend.mission;
 
 import com.bannergress.backend.banner.MissionAlreadyUsedException;
+import com.bannergress.backend.mission.partition.Envelope;
+import org.locationtech.jts.geom.Point;
 import org.springframework.data.domain.Sort.Direction;
 
 import java.util.Collection;
@@ -48,4 +50,12 @@ public interface MissionService {
      */
     void assertNotAlreadyUsedInBanners(Collection<String> ids, List<String> acceptableBannerSlugs)
         throws MissionAlreadyUsedException;
+
+    /**
+     * Returns the start positions of all missions that inside the envelope.
+     * 
+     * @param envelope Envelope.
+     * @return Start positions, without deduplication.
+     */
+    List<Point> getOnlineMissionStartPositions(Envelope envelope);
 }
