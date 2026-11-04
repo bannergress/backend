@@ -2,6 +2,9 @@ package com.bannergress.backend.mission;
 
 import com.bannergress.backend.agent.NamedAgent;
 import com.bannergress.backend.agent.NamedAgentDto;
+import com.bannergress.backend.mission.partition.Envelope;
+import com.bannergress.backend.mission.partition.PartitionRegion;
+import com.bannergress.backend.mission.partition.PartitionService;
 import com.bannergress.backend.mission.step.MissionStep;
 import com.bannergress.backend.mission.step.MissionStepDto;
 import com.bannergress.backend.mission.validation.NianticId;
@@ -40,6 +43,9 @@ public class MissionController {
     @Autowired
     MissionService missionService;
 
+    @Autowired
+    PartitionService partitionService;
+
     @RolesAllowed(Roles.CREATE_BANNER)
     @GetMapping("/missions/unused")
     public Collection<MissionDto> getUnused(@RequestParam @NotEmpty String query,
@@ -47,8 +53,8 @@ public class MissionController {
                                             @RequestParam(defaultValue = "ASC") final Direction orderDirection,
                                             @RequestParam(defaultValue = "0") final int offset,
                                             @RequestParam(defaultValue = "20") @Max(100) final int limit) {
-        Collection<Mission> unusedMissions = missionService.findUnusedMissions(query.trim(), orderBy, orderDirection, offset,
-            limit);
+        Collection<Mission> unusedMissions = missionService.findUnusedMissions(query.trim(), orderBy, orderDirection,
+            offset, limit);
         return Collections2.transform(unusedMissions, MissionController::toSummaryForUnused);
     }
 
@@ -73,6 +79,17 @@ public class MissionController {
         } else {
             return toDetails(mission.get());
         }
+    }
+
+    @GetMapping("/missions/partition")
+    public List<Envelope> getPartition(Envelope envelope) {
+        var startPositions = missionService.getOnlineMissionStartPositions(envelope);
+        var startRegion = new PartitionRegion(envelope, startPositions);
+        var partitions = partitionService.partition(startRegion);
+        return partitions.stream() //
+            .map(PartitionRegion::envelope) //
+            .toList();
+
     }
 
     private static MissionDto toSummary(Mission mission) {

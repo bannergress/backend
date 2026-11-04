@@ -2,9 +2,13 @@ package com.bannergress.backend.mission;
 
 import com.bannergress.backend.banner.Banner;
 import com.bannergress.backend.banner.MissionAlreadyUsedException;
+import com.bannergress.backend.mission.partition.Envelope;
+import com.bannergress.backend.spatial.Spatial;
 import com.bannergress.backend.utils.OffsetBasedPageRequest;
 import com.google.common.collect.ImmutableList;
 import jakarta.transaction.Transactional;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Point;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
@@ -23,6 +27,9 @@ import java.util.Optional;
 public class MissionServiceImpl implements MissionService {
     @Autowired
     private MissionRepository missionRepository;
+
+    @Autowired
+    private Spatial spatial;
 
     @Override
     public Collection<Mission> findUnusedMissions(String search, Optional<MissionSortOrder> orderBy,
@@ -64,5 +71,15 @@ public class MissionServiceImpl implements MissionService {
                 }
             }
         }
+    }
+
+    @Override
+    public List<Point> getOnlineMissionStartPositions(Envelope envelope) {
+        return missionRepository.findMissionStartPositionsByStatus(toGeometry(envelope), MissionStatus.published);
+    }
+
+    private Geometry toGeometry(Envelope envelope) {
+        return spatial.toGeometry(new org.locationtech.jts.geom.Envelope(envelope.minLongitude(),
+            envelope.maxLongitude(), envelope.minLatitude(), envelope.maxLatitude()));
     }
 }
