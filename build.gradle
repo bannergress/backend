@@ -42,7 +42,7 @@ dependencies {
   implementation "com.squareup.okhttp3:okhttp:${okhttp_version}"
   implementation 'tools.jackson.dataformat:jackson-dataformat-xml'
   implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1'
-  implementation 'org.geotools:gt-referencing:34.2'
+  implementation 'org.geotools:gt-referencing:34.3'
 
   annotationProcessor platform("org.springframework.boot:spring-boot-dependencies:${spring_boot_version}")
   annotationProcessor 'org.hibernate.orm:hibernate-processor'
