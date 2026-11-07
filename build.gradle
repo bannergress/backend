@@ -24,7 +24,7 @@ repositories {
 }
 
 dependencies {
-  implementation platform('org.springframework.boot:spring-boot-dependencies:4.0.2')
+  implementation platform('org.springframework.boot:spring-boot-dependencies:4.1.2')
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-resource-server'
@@ -44,7 +44,7 @@ dependencies {
   implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.0'
   implementation 'org.geotools:gt-referencing:34.3'
 
-  annotationProcessor platform('org.springframework.boot:spring-boot-dependencies:4.0.2')
+  annotationProcessor platform('org.springframework.boot:spring-boot-dependencies:4.1.2')
   annotationProcessor 'org.hibernate.orm:hibernate-processor'
   annotationProcessor 'net.karneim:pojobuilder:4.2.3'
 
