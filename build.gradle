@@ -1,5 +1,5 @@
 plugins {
-	id 'org.springframework.boot' version "${spring_boot_version}"
+	id 'org.springframework.boot' version '4.0.2'
 	id 'com.palantir.git-version' version '5.1.0'
 }
 
@@ -24,7 +24,7 @@ repositories {
 }
 
 dependencies {
-  implementation platform("org.springframework.boot:spring-boot-dependencies:${spring_boot_version}")
+  implementation platform('org.springframework.boot:spring-boot-dependencies:4.0.2')
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-resource-server'
@@ -38,17 +38,17 @@ dependencies {
   implementation 'org.hibernate.search:hibernate-search-mapper-orm'
   implementation 'org.hibernate.search:hibernate-search-backend-lucene'
 	implementation 'com.google.guava:guava:33.8.0-jre'
-	implementation "com.google.maps:google-maps-services:${google_maps_services_version}"
-  implementation "com.squareup.okhttp3:okhttp:${okhttp_version}"
+	implementation 'com.google.maps:google-maps-services:2.0.0'
+  implementation 'com.squareup.okhttp3:okhttp:4.9.3'
   implementation 'tools.jackson.dataformat:jackson-dataformat-xml'
   implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.0'
   implementation 'org.geotools:gt-referencing:34.3'
 
-  annotationProcessor platform("org.springframework.boot:spring-boot-dependencies:${spring_boot_version}")
+  annotationProcessor platform('org.springframework.boot:spring-boot-dependencies:4.0.2')
   annotationProcessor 'org.hibernate.orm:hibernate-processor'
-  annotationProcessor "net.karneim:pojobuilder:$pojobuilder_version"
+  annotationProcessor 'net.karneim:pojobuilder:4.2.3'
 
-  compileOnly "net.karneim:pojobuilder:$pojobuilder_version:annotations"
+  compileOnly 'net.karneim:pojobuilder:4.2.3:annotations'
 
 	runtimeOnly 'org.postgresql:postgresql'
 	runtimeOnly 'org.flywaydb:flyway-database-postgresql'
