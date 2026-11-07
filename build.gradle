@@ -39,7 +39,7 @@ dependencies {
   implementation 'org.hibernate.search:hibernate-search-backend-lucene'
 	implementation 'com.google.guava:guava:33.8.0-jre'
 	implementation 'com.google.maps:google-maps-services:2.0.0'
-  implementation 'com.squareup.okhttp3:okhttp:4.9.3'
+  implementation 'com.squareup.okhttp3:okhttp:5.5.1'
   implementation 'tools.jackson.dataformat:jackson-dataformat-xml'
   implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.0'
   implementation 'org.geotools:gt-referencing:34.3'
