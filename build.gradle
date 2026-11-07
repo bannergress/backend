@@ -46,9 +46,9 @@ dependencies {
 
   annotationProcessor platform('org.springframework.boot:spring-boot-dependencies:4.1.2')
   annotationProcessor 'org.hibernate.orm:hibernate-processor'
-  annotationProcessor 'net.karneim:pojobuilder:4.2.3'
+  annotationProcessor 'net.karneim:pojobuilder:4.3.1'
 
-  compileOnly 'net.karneim:pojobuilder:4.2.3:annotations'
+  compileOnly 'net.karneim:pojobuilder:4.3.1:annotations'
 
 	runtimeOnly 'org.postgresql:postgresql'
 	runtimeOnly 'org.flywaydb:flyway-database-postgresql'
