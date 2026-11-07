@@ -6,10 +6,6 @@ import com.bannergress.backend.user.User;
 import jakarta.persistence.*;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.search.engine.backend.types.Searchable;
-import org.hibernate.search.engine.backend.types.Sortable;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.IndexedEmbedded;
 import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
@@ -42,7 +38,6 @@ public class BannerSettings {
      */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user")
-    @IndexedEmbedded
     private User user;
 
     /**
@@ -51,14 +46,12 @@ public class BannerSettings {
     @Column(name = "list_type", nullable = false)
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @GenericField(searchable = Searchable.YES, sortable = Sortable.NO)
     private BannerListType listType = BannerListType.none;
 
     /**
      * Timestamp the banner was added to the list in {@link #listType}.
      */
     @Column(name = "list_added", nullable = true)
-    @GenericField(searchable = Searchable.NO, sortable = Sortable.YES)
     private Instant listAdded;
 
     public UUID getUuid() {

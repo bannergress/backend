@@ -15,7 +15,6 @@ import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.SortNatural;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
-import org.hibernate.search.engine.backend.types.ObjectStructure;
 import org.hibernate.search.engine.backend.types.Searchable;
 import org.hibernate.search.engine.backend.types.Sortable;
 import org.hibernate.search.mapper.pojo.bridge.mapping.annotation.ValueBridgeRef;
@@ -45,7 +44,7 @@ public class Banner {
     @Id
     @Column(name = "uuid", columnDefinition = "uuid")
     @GeneratedValue
-    @GenericField(searchable = Searchable.NO, sortable = Sortable.YES)
+    @GenericField(searchable = Searchable.YES, sortable = Sortable.YES)
     private UUID uuid;
 
     /**
@@ -193,7 +192,6 @@ public class Banner {
      */
     @OneToMany(mappedBy = "banner", cascade = CascadeType.ALL)
     @NotAudited
-    @IndexedEmbedded(structure = ObjectStructure.NESTED)
     private List<BannerSettings> settings;
 
     /**
