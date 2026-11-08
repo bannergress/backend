@@ -44,7 +44,7 @@ CREATE TABLE comment_audit (
     previous_state varchar(20) NOT NULL,
     next_state varchar(20) NOT NULL,
     created_at timestamptz NOT NULL DEFAULT clock_timestamp(),
-    UNIQUE (actor, request_key)
+    UNIQUE (request_key)
 );
 CREATE INDEX comment_audit_author ON comment_audit(author_id, created_at, id);
 

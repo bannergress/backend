@@ -173,7 +173,7 @@ public class CommentService {
         var author = store.lockAuthor(initial.author());
         var comment = store.comment(id);
         String actor = "bot:" + authentication.getName();
-        if (repeated(actor, request.requestId(), id, author.id(), request.action().name(),
+        if (repeated(request.requestId(), id, author.id(), request.action().name(),
             request.expectedVersion(), request.reason(), request.moderatorId())) {
             return moderationView(comment);
         }
@@ -181,7 +181,7 @@ public class CommentService {
         State target = target(comment.state(), request.action());
         boolean strike = request.action() == Action.REMOVE || request.action() == Action.REJECT;
         store.jdbc.update("""
-            UPDATE banner_comment SET state = ?, reviewed = true, strike = ?, reason = ?, version = version + 1
+            UPDATE banner_comment SET state = ?, reviewed = true, strike = ?, forgiven = false, reason = ?, version = version + 1
             WHERE id = ?
             """, target.name(), strike, request.reason(), id);
         audit(id, author.id(), actor, request.moderatorId(), request.requestId(), request.action().name(),
@@ -219,7 +219,7 @@ public class CommentService {
         var author = store.lockAuthor(id);
         String actor = "bot:" + authentication.getName();
         String action = request.mode() == Mode.POSTMODERATION ? "RESET_POSTMODERATION" : "REQUIRE_PREMODERATION";
-        if (repeated(actor, request.requestId(), null, id, action, request.expectedVersion(),
+        if (repeated(request.requestId(), null, id, action, request.expectedVersion(),
             request.reason(), request.moderatorId())) {
             return;
         }
@@ -234,9 +234,9 @@ public class CommentService {
         store.event(null, id, "AUTHOR_MODE_CHANGED", settings.environment());
     }
 
-    private boolean repeated(String actor, UUID key, UUID comment, UUID author, String action, long version,
+    private boolean repeated(UUID key, UUID comment, UUID author, String action, long version,
         String reason, long moderator) {
-        var rows = store.jdbc.queryForList("SELECT * FROM comment_audit WHERE actor = ? AND request_key = ?", actor, key);
+        var rows = store.jdbc.queryForList("SELECT * FROM comment_audit WHERE request_key = ?", key);
         if (rows.isEmpty()) {
             return false;
         }
@@ -255,7 +255,7 @@ public class CommentService {
         int inserted = store.jdbc.update("""
             INSERT INTO comment_audit(id, comment_id, author_id, actor, moderator_id, request_key,
                 action, expected_version, reason, previous_state, next_state)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(actor, request_key) DO NOTHING
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(request_key) DO NOTHING
             """, UUID.randomUUID(), comment, author, actor, moderator, key, action, version, reason, previous, next);
         if (inserted != 1) {
             throw new ResponseStatusException(CONFLICT, "Concurrent duplicate moderation request; retry");

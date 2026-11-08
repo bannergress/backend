@@ -245,6 +245,79 @@ class CommentIntegrationTest {
     }
 
     @Test
+    void freshViolationAfterForgivenessCountsAndTriggersPremoderation() {
+        open(settings("TEST", true, true, true, 1, 10));
+        var removed = decide(post("a"), Action.REMOVE);
+        service.changeMode(bot, removed.authorReference(), new ChangeMode(UUID.randomUUID(),
+            removed.authorVersion(), Mode.POSTMODERATION, "Forgiven", 123));
+        assertThat(service.capabilities("a").effectiveStrikes()).isZero();
+        var restored = service.decide(bot, removed.id(), new Decision(UUID.randomUUID(), removed.version(),
+            Action.RESTORE, "Restored", 123));
+        var removedAgain = service.decide(bot, restored.id(), new Decision(UUID.randomUUID(), restored.version(),
+            Action.REMOVE, "New violation", 123));
+        assertThat(removedAgain.effectiveStrikes()).isEqualTo(1);
+        assertThat(removedAgain.authorMode()).isEqualTo(Mode.PREMODERATION);
+    }
+
+    @Test
+    void moderationKeysAreGlobalAcrossBotPrincipalsAndOperations() {
+        var migratedBot = new JwtAuthenticationToken(bot.getToken(), bot.getAuthorities(), "migrated-service-account");
+        var firstComment = post("a");
+        var secondComment = post("b");
+        var request = new Decision(UUID.randomUUID(), firstComment.version(), Action.REMOVE, "Spam", 123);
+        var first = service.decide(bot, firstComment.id(), request);
+        assertThat(service.decide(migratedBot, firstComment.id(), request)).isEqualTo(first);
+        assertThatThrownBy(() -> service.decide(migratedBot, secondComment.id(), request))
+            .hasMessageContaining("409");
+        assertThat(service.moderation(secondComment.id()).state()).isEqualTo(State.PUBLISHED);
+        assertThatThrownBy(() -> service.changeMode(migratedBot, first.authorReference(),
+            new ChangeMode(request.requestId(), first.authorVersion(), Mode.POSTMODERATION, "Spam", 123)))
+            .hasMessageContaining("409");
+        var reset = new ChangeMode(UUID.randomUUID(), first.authorVersion(), Mode.POSTMODERATION, "Forgiven", 123);
+        service.changeMode(bot, first.authorReference(), reset);
+        service.changeMode(migratedBot, first.authorReference(), reset);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM comment_audit WHERE request_key = ?",
+            Integer.class, reset.requestId())).isEqualTo(1);
+        assertThat(jdbc.queryForObject("SELECT actor FROM comment_audit WHERE request_key = ?",
+            String.class, request.requestId())).isEqualTo("bot:service-account");
+    }
+
+    @Test
+    void concurrentGlobalKeyConflictRollsBackTheLosingDecision() throws Exception {
+        var comments = List.of(post("a"), post("b"));
+        var request = new Decision(UUID.randomUUID(), 0, Action.REMOVE, "Spam", 123);
+        var migratedBot = new JwtAuthenticationToken(bot.getToken(), bot.getAuthorities(), "migrated-service-account");
+        CountDownLatch ready = new CountDownLatch(2);
+        try (var workers = Executors.newFixedThreadPool(2)) {
+            var results = comments.stream().map(comment -> workers.submit(() -> {
+                ready.countDown();
+                assertThat(ready.await(10, TimeUnit.SECONDS)).isTrue();
+                try {
+                    service.decide(comment == comments.getFirst() ? bot : migratedBot, comment.id(), request);
+                    return true;
+                } catch (ResponseStatusException exception) {
+                    assertThat(exception.getStatusCode().value()).isEqualTo(409);
+                    return false;
+                }
+            })).toList();
+            int successes = 0;
+            for (var result : results) {
+                if (result.get(15, TimeUnit.SECONDS)) {
+                    successes++;
+                }
+            }
+            assertThat(successes).isEqualTo(1);
+        }
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM banner_comment WHERE state = 'REMOVED'",
+            Integer.class)).isEqualTo(1);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM banner_comment WHERE state = 'PUBLISHED' AND version = 0",
+            Integer.class)).isEqualTo(1);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM comment_audit WHERE request_key = ?",
+            Integer.class, request.requestId())).isEqualTo(1);
+        assertThat(outbox.stats().queued()).isEqualTo(3);
+    }
+
+    @Test
     void withdrawalIsOwnerOnlyDoesNotStrikeAndCannotBeRestored() {
         var comment = post("a");
         assertThatThrownBy(() -> service.withdraw("b", comment.id(), 0)).hasMessageContaining("404");
