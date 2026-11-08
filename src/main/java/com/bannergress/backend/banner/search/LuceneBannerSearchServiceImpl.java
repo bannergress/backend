@@ -3,6 +3,8 @@ package com.bannergress.backend.banner.search;
 import com.bannergress.backend.banner.Banner;
 import com.bannergress.backend.banner.BannerListType;
 import jakarta.persistence.EntityManager;
+import org.apache.lucene.analysis.Analyzer;
+import org.hibernate.search.backend.lucene.LuceneBackend;
 import org.hibernate.search.engine.search.common.BooleanOperator;
 import org.hibernate.search.engine.search.predicate.dsl.PredicateFinalStep;
 import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
@@ -53,6 +55,12 @@ class LuceneBannerSearchServiceImpl extends BaseBannerSearchServiceImpl {
     @Autowired
     private EntityManager entityManager;
 
+    /** The analyzer the text fields are indexed with. */
+    private Analyzer defaultAnalyzer() {
+        return Search.mapping(entityManager.getEntityManagerFactory()).backend().unwrap(LuceneBackend.class)
+            .analyzer("default").orElseThrow();
+    }
+
     @Override
     public List<Banner> find(Optional<String> placeSlug, Optional<Double> minLatitude, Optional<Double> maxLatitude,
                              Optional<Double> minLongitude, Optional<Double> maxLongitude, Optional<String> search,
@@ -83,7 +91,8 @@ class LuceneBannerSearchServiceImpl extends BaseBannerSearchServiceImpl {
                 if (queryAuthor) {
                     step = step.field(FIELD_MISSIONS_AUTHOR_NAME);
                 }
-                predicate.add(step.matching(search.get()).defaultOperator(BooleanOperator.AND));
+                String query = PrefixQuerySplitter.split(search.get(), defaultAnalyzer(), FIELD_TITLE);
+                predicate.add(step.matching(query).defaultOperator(BooleanOperator.AND));
             }
             if (missionId.isPresent()) {
                 predicate.add(factory.match().field(FIELD_MISSIONS_ID).matching(missionId.get()));
