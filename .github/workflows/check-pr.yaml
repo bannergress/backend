@@ -50,8 +50,8 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - name: Verify delivery boundaries
         run: |
-          bash -n scripts/deploy-backend.sh scripts/backend-deploy-command.sh
-          python3 -m unittest discover -s scripts -p 'test_*.py' -v
+          bash -n scripts/*.sh
+          bash scripts/test-backend-delivery.sh
       - name: Test, lint and package
         run: ./gradlew test checkstyleMain checkstyleTest bootJar --no-daemon
       - name: Publish test evidence
@@ -73,7 +73,7 @@ jobs:
   image:
     name: Publish immutable backend image
     needs: verify
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') || (github.event_name == 'release' && !github.event.release.prerelease)
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') || (github.event_name == 'release' && !github.event.release.draft && !github.event.release.prerelease)
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -112,22 +112,40 @@ jobs:
           [[ "$image" =~ ^ghcr\.io/bannergress/bannergress-backend@sha256:[0-9a-f]{64}$ ]]
           echo "image=$image" >> "$GITHUB_OUTPUT"
 
-  deploy_test:
-    name: Deploy test
+  deploy:
+    name: Deploy backend
     needs: image
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-    uses: ./.github/workflows/deploy-backend.yaml
-    with:
-      environment: test
-      image: ${{ needs.image.outputs.image }}
-    secrets: inherit
-
-  deploy_production:
-    name: Deploy production
-    needs: image
-    if: github.event_name == 'release' && !github.event.release.prerelease
-    uses: ./.github/workflows/deploy-backend.yaml
-    with:
-      environment: production
-      image: ${{ needs.image.outputs.image }}
-    secrets: inherit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Like website PR553: bind environment secrets directly to the deployment job.
+    environment: ${{ github.event_name == 'release' && 'production' || 'test' }}
+    concurrency:
+      group: backend-deploy-${{ github.event_name == 'release' && 'production' || 'test' }}
+      cancel-in-progress: false
+    env:
+      DEPLOY_ENVIRONMENT: ${{ github.event_name == 'release' && 'production' || 'test' }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Validate deployment source
+        env:
+          STABLE_RELEASE: ${{ github.event_name == 'release' && github.event.action == 'published' && !github.event.release.draft && !github.event.release.prerelease }}
+        run: |
+          if [[ "$DEPLOY_ENVIRONMENT" == test ]]; then
+            current=$(git ls-remote --exit-code origin refs/heads/main | cut -f1)
+            test "$GITHUB_REF" = refs/heads/main
+            test "$current" = "$GITHUB_SHA"
+          else
+            test "$STABLE_RELEASE" = true
+            git merge-base --is-ancestor HEAD origin/main
+          fi
+      - name: Deploy pinned image and verify readiness
+        run: bash scripts/run-backend-deploy.sh
+        env:
+          DEPLOY_IMAGE: ${{ needs.image.outputs.image }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
