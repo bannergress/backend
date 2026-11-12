@@ -22,9 +22,9 @@ jobs:
         run: echo "version=`git describe --tags`" >> $GITHUB_OUTPUT
       - name: Install ssh files
         run: |
-          echo "$SCP_PRIVATE_KEY" > keyfile
+          echo "$SSH_PRIVATE_KEY" > keyfile
           chmod go-rw keyfile
-          echo "$SCP_FINGERPRINT" > known_hosts_file
+          echo "$SSH_FINGERPRINT" > known_hosts_file
         env:
           SCP_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           SCP_FINGERPRINT: ${{ secrets.SSH_FINGERPRINT }}
