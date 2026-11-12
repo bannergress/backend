@@ -24,9 +24,9 @@ jobs:
         run: |
           echo "$SSH_PRIVATE_KEY" > keyfile
           chmod go-rw keyfile
-          echo "$SSH_FINGERPRINT" > known_hosts_file
+          echo "$SSH_KNOWN_HOSTS" > known_hosts_file
         env:
-          SCP_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SCP_FINGERPRINT: ${{ secrets.SSH_FINGERPRINT }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
       - name: Deploy
-        run: ssh -P ${{ secrets.SSH_TARGET_PORT }} -r -i keyfile -o UserKnownHostsFile=known_hosts_file 'cd ${{ secrets.SSH_TARGET }} && sed -i '"'"'s/\(ghcr.io\/bannergress\/bannergress-backend:\).*/\$ {{ steps.describe.outputs.version }}/'"'"' compose.yaml && docker compose up'
+        run: ssh -P ${{ secrets.SSH_PORT }} -r -i keyfile -o UserKnownHostsFile=known_hosts_file 'cd ${{ secrets.SSH_TARGET }} && sed -i '"'"'s/\(ghcr.io\/bannergress\/bannergress-backend:\).*/\$ {{ steps.describe.outputs.version }}/'"'"' compose.yaml && docker compose up'
