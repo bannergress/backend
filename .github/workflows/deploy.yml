@@ -1,0 +1,32 @@
+name: Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        type: environment
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Get version from git
+        id: describe
+        run: echo "version=`git describe --tags`" >> $GITHUB_OUTPUT
+      - name: Install ssh files
+        run: |
+          echo "$SCP_PRIVATE_KEY" > keyfile
+          chmod go-rw keyfile
+          echo "$SCP_FINGERPRINT" > known_hosts_file
+        env:
+          SCP_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SCP_FINGERPRINT: ${{ secrets.SSH_FINGERPRINT }}
+      - name: Deploy
+        run: ssh -P ${{ secrets.SSH_TARGET_PORT }} -r -i keyfile -o UserKnownHostsFile=known_hosts_file 'cd ${{ secrets.SSH_TARGET }} && sed -i '"'"'s/\(ghcr.io\/bannergress\/bannergress-backend:\).*/\$ {{ steps.describe.outputs.version }}/'"'"' compose.yaml && docker compose up'
