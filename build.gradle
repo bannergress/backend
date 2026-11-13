@@ -1,9 +1,8 @@
 plugins {
+  id 'java'
+  id 'checkstyle'
 	id 'org.springframework.boot' version '4.1.2'
 }
-
-apply plugin: 'java'
-apply plugin: 'checkstyle'
 
 group = 'com.bannergress'
 
