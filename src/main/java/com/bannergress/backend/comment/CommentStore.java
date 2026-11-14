@@ -74,7 +74,7 @@ public class CommentStore {
     }
 
     int strikes(UUID author) {
-        return entities.createQuery("select count(c) from BannerComment c where c.author = :author and c.strike = true and c.forgiven = false",
+        return entities.createQuery("select count(c) from BannerComment c where c.author = :author and c.strike = true and c.forgiven = false and c.strikeGeneration = (select a.strikeGeneration from CommentAuthor a where a.id = :author)",
             Long.class).setParameter("author", author).getSingleResult().intValue();
     }
 

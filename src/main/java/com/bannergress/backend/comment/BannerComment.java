@@ -121,6 +121,12 @@ class BannerComment {
         return version;
     }
 
+    @Column(name = "submission_slug")
+    String submissionSlug;
+
+    @Column(name = "strike_generation")
+    long strikeGeneration;
+
     @Column(name = "submission_key")
     UUID submissionKey;
 

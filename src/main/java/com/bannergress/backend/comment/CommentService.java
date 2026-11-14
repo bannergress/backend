@@ -72,16 +72,16 @@ public class CommentService {
         if (text == null || text.isBlank() || text.length() > 2000 || text.indexOf(0) >= 0 || request.requestId() == null) {
             throw new ResponseStatusException(BAD_REQUEST, "Invalid comment");
         }
-        var banner = banner(slug);
         var previous = store.entities().createQuery("from BannerComment where author = :author and submissionKey = :key", BannerComment.class)
             .setParameter("author", author.id()).setParameter("key", request.requestId()).getResultList();
         if (!previous.isEmpty()) {
             var comment = previous.getFirst();
-            if (!comment.body().equals(text) || !comment.bannerReference().equals(banner.id())) {
+            if (!comment.body().equals(text) || !sameSubmissionBanner(comment, slug)) {
                 throw new ResponseStatusException(CONFLICT, "Submission key already used for another comment");
             }
             return view(comment);
         }
+        var banner = banner(slug);
         Instant now = store.now();
         long minute = recentCount(author.id(), now.minus(1, ChronoUnit.MINUTES));
         long day = recentCount(author.id(), now.minus(1, ChronoUnit.DAYS));
@@ -99,9 +99,18 @@ public class CommentService {
         comment.body = text;
         comment.state = author.mode() == Mode.PREMODERATION ? State.PENDING : State.PUBLISHED;
         comment.submissionKey = request.requestId();
+        comment.submissionSlug = slug;
         store.entities().persist(comment);
         store.event(comment.id(), author.id(), "CREATED", settings.environment());
         return view(comment);
+    }
+
+    private boolean sameSubmissionBanner(BannerComment comment, String slug) {
+        if (Objects.equals(comment.submissionSlug, slug)) {
+            return true;
+        }
+        return store.entities().createQuery("select count(b) from Banner b join b.slugs s where s = :slug and b.uuid = :id", Long.class)
+            .setParameter("slug", slug).setParameter("id", comment.bannerReference()).getSingleResult() > 0;
     }
 
     private long recentCount(UUID author, Instant since) {
@@ -173,6 +182,7 @@ public class CommentService {
 
     public ModerationView decide(Authentication authentication, UUID id, Decision request) {
         authorizeBot(authentication, request.moderatorId());
+        validateReason(request.reason());
         var initial = store.comment(id);
         var author = store.lockAuthor(initial.author());
         var comment = store.refreshComment(id);
@@ -189,6 +199,7 @@ public class CommentService {
         comment.reviewed = true;
         comment.strike = strike;
         comment.forgiven = false;
+        comment.strikeGeneration = author.strikeGeneration;
         comment.reason = request.reason();
         comment.version++;
         audit(id, author.id(), actor, request.moderatorId(), request.requestId(), request.action().name(),
@@ -225,6 +236,7 @@ public class CommentService {
 
     public void changeMode(Authentication authentication, UUID id, ChangeMode request) {
         authorizeBot(authentication, request.moderatorId());
+        validateReason(request.reason());
         var author = store.lockAuthor(id);
         String actor = "bot:" + authentication.getName();
         String action = request.mode() == Mode.POSTMODERATION ? "RESET_POSTMODERATION" : "REQUIRE_PREMODERATION";
@@ -234,9 +246,7 @@ public class CommentService {
         }
         version(author.version(), request.expectedVersion());
         if (request.mode() == Mode.POSTMODERATION) {
-            // Managed updates are essential: HQL bulk updates would bypass Envers.
-            store.entities().createQuery("from BannerComment where author = :author and strike = true and forgiven = false", BannerComment.class)
-                .setParameter("author", id).getResultList().forEach(c -> c.forgiven = true);
+            author.strikeGeneration++;
         }
         Mode previousMode = author.mode();
         author.mode = request.mode();
@@ -244,6 +254,12 @@ public class CommentService {
         audit(null, id, actor, request.moderatorId(), request.requestId(), action, request.expectedVersion(),
             request.reason(), previousMode.name(), request.mode().name());
         store.event(null, id, "AUTHOR_MODE_CHANGED", settings.environment());
+    }
+
+    private static void validateReason(String reason) {
+        if (reason == null || reason.isBlank() || reason.length() > 200 || reason.indexOf(0) >= 0) {
+            throw new ResponseStatusException(BAD_REQUEST, "Invalid moderation reason");
+        }
     }
 
     private boolean repeated(UUID key, UUID comment, UUID author, String action, long version,

@@ -36,6 +36,10 @@ class CommentAuthor {
         return mode;
     }
 
+    // Resetting strikes advances one audited author baseline, not every historical comment.
+    @Column(name = "strike_generation")
+    long strikeGeneration;
+
     @Column(name = "version")
     long version;
 

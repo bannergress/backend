@@ -159,14 +159,16 @@ class CommentIntegrationTest {
         try (var entities = factory.createEntityManager()) {
             var reader = AuditReaderFactory.get(entities);
             var revisions = reader.getRevisions(BannerComment.class, comment.id());
-            assertThat(revisions).hasSize(3);
+            assertThat(revisions).hasSize(2);
             var created = reader.find(BannerComment.class, comment.id(), revisions.get(0));
             var decided = reader.find(BannerComment.class, comment.id(), revisions.get(1));
-            var forgiven = reader.find(BannerComment.class, comment.id(), revisions.get(2));
             assertThat(created.state).isEqualTo(State.PUBLISHED);
             assertThat(decided.state).isEqualTo(State.REMOVED);
             assertThat(decided.strike).isTrue();
-            assertThat(forgiven.forgiven).isTrue();
+            var authorRevisions = reader.getRevisions(CommentAuthor.class, removed.authorReference());
+            var forgivenAuthor = reader.find(CommentAuthor.class, removed.authorReference(), authorRevisions.getLast());
+            assertThat(forgivenAuthor.strikeGeneration).isEqualTo(1);
+            assertThat(decided.strikeGeneration).isZero();
             assertThat(reader.getRevisions(CommentAuthor.class, removed.authorReference())).hasSize(3);
             assertThat(reader.findRevision(com.bannergress.backend.audit.Revision.class, revisions.get(1)).getUserid()).isEqualTo(bot.getName());
         }
@@ -244,6 +246,60 @@ class CommentIntegrationTest {
             .hasMessageContaining("409");
         assertThat(jdbc.queryForObject("SELECT count(*) FROM banner_comment", Integer.class)).isEqualTo(1);
         assertThat(outbox.stats().queued()).isEqualTo(1);
+    }
+
+    @Test
+    void submissionRetrySurvivesDeletionAndRetainsOriginalAliasIdentity() {
+        String alias = "submitted-" + banner;
+        jdbc.update("INSERT INTO banner_slug(slug, banner) VALUES (?, ?)", alias, banner);
+        var request = new Create(UUID.randomUUID(), "retained");
+        var first = service.create("a", alias, request);
+        assertThat(service.create("a", banner.toString(), request)).isEqualTo(first);
+        new TransactionTemplate(new JpaTransactionManager(factory)).executeWithoutResult(status -> {
+            jdbc.update("DELETE FROM banner_slug WHERE banner = ?", banner);
+            jdbc.update("DELETE FROM banner WHERE uuid = ?", banner);
+        });
+        assertThat(service.create("a", alias, request)).isEqualTo(first);
+        assertThatThrownBy(() -> service.create("a", "other-path", request)).hasMessageContaining("409");
+        assertThatThrownBy(() -> service.create("a", alias, new Create(request.requestId(), "changed")))
+            .hasMessageContaining("409");
+        assertThat(outbox.stats().queued()).isEqualTo(1);
+    }
+
+    @Test
+    void moderationNulReasonsRollBackWithoutDomainOrAuditChanges() {
+        var comment = post("a");
+        var author = service.moderation(comment.id());
+        assertThatThrownBy(() -> service.decide(bot, comment.id(),
+            new Decision(UUID.randomUUID(), 0, Action.REMOVE, "bad\0reason", 123))).hasMessageContaining("400");
+        assertThatThrownBy(() -> service.changeMode(bot, author.authorReference(),
+            new ChangeMode(UUID.randomUUID(), 0, Mode.PREMODERATION, "bad\0reason", 123))).hasMessageContaining("400");
+        assertThat(service.moderation(comment.id())).isEqualTo(author);
+        assertThat(service.history(author.authorReference(), 0, 100)).isEmpty();
+        assertThat(outbox.stats().queued()).isEqualTo(1);
+    }
+
+    @Test
+    void strikeResetOnlyRevisesAuthorAndNewStrikesUseNewBaseline() {
+        open(settings("TEST", true, true, true, 1, 100));
+        var first = decide(post("a"), Action.REMOVE);
+        for (int i = 0; i < 20; i++) {
+            decide(post("a"), Action.REJECT);
+        }
+        int snapshots = jdbc.queryForObject("SELECT count(*) FROM banner_comment_audit", Integer.class);
+        var author = service.moderation(first.id());
+        var reset = new ChangeMode(UUID.randomUUID(), author.authorVersion(), Mode.POSTMODERATION, "Reset", 123);
+        service.changeMode(bot, author.authorReference(), reset);
+        service.changeMode(bot, author.authorReference(), reset);
+        assertThat(service.capabilities("a").effectiveStrikes()).isZero();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM banner_comment_audit", Integer.class)).isEqualTo(snapshots);
+        var restored = service.decide(bot, first.id(),
+            new Decision(UUID.randomUUID(), first.version(), Action.RESTORE, "Restore", 123));
+        assertThat(restored.effectiveStrikes()).isZero();
+        var removedAgain = service.decide(bot, first.id(),
+            new Decision(UUID.randomUUID(), restored.version(), Action.REMOVE, "New strike", 123));
+        assertThat(removedAgain.effectiveStrikes()).isEqualTo(1);
+        assertThat(removedAgain.authorMode()).isEqualTo(Mode.PREMODERATION);
     }
 
     @Test

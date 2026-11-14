@@ -29,7 +29,9 @@ Moderation history uses the stable realm subject, not a mutable agent name. Unli
 Comments and moderation profiles are managed JPA entities with `@Audited`, using the existing
 Envers `Revision` / `CustomRevisionListener` and `_audit` table naming. Creation, decisions,
 withdrawal, threshold changes and forgiveness generate entity snapshots in the same transaction
-as the business change. No JDBC writes or HQL bulk mutations bypass Envers. SQL is confined to
+as the business change. Forgiveness advances an audited author strike-generation baseline in constant work;
+old comment rows and their snapshots are not rewritten. A negative decision records the current generation,
+and only strikes in that generation remain effective. No JDBC writes or HQL bulk mutations bypass Envers. SQL is confined to
 Flyway schema migrations; runtime selection uses Hibernate queries and managed entity changes.
 
 `comment_decision` is an immutable **command receipt**, not a replacement entity-audit engine:
@@ -50,7 +52,8 @@ the author lock, avoiding stale first-level-cache state. Queue workers use Hiber
 V2_71 introduces the comment schema (renumbered from the unreleased draft to avoid the
 existing main-branch V2_70 migration). V2_72 renames its command-receipt table and adds
 Envers history tables referencing the shared revision table; no deployed migration is edited. Existing rows acquire snapshots
-on their next managed change; the migration does not invent historical revisions.
+on their next managed change; the migration does not invent historical revisions. V2_73 retains
+the submitted banner path for retries and adds the audited strike-generation baseline/index.
 
 ## Website API
 
@@ -64,7 +67,7 @@ All endpoints require a validated bearer token. Comment responses use `Cache-Con
 | `GET /user/comments?offset=0&limit=30` | Only the caller's items, including pending/rejected/withdrawn and author-visible reason |
 | `DELETE /comments/{id}?expectedVersion=N` | Owner-only withdrawal; unknown/other-author ID returns 404; idempotent if already withdrawn |
 
-`requestId` is an idempotency key scoped to the author. Retrying the exact payload returns the same item, not another comment/event; reusing the key for another body/banner returns 409. Every creation rechecks eligibility. Use 1–100 items and bounded nonnegative offsets. Length is 1–2000 UTF-16 code units at the HTTP boundary, excluding whitespace-only text; bodies are retained verbatim, including Unicode/newlines, and must be rendered as **text**, never HTML. There is no editing, arbitrary direct-comment public lookup, attachment, threading or user-set publication state.
+`requestId` is an idempotency key scoped to the author. Retrying the exact payload returns the same item, not another comment/event; reusing the key for another body/banner returns 409. The originally submitted slug is retained separately from the canonical banner slug, so an exact retry still succeeds after banner deletion; another live alias for the same banner is also accepted. Every creation rechecks eligibility. Use 1–100 items and bounded nonnegative offsets. Length is 1–2000 UTF-16 code units at the HTTP boundary, excluding whitespace-only text and U+0000; bodies are retained verbatim, including Unicode/newlines, and must be rendered as **text**, never HTML. There is no editing, arbitrary direct-comment public lookup, attachment, threading or user-set publication state.
 
 Banner aliases resolve to the immutable UUID. A rename preserves the discussion and the moderator permalink uses the current canonical slug. Deletion sets the live banner FK to null, retaining the immutable UUID/title/slug snapshots and private moderation history, but no comments are publicly reachable for that deleted banner. A future banner merge must explicitly reassign comments under reviewed migration semantics; this PR does not silently infer merges.
 
@@ -80,7 +83,7 @@ Prefix: `/moderation/comments/{environment}`, where the exact uppercase TEST/PRO
 | `POST /authors/{id}/mode` | `{requestId, expectedVersion, mode, reason, moderatorId}`; author profile version |
 | `GET /authors/{id}/audit` | Paginated decisions/mode changes, reasons and numeric moderator IDs; no service subject |
 
-`KEEP` / `REMOVE` apply to published comments; `APPROVE` / `REJECT` to pending comments; `RESTORE` reverses a removed/rejected comment. Only explicit REMOVE/REJECT decisions add a strike, at most one active strike per distinct comment. Reasons are required and author-visible; do not put private moderator notes or personal information in this field. Withdrawn comments cannot be restored by moderation.
+`KEEP` / `REMOVE` apply to published comments; `APPROVE` / `REJECT` to pending comments; `RESTORE` reverses a removed/rejected comment. Only explicit REMOVE/REJECT decisions add a strike, at most one active strike per distinct comment. Reasons are required, reject U+0000, and are author-visible; do not put private moderator notes or personal information in this field. Withdrawn comments cannot be restored by moderation.
 
 Each author has a transactional row lock shared by submissions, withdrawals, all decisions and mode changes. The threshold-crossing strike and PREMODERATION transition commit together; a submission serialized after that transition is pending. Existing published comments are not bulk-hidden. Reversals void that comment's strike but never automatically restore normal posting. Explicit `POSTMODERATION` resets forgive the current strike baseline, keep audit and do not publish existing pending comments. A fresh negative decision after restoration clears forgiveness and counts toward the threshold again. All mode actions are reasoned and audited. Role-granting/agent-link endpoints remain unchanged.
 

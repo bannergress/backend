@@ -24,11 +24,11 @@ public final class CommentModels {
     }
 
     public record Decision(@NotNull UUID requestId, @Min(0) long expectedVersion,
-        @NotNull Action action, @NotBlank @Size(max = 200) String reason, @Min(1) long moderatorId) {
+        @NotNull Action action, @NotBlank @Size(max = 200) @Pattern(regexp = "[^\\x00]*") String reason, @Min(1) long moderatorId) {
     }
 
     public record ChangeMode(@NotNull UUID requestId, @Min(0) long expectedVersion,
-        @NotNull Mode mode, @NotBlank @Size(max = 200) String reason, @Min(1) long moderatorId) {
+        @NotNull Mode mode, @NotBlank @Size(max = 200) @Pattern(regexp = "[^\\x00]*") String reason, @Min(1) long moderatorId) {
     }
 
     public record Capabilities(boolean canComment, String denialReason, boolean testExemption,

@@ -95,6 +95,23 @@ class CommentHttpSecurityTest {
     }
 
     @Test
+    void escapedNulModerationReasonsAreRejectedAtHttpBoundary() throws Exception {
+        var bot = jwt().authorities(new SimpleGrantedAuthority("ROLE_moderate-comments"));
+        String fields = "{\"requestId\":\"00000000-0000-0000-0000-000000000002\",\"expectedVersion\":0,"
+            + "\"moderatorId\":123,\"reason\":\"bad\\u0000reason\",";
+        mvc.perform(post("/moderation/comments/TEST/00000000-0000-0000-0000-000000000001/decisions")
+            .with(bot).contentType("application/json").content(fields + "\"action\":\"REMOVE\"}"))
+            .andExpect(status().isBadRequest());
+        mvc.perform(post("/moderation/comments/TEST/authors/00000000-0000-0000-0000-000000000001/mode")
+            .with(bot).contentType("application/json").content(fields + "\"mode\":\"PREMODERATION\"}"))
+            .andExpect(status().isBadRequest());
+        org.mockito.Mockito.verify(context.getBean(CommentService.class), org.mockito.Mockito.never())
+            .decide(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
+        org.mockito.Mockito.verify(context.getBean(CommentService.class), org.mockito.Mockito.never())
+            .changeMode(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
     void testCallbackCannotSelectProductionAndModeratorReasonIsRequired() throws Exception {
         var bot = jwt().authorities(new SimpleGrantedAuthority("ROLE_moderate-comments"));
         mvc.perform(get("/moderation/comments/PROD").with(bot)).andExpect(status().isForbidden());
