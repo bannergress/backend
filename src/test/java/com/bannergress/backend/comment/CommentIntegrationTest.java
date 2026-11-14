@@ -7,7 +7,11 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import jakarta.persistence.EntityManagerFactory;
+import org.hibernate.envers.AuditReaderFactory;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -18,6 +22,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -35,6 +40,7 @@ import static org.mockito.Mockito.*;
 class CommentIntegrationTest {
     private static DriverManagerDataSource dataSource;
     private static JdbcTemplate jdbc;
+    private static EntityManagerFactory factory;
     private AnnotationConfigApplicationContext context;
     private CommentService service;
     private CommentOutbox outbox;
@@ -57,13 +63,31 @@ class CommentIntegrationTest {
         jdbc = new JdbcTemplate(dataSource);
         Flyway.configure().dataSource(dataSource).load().migrate();
         Flyway.configure().dataSource(dataSource).load().validate();
+        var bean = new LocalContainerEntityManagerFactoryBean();
+        bean.setDataSource(dataSource);
+        bean.setPackagesToScan("com.bannergress.backend");
+        bean.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
+        bean.setJpaPropertyMap(Map.of(
+            "hibernate.globally_quoted_identifiers", "true",
+            "hibernate.id.db_structure_naming_strategy", "single",
+            "hibernate.search.enabled", "false",
+            "org.hibernate.envers.audit_table_suffix", "_audit",
+            "org.hibernate.envers.revision_field_name", "rev",
+            "org.hibernate.envers.revision_type_field_name", "revtype"));
+        bean.afterPropertiesSet();
+        factory = bean.getObject();
+    }
+
+    @AfterAll
+    static void closeFactory() {
+        factory.close();
     }
 
     @BeforeEach
     void setup() {
-        jdbc.execute("TRUNCATE comment_outbox, comment_audit, banner_comment, comment_author");
+        jdbc.execute("TRUNCATE comment_outbox, comment_decision, banner_comment, comment_author, banner_comment_audit, comment_author_audit");
         banner = UUID.randomUUID();
-        new TransactionTemplate(new DataSourceTransactionManager(dataSource)).executeWithoutResult(status -> {
+        new TransactionTemplate(new JpaTransactionManager(factory)).executeWithoutResult(status -> {
             jdbc.update("""
                 INSERT INTO banner(uuid, canonical_slug, created, width, number_of_missions, online, title, type,
                     number_of_submitted_missions, number_of_disabled_missions)
@@ -82,13 +106,16 @@ class CommentIntegrationTest {
         }
         context = new AnnotationConfigApplicationContext();
         context.register(Transactions.class);
+        context.registerBean(org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor.class);
+        context.registerBean(org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor.class);
         context.registerBean("dataSource", DriverManagerDataSource.class, () -> dataSource);
-        context.registerBean("transactionManager", DataSourceTransactionManager.class,
-            () -> new DataSourceTransactionManager(dataSource));
+        context.registerBean("entityManagerFactory", EntityManagerFactory.class, () -> factory, definition -> definition.setDestroyMethodName(""));
+        context.registerBean("transactionManager", JpaTransactionManager.class,
+            () -> new JpaTransactionManager(factory));
         context.registerBean(JdbcTemplate.class, () -> jdbc);
         context.registerBean(CommentSettings.class, () -> settings);
         context.registerBean(UserMappingService.class, () -> mappings);
-        context.register(CommentStore.class, CommentService.class, CommentOutbox.class);
+        context.register(CommentAuthorProvisioner.class, CommentStore.class, CommentService.class, CommentOutbox.class);
         context.refresh();
         service = context.getBean(CommentService.class);
         outbox = context.getBean(CommentOutbox.class);
@@ -97,6 +124,7 @@ class CommentIntegrationTest {
     @AfterEach
     void close() {
         context.close();
+        org.springframework.security.core.context.SecurityContextHolder.clearContext();
     }
 
     static CommentSettings settings(String environment, boolean enabled, boolean exempt, boolean trusted,
@@ -118,6 +146,57 @@ class CommentIntegrationTest {
 
     private ModerationView decide(View comment, Action action) {
         return service.decide(bot, comment.id(), new Decision(UUID.randomUUID(), comment.version(), action, "Policy reason", 123));
+    }
+
+    @Test
+    void enversTracksCreationDecisionAndForgivenessWithExistingRevisionEntity() {
+        open(settings("TEST", true, true, true, 1, 10));
+        var comment = post("a");
+        org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(bot);
+        var removed = decide(comment, Action.REMOVE);
+        service.changeMode(bot, removed.authorReference(), new ChangeMode(UUID.randomUUID(),
+            removed.authorVersion(), Mode.POSTMODERATION, "Forgiven", 123));
+        try (var entities = factory.createEntityManager()) {
+            var reader = AuditReaderFactory.get(entities);
+            var revisions = reader.getRevisions(BannerComment.class, comment.id());
+            assertThat(revisions).hasSize(3);
+            var created = reader.find(BannerComment.class, comment.id(), revisions.get(0));
+            var decided = reader.find(BannerComment.class, comment.id(), revisions.get(1));
+            var forgiven = reader.find(BannerComment.class, comment.id(), revisions.get(2));
+            assertThat(created.state).isEqualTo(State.PUBLISHED);
+            assertThat(decided.state).isEqualTo(State.REMOVED);
+            assertThat(decided.strike).isTrue();
+            assertThat(forgiven.forgiven).isTrue();
+            assertThat(reader.getRevisions(CommentAuthor.class, removed.authorReference())).hasSize(3);
+            assertThat(reader.findRevision(com.bannergress.backend.audit.Revision.class, revisions.get(1)).getUserid()).isEqualTo(bot.getName());
+        }
+    }
+
+    @Test
+    void concurrentFirstSubmissionsShareOneAuthorAndEnforceRateLimit() throws Exception {
+        open(settings("TEST", true, true, true, 3, 1));
+        CountDownLatch ready = new CountDownLatch(2);
+        try (var workers = Executors.newFixedThreadPool(2)) {
+            var tasks = java.util.stream.IntStream.range(0, 2).mapToObj(i -> workers.submit(() -> {
+                ready.countDown();
+                assertThat(ready.await(10, TimeUnit.SECONDS)).isTrue();
+                try {
+                    post("new-author");
+                    return true;
+                } catch (ResponseStatusException exception) {
+                    assertThat(exception.getStatusCode().value()).isEqualTo(429);
+                    return false;
+                }
+            })).toList();
+            int successes = 0;
+            for (var task : tasks) {
+                if (task.get(15, TimeUnit.SECONDS)) {
+                    successes++;
+                }
+            }
+            assertThat(successes).isEqualTo(1);
+        }
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM comment_author WHERE subject = 'new-author'", Integer.class)).isEqualTo(1);
     }
 
     @Test
@@ -191,7 +270,7 @@ class CommentIntegrationTest {
         assertThat(service.capabilities("a").effectiveStrikes()).isZero();
         assertThat(post("a").state()).isEqualTo(State.PUBLISHED);
         assertThat(service.history(restored.authorReference(), 0, 100)).anyMatch(a -> a.action().equals("RESET_POSTMODERATION"));
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM comment_audit WHERE action = 'RESET_POSTMODERATION'", Integer.class)).isEqualTo(1);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM comment_decision WHERE action = 'RESET_POSTMODERATION'", Integer.class)).isEqualTo(1);
     }
 
     @Test
@@ -276,9 +355,9 @@ class CommentIntegrationTest {
         var reset = new ChangeMode(UUID.randomUUID(), first.authorVersion(), Mode.POSTMODERATION, "Forgiven", 123);
         service.changeMode(bot, first.authorReference(), reset);
         service.changeMode(migratedBot, first.authorReference(), reset);
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM comment_audit WHERE request_key = ?",
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM comment_decision WHERE request_key = ?",
             Integer.class, reset.requestId())).isEqualTo(1);
-        assertThat(jdbc.queryForObject("SELECT actor FROM comment_audit WHERE request_key = ?",
+        assertThat(jdbc.queryForObject("SELECT actor FROM comment_decision WHERE request_key = ?",
             String.class, request.requestId())).isEqualTo("bot:service-account");
     }
 
@@ -312,7 +391,7 @@ class CommentIntegrationTest {
             Integer.class)).isEqualTo(1);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM banner_comment WHERE state = 'PUBLISHED' AND version = 0",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM comment_audit WHERE request_key = ?",
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM comment_decision WHERE request_key = ?",
             Integer.class, request.requestId())).isEqualTo(1);
         assertThat(outbox.stats().queued()).isEqualTo(3);
     }
@@ -363,13 +442,13 @@ class CommentIntegrationTest {
     @Test
     void aliasRenameAndDeletionPreservePrivateAuditWithoutOrphanedPublicComments() {
         var comment = post("a");
-        new TransactionTemplate(new DataSourceTransactionManager(dataSource)).executeWithoutResult(status -> {
+        new TransactionTemplate(new JpaTransactionManager(factory)).executeWithoutResult(status -> {
             jdbc.update("INSERT INTO banner_slug(slug, banner) VALUES (?, ?)", "renamed-" + banner, banner);
             jdbc.update("UPDATE banner SET canonical_slug = ? WHERE uuid = ?", "renamed-" + banner, banner);
         });
         assertThat(service.published(banner.toString(), 0, 30).total()).isEqualTo(1);
         assertThat(service.moderation(comment.id()).bannerUrl()).contains("renamed-");
-        new TransactionTemplate(new DataSourceTransactionManager(dataSource)).executeWithoutResult(status -> {
+        new TransactionTemplate(new JpaTransactionManager(factory)).executeWithoutResult(status -> {
             jdbc.update("DELETE FROM banner_slug WHERE banner = ?", banner);
             jdbc.update("DELETE FROM banner WHERE uuid = ?", banner);
         });
@@ -407,13 +486,43 @@ class CommentIntegrationTest {
 
     @Test
     void outboxAndCommentRollbackTogether() {
-        var transaction = new TransactionTemplate(new DataSourceTransactionManager(dataSource));
+        var transaction = new TransactionTemplate(new JpaTransactionManager(factory));
         transaction.executeWithoutResult(status -> {
             post("a");
             status.setRollbackOnly();
         });
         assertThat(jdbc.queryForObject("SELECT count(*) FROM banner_comment", Integer.class)).isZero();
         assertThat(outbox.stats().queued()).isZero();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM banner_comment_audit", Integer.class)).isZero();
+    }
+
+    @Test
+    void concurrentDecisionsOnOneCommentRejectStaleManagedState() throws Exception {
+        var comment = post("same-author");
+        CountDownLatch ready = new CountDownLatch(2);
+        try (var workers = Executors.newFixedThreadPool(2)) {
+            var tasks = java.util.stream.IntStream.range(0, 2).mapToObj(i -> workers.submit(() -> {
+                ready.countDown();
+                assertThat(ready.await(10, TimeUnit.SECONDS)).isTrue();
+                try {
+                    decide(comment, Action.REMOVE);
+                    return true;
+                } catch (ResponseStatusException exception) {
+                    assertThat(exception.getStatusCode().value()).isEqualTo(409);
+                    return false;
+                }
+            })).toList();
+            int successes = 0;
+            for (var task : tasks) {
+                if (task.get(15, TimeUnit.SECONDS)) {
+                    successes++;
+                }
+            }
+            assertThat(successes).isEqualTo(1);
+        }
+        assertThat(service.moderation(comment.id()).version()).isEqualTo(1);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM comment_decision", Integer.class)).isEqualTo(1);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM banner_comment_audit", Integer.class)).isEqualTo(2);
     }
 
     @Test
@@ -424,7 +533,7 @@ class CommentIntegrationTest {
         CountDownLatch locked = new CountDownLatch(1);
         CountDownLatch submitStarted = new CountDownLatch(1);
         try (var workers = Executors.newFixedThreadPool(2)) {
-            var decision = workers.submit(() -> new TransactionTemplate(new DataSourceTransactionManager(dataSource))
+            var decision = workers.submit(() -> new TransactionTemplate(new JpaTransactionManager(factory))
                 .executeWithoutResult(status -> {
                     jdbc.queryForObject("SELECT version FROM comment_author WHERE id = ? FOR UPDATE", Long.class, author);
                     locked.countDown();

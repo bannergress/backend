@@ -24,6 +24,33 @@ Environment is read only from server configuration. When enabled, TEST must use 
 
 Moderation history uses the stable realm subject, not a mutable agent name. Unlink/relink and renaming do not reset it. The existing Ingress integration does not provide an immutable Ingress GUID; account transfers must not be automated as a way to reset history. Any cross-account transfer requires an administrator to review and migrate moderation history explicitly before enabling the new account; no automatic transfer/merge API is provided here.
 
+## Hibernate persistence and Envers history
+
+Comments and moderation profiles are managed JPA entities with `@Audited`, using the existing
+Envers `Revision` / `CustomRevisionListener` and `_audit` table naming. Creation, decisions,
+withdrawal, threshold changes and forgiveness generate entity snapshots in the same transaction
+as the business change. No JDBC writes or HQL bulk mutations bypass Envers. SQL is confined to
+Flyway schema migrations; runtime selection uses Hibernate queries and managed entity changes.
+
+`comment_decision` is an immutable **command receipt**, not a replacement entity-audit engine:
+it preserves globally unique retry keys, the numeric Telegram moderator, reason, action and the
+API history DTO. Envers owns state-change history; the existing revision listener records the
+request's authenticated principal. Operational outbox leases/receipts are deliberately not audited
+by Envers, avoiding a revision for every delivery retry.
+
+Author locks use JPA pessimistic locking; explicit API versions are domain counters checked and
+incremented under that shared lock (not a second Hibernate optimistic-lock scheme). Concurrent
+first use provisions only an empty author lock/profile row in a separate transaction and tolerates
+the winning unique-subject insert; comment changes, command receipts, Envers snapshots and
+outbox events still roll back together. A failed request can leave an empty profile, never a
+partially accepted comment. Moderation refreshes a previously loaded comment **after** acquiring
+the author lock, avoiding stale first-level-cache state. Queue workers use Hibernate's
+`UPGRADE_SKIPLOCKED`, and leases/rate windows use database wall time.
+
+Migration V2_71 preserves existing V2_70 data/checksums, renames its command-receipt table and
+adds Envers history tables referencing the shared revision table. Existing rows acquire snapshots
+on their next managed change; the migration does not invent historical revisions.
+
 ## Website API
 
 All endpoints require a validated bearer token. Comment responses use `Cache-Control: private, no-store` and vary on Authorization. User IDs, email, Google IDs and tokens are never exposed in comment DTOs.

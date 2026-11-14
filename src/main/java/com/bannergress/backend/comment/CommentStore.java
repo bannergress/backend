@@ -1,80 +1,111 @@
 package com.bannergress.backend.comment;
 
-import org.springframework.jdbc.core.JdbcTemplate;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.PersistenceContext;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
-/** PostgreSQL store. Every author mutation must first take the same transaction-scoped row lock. */
+/** Hibernate persistence; author row locks serialize every domain mutation, including API version increments. */
 @Repository
 public class CommentStore {
-    final JdbcTemplate jdbc;
+    @PersistenceContext
+    private EntityManager entities;
+    private final CommentAuthorProvisioner provisioner;
 
-    public CommentStore(JdbcTemplate jdbc) {
-        this.jdbc = jdbc;
+    public CommentStore(CommentAuthorProvisioner provisioner) {
+        this.provisioner = provisioner;
     }
 
-    record Author(UUID id, String subject, CommentModels.Mode mode, long version) {
+    EntityManager entities() {
+        return entities;
     }
 
-    record Comment(UUID id, UUID bannerId, UUID bannerReference, String title, String slug,
-        UUID author, String agent, String body, Instant createdAt, CommentModels.State state,
-        boolean reviewed, boolean strike, boolean forgiven, String reason, long version) {
+    CommentAuthor lockAuthor(String subject) {
+        var authors = entities.createQuery("from CommentAuthor where subject = :subject", CommentAuthor.class)
+            .setParameter("subject", subject).getResultList();
+        if (authors.isEmpty()) {
+            try {
+                provisioner.ensure(subject);
+            } catch (RuntimeException exception) {
+                if (!constraint(exception, "comment_author_subject_key")) {
+                    throw exception;
+                }
+                // The winning concurrent transaction committed the same subject. Read it in this transaction.
+            }
+            authors = entities.createQuery("from CommentAuthor where subject = :subject", CommentAuthor.class)
+                .setParameter("subject", subject).getResultList();
+        }
+        var author = one(authors);
+        entities.refresh(author, LockModeType.PESSIMISTIC_WRITE);
+        return author;
     }
 
-    Author lockAuthor(String subject) {
-        jdbc.update("INSERT INTO comment_author(id, subject) VALUES (?, ?) ON CONFLICT(subject) DO NOTHING",
-            UUID.randomUUID(), subject);
-        return jdbc.queryForObject("SELECT * FROM comment_author WHERE subject = ? FOR UPDATE", this::mapAuthor, subject);
+    CommentAuthor lockAuthor(UUID id) {
+        var author = author(id);
+        entities.refresh(author, LockModeType.PESSIMISTIC_WRITE);
+        return author;
     }
 
-    Author lockAuthor(UUID id) {
-        return one(jdbc.query("SELECT * FROM comment_author WHERE id = ? FOR UPDATE", this::mapAuthor, id));
+    CommentAuthor author(UUID id) {
+        return required(entities.find(CommentAuthor.class, id));
     }
 
-    Author author(UUID id) {
-        return one(jdbc.query("SELECT * FROM comment_author WHERE id = ?", this::mapAuthor, id));
+    BannerComment comment(UUID id) {
+        return required(entities.find(BannerComment.class, id));
     }
 
-    Comment comment(UUID id) {
-        return one(jdbc.query("SELECT * FROM banner_comment WHERE id = ?", this::mapComment, id));
+    BannerComment refreshComment(UUID id) {
+        var comment = comment(id);
+        entities.refresh(comment);
+        return comment;
+    }
+
+    Instant now() {
+        // Database wall time keeps lease fencing consistent across backend instances.
+        return entities.createQuery("select cast(function('clock_timestamp') as Instant)", Instant.class).getSingleResult();
     }
 
     int strikes(UUID author) {
-        return jdbc.queryForObject("SELECT count(*) FROM banner_comment WHERE author_id = ? AND strike AND NOT forgiven",
-            Integer.class, author);
+        return entities.createQuery("select count(c) from BannerComment c where c.author = :author and c.strike = true and c.forgiven = false",
+            Long.class).setParameter("author", author).getSingleResult().intValue();
     }
 
     void event(UUID comment, UUID author, String type, String environment) {
-        jdbc.update("INSERT INTO comment_outbox(id, comment_id, author_id, event_type, environment) VALUES (?, ?, ?, ?, ?)",
-            UUID.randomUUID(), comment, author, type, environment);
+        var event = new CommentOutboxEvent();
+        event.createdAt = now();
+        event.availableAt = event.createdAt;
+        event.comment = comment;
+        event.author = author;
+        event.eventType = type;
+        event.environment = environment;
+        entities.persist(event);
     }
 
-    private Author mapAuthor(ResultSet r, int row) throws SQLException {
-        return new Author(r.getObject("id", UUID.class), r.getString("subject"),
-            CommentModels.Mode.valueOf(r.getString("mode")), r.getLong("version"));
+    static boolean constraint(Throwable error, String name) {
+        for (Throwable cause = error; cause != null; cause = cause.getCause()) {
+            if (cause instanceof ConstraintViolationException violation && name.equals(violation.getConstraintName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
-    Comment mapComment(ResultSet r, int row) throws SQLException {
-        return new Comment(r.getObject("id", UUID.class), r.getObject("banner_uuid", UUID.class),
-            r.getObject("banner_reference", UUID.class), r.getString("banner_title"), r.getString("banner_slug"),
-            r.getObject("author_id", UUID.class), r.getString("agent_name"), r.getString("body"),
-            r.getTimestamp("created_at").toInstant(), CommentModels.State.valueOf(r.getString("state")),
-            r.getBoolean("reviewed"), r.getBoolean("strike"), r.getBoolean("forgiven"), r.getString("reason"),
-            r.getLong("version"));
+    static <T> T required(T value) {
+        if (value == null) {
+            throw new ResponseStatusException(NOT_FOUND);
+        }
+        return value;
     }
 
     static <T> T one(List<T> values) {
-        if (values.isEmpty()) {
-            throw new ResponseStatusException(NOT_FOUND);
-        }
-        return values.getFirst();
+        return required(values.isEmpty() ? null : values.getFirst());
     }
 }
