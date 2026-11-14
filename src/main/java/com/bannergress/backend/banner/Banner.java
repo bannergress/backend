@@ -350,13 +350,13 @@ public class Banner {
     /**
      * Efficiency in missions per kilometer. Not persisted, only indexed for sorting.
      *
-     * @return Missions per kilometer, or <code>null</code> if the length is unknown or zero.
+     * @return Missions per kilometer, or <code>null</code> if the length is unknown.
      */
     @GenericField(searchable = Searchable.NO, sortable = Sortable.YES)
     @IndexingDependency(derivedFrom = {@ObjectPath(@PropertyValue(propertyName = "numberOfMissions")),
         @ObjectPath(@PropertyValue(propertyName = "lengthMeters"))})
     public Double getEfficiency() {
-        if (lengthMeters == null || lengthMeters <= 0) {
+        if (lengthMeters == null) {
             return null;
         }
         return numberOfMissions * 1000.0 / lengthMeters;

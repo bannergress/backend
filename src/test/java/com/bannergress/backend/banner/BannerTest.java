@@ -29,6 +29,6 @@ class BannerTest {
         final Banner banner = new BannerBuilder().withNumberOfMissions(18).withLengthMeters(0).build();
 
         // VERIFY
-        assertThat(banner.getEfficiency()).isNull();
+        assertThat(banner.getEfficiency()).isEqualTo(Double.POSITIVE_INFINITY);
     }
 }

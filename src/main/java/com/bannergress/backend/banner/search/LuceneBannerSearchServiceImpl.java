@@ -135,7 +135,7 @@ class LuceneBannerSearchServiceImpl extends BaseBannerSearchServiceImpl {
                                 b.add(factory.field(FIELD_CREATED).order(direction));
                                 break;
                             case efficiency:
-                                b.add(factory.field(FIELD_EFFICIENCY).order(direction).missing().last());
+                                b.add(factory.field(FIELD_EFFICIENCY).order(direction));
                                 break;
                             case lengthMeters:
                                 b.add(factory.field(FIELD_LENGTH_METERS).order(direction));
