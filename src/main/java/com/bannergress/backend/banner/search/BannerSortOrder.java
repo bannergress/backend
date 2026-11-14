@@ -15,6 +15,8 @@ public enum BannerSortOrder {
     numberOfMissions,
     /** Order by {@link Banner#getLengthMeters}. */
     lengthMeters,
+    /** Order by {@link Banner#getEfficiency} (missions per kilometer). Banners without a length come last. */
+    efficiency,
     /** Order by {@link BannerSettings#listAdded}. */
     listAdded,
     /** Order by distance between {@link Banner#getStartPoint} and a given point. */
