@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 import java.time.Instant;
@@ -19,7 +20,7 @@ public final class CommentModels {
     public enum Mode { POSTMODERATION, PREMODERATION }
     public enum Action { KEEP, APPROVE, REMOVE, REJECT, RESTORE }
 
-    public record Create(@NotNull UUID requestId, @NotBlank @Size(max = 2000) String text) {
+    public record Create(@NotNull UUID requestId, @NotBlank @Size(max = 2000) @Pattern(regexp = "[^\\x00]*") String text) {
     }
 
     public record Decision(@NotNull UUID requestId, @Min(0) long expectedVersion,

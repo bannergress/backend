@@ -458,6 +458,33 @@ class CommentIntegrationTest {
     }
 
     @Test
+    void expiredExhaustedLeasesAreCleanedInBoundedBatchesWithoutBlockingFreshWork() {
+        post("a");
+        post("b");
+        post("c");
+        jdbc.update("UPDATE comment_outbox SET attempts = 10, lease_until = now() - interval '1 second'");
+        var fresh = post("d");
+        assertThat(outbox.claim(1)).extracting(Delivery::commentId).containsExactly(fresh.id());
+        assertThat(outbox.stats().dead()).isEqualTo(1);
+        assertThat(outbox.stats().queued()).isEqualTo(3);
+        assertThat(outbox.claim(1)).isEmpty();
+        assertThat(outbox.stats().dead()).isEqualTo(2);
+        assertThat(outbox.claim(1)).isEmpty();
+        assertThat(outbox.stats().dead()).isEqualTo(3);
+        assertThat(outbox.stats().queued()).isEqualTo(1);
+    }
+
+    @Test
+    void nulInputIsRejectedWithoutPersistingCommentOutboxOrAudit() {
+        assertThatThrownBy(() -> service.create("a", banner.toString(), new Create(UUID.randomUUID(), "bad\0text")))
+            .hasMessageContaining("400");
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM banner_comment", Integer.class)).isZero();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM banner_comment_audit", Integer.class)).isZero();
+        assertThat(outbox.stats().queued()).isZero();
+        assertThat(post("a").state()).isEqualTo(State.PUBLISHED);
+    }
+
+    @Test
     void outboxLeasesAreFencedRetryableAndRecoverable() {
         post("a");
         var first = outbox.claim(10).getFirst();

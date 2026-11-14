@@ -69,7 +69,7 @@ public class CommentService {
             throw new ResponseStatusException(FORBIDDEN, "Verified Ingress link required");
         }
         String text = request.text();
-        if (text == null || text.isBlank() || text.length() > 2000 || request.requestId() == null) {
+        if (text == null || text.isBlank() || text.length() > 2000 || text.indexOf(0) >= 0 || request.requestId() == null) {
             throw new ResponseStatusException(BAD_REQUEST, "Invalid comment");
         }
         var banner = banner(slug);

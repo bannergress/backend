@@ -33,8 +33,8 @@ public class CommentOutbox {
             throw new ResponseStatusException(BAD_REQUEST);
         }
         Instant now = store.now();
-        var exhaustedQuery = store.entities().createQuery("from CommentOutboxEvent where environment = :env and state = 'QUEUED' and attempts >= 10 and (leaseUntil is null or leaseUntil < :now)", CommentOutboxEvent.class)
-            .setParameter("env", settings.environment()).setParameter("now", now);
+        var exhaustedQuery = store.entities().createQuery("from CommentOutboxEvent where environment = :env and state = 'QUEUED' and attempts >= 10 and (leaseUntil is null or leaseUntil < :now) order by createdAt, id", CommentOutboxEvent.class)
+            .setParameter("env", settings.environment()).setParameter("now", now).setMaxResults(limit);
         var exhausted = skipLocked(exhaustedQuery).getResultList();
         exhausted.forEach(e -> {
             e.state = "DEAD";

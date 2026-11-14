@@ -87,6 +87,14 @@ class CommentHttpSecurityTest {
     }
 
     @Test
+    void escapedNulIsRejectedBeforeCallingService() throws Exception {
+        mvc.perform(post("/bnrs/banner/comments").with(jwt()).contentType("application/json")
+            .content("{\"requestId\":\"00000000-0000-0000-0000-000000000001\",\"text\":\"bad\\u0000text\"}"))
+            .andExpect(status().isBadRequest());
+        org.mockito.Mockito.verifyNoInteractions(context.getBean(CommentService.class));
+    }
+
+    @Test
     void testCallbackCannotSelectProductionAndModeratorReasonIsRequired() throws Exception {
         var bot = jwt().authorities(new SimpleGrantedAuthority("ROLE_moderate-comments"));
         mvc.perform(get("/moderation/comments/PROD").with(bot)).andExpect(status().isForbidden());
