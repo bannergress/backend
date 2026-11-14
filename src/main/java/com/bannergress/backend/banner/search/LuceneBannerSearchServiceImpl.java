@@ -34,6 +34,7 @@ class LuceneBannerSearchServiceImpl extends BaseBannerSearchServiceImpl {
     private static final String FIELD_CREATED = "created";
     private static final String FIELD_LENGTH_METERS = "lengthMeters";
     private static final String FIELD_NUMBER_OF_MISSIONS = "numberOfMissions";
+    private static final String FIELD_EFFICIENCY = "efficiency";
     private static final String FIELD_ONLINE = "online";
     private static final String FIELD_START_POINT = "startPoint";
     private static final String FIELD_START_PLACES_SLUG = "startPlaces.slug";
@@ -132,6 +133,9 @@ class LuceneBannerSearchServiceImpl extends BaseBannerSearchServiceImpl {
                         switch (orderBy.get()) {
                             case created:
                                 b.add(factory.field(FIELD_CREATED).order(direction));
+                                break;
+                            case efficiency:
+                                b.add(factory.field(FIELD_EFFICIENCY).order(direction).missing().last());
                                 break;
                             case lengthMeters:
                                 b.add(factory.field(FIELD_LENGTH_METERS).order(direction));
