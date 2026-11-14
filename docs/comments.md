@@ -47,8 +47,9 @@ partially accepted comment. Moderation refreshes a previously loaded comment **a
 the author lock, avoiding stale first-level-cache state. Queue workers use Hibernate's
 `UPGRADE_SKIPLOCKED`, and leases/rate windows use database wall time.
 
-Migration V2_71 preserves existing V2_70 data/checksums, renames its command-receipt table and
-adds Envers history tables referencing the shared revision table. Existing rows acquire snapshots
+V2_71 introduces the comment schema (renumbered from the unreleased draft to avoid the
+existing main-branch V2_70 migration). V2_72 renames its command-receipt table and adds
+Envers history tables referencing the shared revision table; no deployed migration is edited. Existing rows acquire snapshots
 on their next managed change; the migration does not invent historical revisions.
 
 ## Website API
