@@ -1,6 +1,7 @@
 package com.bannergress.backend.banner;
 
 import com.bannergress.backend.banner.search.BannerSearchService;
+import com.bannergress.backend.banner.search.BannerSortOrder;
 import com.bannergress.backend.banner.settings.BannerSettingsServiceImpl;
 import com.bannergress.backend.place.PlaceServiceImpl;
 import com.google.common.collect.ImmutableList;
@@ -97,6 +98,29 @@ class BannerControllerTest {
         assertThat(bannerDto.id).isEqualTo(banner.getCanonicalSlug());
         assertThat(bannerDto.numberOfMissions).isEqualTo(banner.getNumberOfMissions());
         assertThat(bannerDto.lengthMeters).isEqualTo(banner.getLengthMeters());
+    }
+
+    @Test
+    void list_orderByEfficiency() {
+        // WHEN
+        final Optional<BannerSortOrder> orderBy = Optional.of(BannerSortOrder.efficiency);
+        final Banner banner = fixPlaceInformation(a($Banner()));
+
+        when(bannerSearchService.find(any(), any(), any(), any(), any(), any(), eq(false), any(), eq(false), any(),
+            any(), any(), any(), eq(orderBy), eq(Direction.DESC), any(), any(), any(), any(), eq(0), anyInt()))
+                .thenReturn(List.of(banner));
+
+        // THEN
+        final ResponseEntity<List<BannerDto>> result = testController.list(Optional.empty(), Optional.empty(),
+            Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), false,
+            Optional.empty(), Optional.empty(), Optional.empty(), orderBy, Direction.DESC, Optional.empty(),
+            Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(ImmutableSet.of(BannerDtoAttribute.id)),
+            0, 100, null, ImmutableList.of());
+
+        // VERIFY
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(result.getBody()).hasSize(1);
+        assertThat(result.getBody().get(0).id).isEqualTo(banner.getCanonicalSlug());
     }
 
     @Test
