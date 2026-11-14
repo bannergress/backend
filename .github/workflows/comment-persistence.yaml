@@ -21,7 +21,7 @@ jobs:
         ports:
           - 55437:5432
         options: >-
-          --health-cmd 'pg_isready -U postgres -d comments_test'
+          --health-cmd "pg_isready -U postgres -d comments_test"
           --health-interval 5s --health-timeout 5s --health-retries 12
     env:
       COMMENTS_TEST_JDBC_URL: jdbc:postgresql://127.0.0.1:55437/comments_test
