@@ -1,18 +1,14 @@
 plugins {
+  id 'java'
+  id 'checkstyle'
 	id 'org.springframework.boot' version '4.1.2'
-	id 'com.palantir.git-version' version '5.1.0'
 }
-
-version = gitVersion()
-
-apply plugin: 'java'
-apply plugin: 'checkstyle'
 
 group = 'com.bannergress'
 
 java {
   toolchain {
-    languageVersion = JavaLanguageVersion.of(21)
+    languageVersion = JavaLanguageVersion.of(25)
   }
 }
 
@@ -38,7 +34,7 @@ dependencies {
   implementation 'org.hibernate.search:hibernate-search-mapper-orm'
   implementation 'org.hibernate.search:hibernate-search-backend-lucene'
 	implementation 'com.google.guava:guava:33.8.0-jre'
-	implementation 'com.google.maps:google-maps-services:2.0.0'
+	implementation 'com.google.maps:google-maps-services:2.2.0'
   implementation 'com.squareup.okhttp3:okhttp:5.5.1'
   implementation 'tools.jackson.dataformat:jackson-dataformat-xml'
   implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.0'
@@ -77,8 +73,4 @@ bootRun {
 	if (project.hasProperty('jvmArgs')) {
 		jvmArgs = (project.jvmArgs.split('\\s+') as List)
 	}
-}
-
-tasks.named("bootBuildImage") {
-	imageName.set("ghcr.io/bannergress/${project.name}:${project.version}")
 }

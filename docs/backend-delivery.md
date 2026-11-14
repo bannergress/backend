@@ -6,14 +6,18 @@ Independent CI/CD infrastructure: no dependency on application features or unmer
 
 | Event | Verification | Image/deployment |
 | --- | --- | --- |
-| PR targeting `main` | Java 21 tests, Checkstyle, JAR and Bash delivery tests | None; no deployment secrets |
+| PR targeting `main` | Java 25 tests, Checkstyle, JAR and Bash delivery tests | None; no deployment secrets |
 | Merge/push to `main` | Same gates | Publish immutable image, **test only** |
 | Manual workflow dispatch on `main` | Same gates | **Test only** |
 | Manually published stable GitHub Release | Same gates; commit must be reachable from `main` | **Production only** |
 | Draft or prerelease | Published prereleases may verify | No delivery |
-| Plain tag push | Pre-existing version-image workflow unchanged | No delivery |
+| Plain tag push | No workflow triggered | No delivery |
 
 Publish a stable Release manually in GitHub from a reviewed main-reachable tag. There is no production workflow-dispatch selector. A Release created by another workflow's `GITHUB_TOKEN` may not emit downstream events. Never publish an unreviewed revision to test delivery.
+
+## Integration with the current main branch
+
+Java 25, Gradle 9.9.0 and current action majors from main are retained. The standalone manual `deploy.yml` introduced by PR492 is superseded by this single gated pipeline: its buildpack image build and direct GitHub environment binding remain, but its environment selector, mutable version-tag deployment and unrestricted remote Compose command do not. The old `container.yaml` was already removed by PR492 and is not restored. No parallel manual production or tag-push publication path remains. The existing restricted host helpers and five environment secrets are unchanged; `SSH_TARGET` is not used.
 
 ## GitHub environments
 
