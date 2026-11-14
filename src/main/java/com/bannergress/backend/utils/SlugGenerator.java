@@ -1,5 +1,6 @@
 package com.bannergress.backend.utils;
 
+import com.google.common.base.CharMatcher;
 import org.springframework.security.crypto.codec.Hex;
 
 import java.security.SecureRandom;
@@ -49,7 +50,7 @@ public final class SlugGenerator {
     private String getPrefix(String base) {
         String lowerCase = base.toLowerCase(Locale.ROOT);
         String onlyAlphanum = replacedCharacters.matcher(lowerCase).replaceAll("-");
-        String prefix = onlyAlphanum.replaceAll("^-+|-+$", "");
+        String prefix = CharMatcher.is('-').trimFrom(onlyAlphanum);
         return prefix;
     }
 
