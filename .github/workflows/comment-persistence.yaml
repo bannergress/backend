@@ -1,0 +1,45 @@
+name: Comment persistence checks
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'build.gradle'
+      - 'gradle/**'
+      - '.github/workflows/comment-persistence.yaml'
+permissions:
+  contents: read
+jobs:
+  postgres-envers:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:16-3.5
+        env:
+          POSTGRES_DB: comments_test
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 55437:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d comments_test"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      COMMENTS_TEST_JDBC_URL: jdbc:postgresql://127.0.0.1:55437/comments_test
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v5
+      - run: ./gradlew test checkstyleMain checkstyleTest bootJar --no-daemon
+      - name: Require PostgreSQL integration execution
+        run: |
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          suite = ET.parse('build/test-results/test/TEST-com.bannergress.backend.comment.CommentIntegrationTest.xml').getroot()
+          assert int(suite.attrib['tests']) > 0, 'PostgreSQL tests did not run'
+          assert all(int(suite.attrib.get(key, 0)) == 0 for key in ('skipped', 'failures', 'errors')), suite.attrib
+          PY
