@@ -1,37 +1,151 @@
-name: Check PR towards master
+name: Backend CI
+
 on:
   pull_request:
-    branches:
-      - master
+    branches: [main]
+  push:
+    branches: [main]
+  release:
+    types: [published]
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: backend-ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
-  junit_tests:
+  verify:
+    name: Tests, Checkstyle and JAR (Java 25)
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgis/postgis:16-3.5
+        env:
+          POSTGRES_DB: comments_test
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d comments_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      COMMENTS_TEST_JDBC_URL: jdbc:postgresql://127.0.0.1:5432/comments_test
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Set up JDK
-        uses: actions/setup-java@v6
+      - uses: actions/checkout@v7
         with:
-          java-version: 25
+          fetch-depth: 0
+      - name: Validate release source
+        if: github.event_name == 'release'
+        run: git merge-base --is-ancestor HEAD origin/main
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '25'
+      - uses: gradle/actions/setup-gradle@v6
+      - name: Verify delivery boundaries
+        run: |
+          bash -n scripts/*.sh
+          bash scripts/test-backend-delivery.sh
+      - name: Test, lint and package
+        run: ./gradlew test checkstyleMain checkstyleTest bootJar --no-daemon
+      - name: Publish test evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: backend-test-reports
+          path: |
+            build/reports/tests/
+            build/reports/checkstyle/
+            build/test-results/
+      - name: Upload executable JAR
+        uses: actions/upload-artifact@v6
+        with:
+          name: backend-jar-${{ github.sha }}
+          path: build/libs/*.jar
+          retention-days: 7
 
-      - name: Execute JUnit tests
-        run: ./gradlew test
-
-  checkstyle:
+  image:
+    name: Publish immutable backend image
+    needs: verify
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') || (github.event_name == 'release' && !github.event.release.draft && !github.event.release.prerelease)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.digest.outputs.image }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Set up JDK
-        uses: actions/setup-java@v6
+      - uses: actions/checkout@v7
         with:
-          java-version: 25
+          fetch-depth: 0
+      - name: Validate release source
+        if: github.event_name == 'release'
+        run: git merge-base --is-ancestor HEAD origin/main
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '25'
+      - uses: gradle/actions/setup-gradle@v6
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build image with the existing Spring Boot buildpack tooling
+        env:
+          IMAGE_TAG: ghcr.io/bannergress/bannergress-backend:sha-${{ github.sha }}
+        run: ./gradlew bootBuildImage --imageName="$IMAGE_TAG" --no-daemon
+      - name: Publish and record digest
+        id: digest
+        env:
+          IMAGE_TAG: ghcr.io/bannergress/bannergress-backend:sha-${{ github.sha }}
+        run: |
+          docker push "$IMAGE_TAG"
+          image=$(docker image inspect "$IMAGE_TAG" --format '{{index .RepoDigests 0}}')
+          [[ "$image" =~ ^ghcr\.io/bannergress/bannergress-backend@sha256:[0-9a-f]{64}$ ]]
+          echo "image=$image" >> "$GITHUB_OUTPUT"
 
-      - name: Execute checkstyle
-        run: ./gradlew checkstyleMain checkstyleTest --continue --exclude-task classes --exclude-task testClasses
+  deploy:
+    name: Deploy backend
+    needs: image
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Like website PR553: bind environment secrets directly to the deployment job.
+    environment: ${{ github.event_name == 'release' && 'production' || 'test' }}
+    concurrency:
+      group: backend-deploy-${{ github.event_name == 'release' && 'production' || 'test' }}
+      cancel-in-progress: false
+    env:
+      DEPLOY_ENVIRONMENT: ${{ github.event_name == 'release' && 'production' || 'test' }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Validate deployment source
+        env:
+          STABLE_RELEASE: ${{ github.event_name == 'release' && github.event.action == 'published' && !github.event.release.draft && !github.event.release.prerelease }}
+        run: |
+          if [[ "$DEPLOY_ENVIRONMENT" == test ]]; then
+            current=$(git ls-remote --exit-code origin refs/heads/main | cut -f1)
+            test "$GITHUB_REF" = refs/heads/main
+            test "$current" = "$GITHUB_SHA"
+          else
+            test "$STABLE_RELEASE" = true
+            git merge-base --is-ancestor HEAD origin/main
+          fi
+      - name: Deploy pinned image and verify readiness
+        run: bash scripts/run-backend-deploy.sh
+        env:
+          DEPLOY_IMAGE: ${{ needs.image.outputs.image }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
