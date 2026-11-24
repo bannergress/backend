@@ -37,7 +37,7 @@ dependencies {
 	implementation 'com.google.maps:google-maps-services:2.2.0'
   implementation 'com.squareup.okhttp3:okhttp:5.5.1'
   implementation 'tools.jackson.dataformat:jackson-dataformat-xml'
-  implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.0'
+  implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.1'
   implementation 'org.geotools:gt-referencing:34.3'
 
   annotationProcessor platform('org.springframework.boot:spring-boot-dependencies:4.2.0')
